@@ -9,11 +9,11 @@ Contributors / Licensing
 ========================
 
 Authors:
-    
-* Firstname Lastname
-* Firstname Lastname
-* Justin Javier
-* Saif Husnain
-* Firstname Lastnmae
 
-Generally everything is LICENSE'D under the Apache License 2.0.
+* Marafi Mergani
+* Charles Perez
+* Justin Javier
+* Sam Lu
+* Saif Husnain
+
+Generally everything is LICENSE'D under Apache 2.0.

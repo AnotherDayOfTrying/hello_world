@@ -12,8 +12,8 @@ Authors:
     
 * Firstname Lastname
 * Firstname Lastname
-* Firstname Lastname
+* Justin Javier
 * Firstname Lastname
 * Firstname Lastnmae
 
-Generally everything is LICENSE'D under the ______________.
+Generally everything is LICENSE'D under the Apache License 2.0.

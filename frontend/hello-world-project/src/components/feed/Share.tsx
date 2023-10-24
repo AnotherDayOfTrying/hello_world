@@ -34,15 +34,9 @@ export default function PostShare() {
                     <ImageIcon/>
                     Photo
                 </div>
-                <div className="option" style={{color: "#4A4EB7"}}>
-                    <TextFieldsIcon/>
-                    Common Mark
-                </div>
-                <div className="option" style={{color: "#4CB256"}}>
-                    <LinkIcon/>
-                    Image Link
-                </div>
-                <button className="postButton">Post</button>
+                <button className="postButton">Friends Only Post</button>
+                <button className="postButton">Public Post</button>
+                <button className="postButton">Unlisted Post</button>
                 <div style={{display: "none"}}>
                     <input 
                     type="file" 

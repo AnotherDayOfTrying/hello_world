@@ -11,6 +11,7 @@ class UserManager(BaseUserManager):
             raise ValueError("Users must have a password")
         user = self.model(username = username, displayName = displayName, github = github, **otherfields)
         user.set_password(password)
+        
         user.save()
         return user
     def create_superuser(self, username, password, **other_fields):
@@ -33,6 +34,9 @@ class Author(AbstractBaseUser, PermissionsMixin):
     host = models.CharField(max_length=255, blank = True)
     url = models.URLField(max_length=255, blank = True)
     is_approved = models.BooleanField(default = False)
+    is_active = models.BooleanField(default = True)
+    is_staff = models.BooleanField(default = False)
+    
 
     USERNAME_FIELD = 'username'
     def __str__(self):

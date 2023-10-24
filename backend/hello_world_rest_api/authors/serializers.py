@@ -12,11 +12,6 @@ class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = ('username', 'password','password2', 'displayName','github')
-
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-        return super().validate(attrs)
     def create(self, validated_data):
         user = Author.objects.create_user(
             username = validated_data['username'],
@@ -25,3 +20,8 @@ class SignUpSerializer(serializers.ModelSerializer):
             github = validated_data['github']
         )
         return user
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        return super().validate(attrs)
+    

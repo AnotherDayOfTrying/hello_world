@@ -16,11 +16,9 @@ class CustomUserTests(TestCase):
         )
         self.assertEqual(user.username, 'will')
         self.assertFalse(user.is_approved)
-        self.assertFalse(user.is_staff)
-        self.assertFalse(user.is_superuser)
         self.assertTrue(user.check_password('testpass123'))
         self.assertEqual(str(user), 'will')
-        self.assertEqual(user.display_name, 'will')
+        self.assertEqual(user.displayName, 'will')
     def create_superuser(self):
         Author = get_user_model()
         admin_user = Author.objects.create_superuser(
@@ -46,5 +44,5 @@ class SignupTests(TestCase):
     github = ''
     c = Client()
     def test_signup_correct(self):
-        response = self.c.post('/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
+        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 201)

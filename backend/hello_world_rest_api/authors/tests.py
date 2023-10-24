@@ -46,3 +46,15 @@ class SignupTests(TestCase):
     def test_signup_correct(self):
         response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 201)
+        self.assertTrue(Author.objects.filter(username = self.username).exists())
+    def test_signup_wrongpassword(self):
+        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.wrongpassword2, 'displayName': self.displayName, 'github': self.github})
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Author.objects.filter(username = self.username).exists())
+    def test_signup_sameusername(self):
+        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Author.objects.filter(username = self.username).exists())
+        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(Author.objects.filter(username = self.username).exists())

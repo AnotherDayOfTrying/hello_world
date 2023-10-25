@@ -1,0 +1,48 @@
+.root {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.root-button {
+	all: revert;
+}
+
+.root-button:hover {
+    all: revert;
+}
+
+.anim-typewriter{
+  width:0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.wrapper {
+    overflow:hidden;
+    background-color: black;
+    display: flex;
+    flex-direction: row;
+}
+
+.line-1{
+    top: 50%;  
+    width: 20.18em;
+    margin: 0 auto;
+    border-right: 2px solid #f3f3f3;
+    font-size: 180%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    -webkit-box-sizing:content-box;
+    box-sizing:content-box;
+}
+
+p {
+    font-size: 10em;
+}

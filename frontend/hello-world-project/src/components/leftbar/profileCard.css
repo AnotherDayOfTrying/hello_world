@@ -1,0 +1,52 @@
+.profileCard{
+    border-radius: 1.5rem;
+    display: flex;
+    max-height: 20rem;
+    flex-direction: column;
+    position: relative;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    overflow-x: clip;
+    background: rgba(255, 255, 255, 0.64);
+}
+
+.profileImages{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.profileImages>img:nth-of-type(1){
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -3rem;
+    box-shadow: 0px 4px 17px 2px rgba(0,0,0,0.25);
+    }
+
+.profileImages>img:nth-of-type(2){
+    width: 100%;
+    min-width: 18rem;
+    max-height: 10rem;
+    object-fit: cover;
+
+
+    
+    
+}
+
+.profileName{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 3rem;
+    gap: 10px;
+}
+
+.profileName>span:nth-of-type(1){
+    font-weight: bold;
+    
+}

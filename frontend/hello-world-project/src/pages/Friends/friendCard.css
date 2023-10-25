@@ -1,0 +1,22 @@
+.FriendCard{
+    display: flex;
+    padding: 1rem;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.64);
+    gap: 2rem;
+}
+.friendCardImg{
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+}
+.friendCardUsername{
+    margin-bottom: 10px;    
+    font-weight: bold;
+}
+.friendCardButton{
+    height: 2rem;
+    margin-left: 10rem;
+    padding-left: 20px;
+    padding-right: 20px;
+}

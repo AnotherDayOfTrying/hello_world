@@ -1,0 +1,12 @@
+.leftbar{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    overflow: auto;
+}
+.leftbarButton{
+    height: 2rem;
+    padding-left: 20px;
+    padding-right: 20px;
+}

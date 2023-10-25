@@ -1,7 +1,7 @@
 from django.test import TestCase,Client
 
 from django.contrib.auth import get_user_model
-from .models import Author
+from .models import Author, Post, Comment
 # Create your tests here.
 
 class CustomUserTests(TestCase):
@@ -58,3 +58,41 @@ class SignupTests(TestCase):
         response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 400)
         self.assertTrue(Author.objects.filter(username = self.username).exists())
+        
+class PostCommentTests(TestCase):
+    
+    # Create an author with posts and comments on said post
+    def setUp(self):
+        self.author = Author.objects.create_user(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        
+        self.post = Post.objects.create(
+            author=self.author,
+            content='text',
+            privacy='PUBLIC'
+        )
+        
+        Comment.objects.create(
+            post=self.post,
+            author=self.author,
+            comment='Test Comment'
+        )
+        
+    # Test deleting posts deletes related comments
+    def del_post_comments(self):
+        # 1 Comment prior to deletion of post and 0 after
+        self.assertEqual(Comment.objects.count(), 1)
+        self.post.delete()
+        self.assertEqual(Comment.objects.count(), 0)
+        
+    # Test deleting authors deletes all posts related to author
+    def del_author_posts(self):
+        # 1 Post prior to deletion of author and 0 after
+        self.assertEqual(Post.objects.count(), 1)
+        self.author.delete()
+        self.assertEqual(Post.objects.count(), 0)
+        

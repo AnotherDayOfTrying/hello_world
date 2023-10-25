@@ -69,10 +69,16 @@ class SiginTests(TestCase):
             displayName='will',
             github='',
         )
+        self.admin_user = Author.objects.create_superuser(
+            username='superadmin',
+            password='testpass123',
+            displayName='superadmin',
+            github='',
+        )
         self.c = Client()
         
     def test_signin_correct(self):
-        response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass123'})
+        response = self.c.post('/auth/signin/', {'username': 'superadmin', 'password':'testpass123'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('message', response.data)
         self.assertTrue('data', response.data)
@@ -80,6 +86,10 @@ class SiginTests(TestCase):
         
     def test_signin_fail(self):
         response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass543'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    def test_signin_not_approved(self):
+        response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
 class PostCommentTests(TestCase):

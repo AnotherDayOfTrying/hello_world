@@ -39,6 +39,8 @@ class SignInSerializer(serializers.Serializer):
         author = authenticate(request=self.context.get('request'), username=username, password=password)
         if not author:
             raise serializers.ValidationError('Invalid Credentials')
+        if not author.is_approved:
+            raise serializers.ValidationError('Author is not approved')
         data['author'] = author
         return data
 

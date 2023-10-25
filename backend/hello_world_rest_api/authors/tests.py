@@ -2,6 +2,7 @@ from django.test import TestCase,Client
 
 from django.contrib.auth import get_user_model
 from .models import Author, Post, Comment
+from rest_framework import status
 # Create your tests here.
 
 class CustomUserTests(TestCase):
@@ -59,6 +60,38 @@ class SignupTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertTrue(Author.objects.filter(username = self.username).exists())
         
+class SiginTests(TestCase):
+    
+    def setUp(self):
+        self.author = self.author = Author.objects.create_user(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.admin_user = Author.objects.create_superuser(
+            username='superadmin',
+            password='testpass123',
+            displayName='superadmin',
+            github='',
+        )
+        self.c = Client()
+        
+    def test_signin_correct(self):
+        response = self.c.post('/auth/signin/', {'username': 'superadmin', 'password':'testpass123'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('message', response.data)
+        self.assertTrue('data', response.data)
+        self.assertEqual(response.data['message'], 'User logged in successfully')
+        
+    def test_signin_fail(self):
+        response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass543'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    def test_signin_not_approved(self):
+        response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass123'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
 class PostCommentTests(TestCase):
     
     # Create an author with posts and comments on said post
@@ -83,14 +116,14 @@ class PostCommentTests(TestCase):
         )
         
     # Test deleting posts deletes related comments
-    def del_post_comments(self):
+    def test_del_post_comments(self):
         # 1 Comment prior to deletion of post and 0 after
         self.assertEqual(Comment.objects.count(), 1)
         self.post.delete()
         self.assertEqual(Comment.objects.count(), 0)
         
     # Test deleting authors deletes all posts related to author
-    def del_author_posts(self):
+    def test_del_author_posts(self):
         # 1 Post prior to deletion of author and 0 after
         self.assertEqual(Post.objects.count(), 1)
         self.author.delete()

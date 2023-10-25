@@ -1,3 +1,10 @@
+.shareContainer{
+    position: relative;
+    display: grid;
+    grid-template-columns: 18rem auto 20rem;
+    gap: 1rem;
+}
+
 .postShare{
     display: flex;
     gap: 1rem;
@@ -19,8 +26,9 @@
     gap: 1rem;
 }
 
-.postShare>div>input{
+.postShare>div>textarea{
     background-color: rgba(40, 52, 62, 0.07);
+    height: 10rem;
     border-radius: 10px;
     padding: 10px;
     font-size: 17px;

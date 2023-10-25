@@ -2,6 +2,8 @@ import React from 'react'
 import ProfileCard from './profileCard';
 import LeftbarList from './LeftbarList';
 import './leftbar.css'
+import { NavLink } from 'react-router-dom';
+
 
 export default function Leftbar() {
   return (
@@ -9,9 +11,11 @@ export default function Leftbar() {
       
       <ProfileCard />
       <LeftbarList />
-      <button className='leftbarButton'>
-        Post
-      </button>
+      <NavLink to='/post'>
+        <button className='leftbarButton'>
+          Post
+        </button>
+      </NavLink>
     
     </div>
   )

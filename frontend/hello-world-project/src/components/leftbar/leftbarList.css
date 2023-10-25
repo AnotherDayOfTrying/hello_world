@@ -17,3 +17,19 @@
 .leftbarIcon{
     margin-right: 0.5rem;
 }
+
+a {
+    text-decoration: none;
+    transition: color 0.3s ease; 
+  }
+  
+a:hover {
+    color: #007bff; 
+}
+
+.leftbarLink.active {
+    color: #007bff; 
+    font-weight: bold; 
+  }
+  
+  

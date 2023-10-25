@@ -21,3 +21,20 @@
     color:  #ff6b6b;
     
 }
+.postTop{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.postTop>img{
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem
+}
+
+.postUsername{
+    display: flex;
+    font-weight: bold;
+}
+
+

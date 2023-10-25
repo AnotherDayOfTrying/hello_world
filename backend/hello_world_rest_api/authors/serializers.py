@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from .models import Author
 from rest_framework.validators import UniqueValidator
@@ -28,4 +28,19 @@ class SignUpSerializer(serializers.ModelSerializer):
         if username_exist:
             raise serializers.ValidationError({"username": "Username is already taken."})
         return super().validate(attrs)
+    
+class SignInSerializer(serializers.Serializer):
+    username = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True)
+    
+    def validate(self, data):
+        username = data['username']
+        password = data['password']
+        author = authenticate(request=self.context.get('request'), username=username, password=password)
+        if not author:
+            raise serializers.ValidationError('Invalid Credentials')
+        data['author'] = author
+        return data
+
+    
     

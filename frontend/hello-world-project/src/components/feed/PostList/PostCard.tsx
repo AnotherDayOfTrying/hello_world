@@ -4,6 +4,8 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import SendIcon from '@mui/icons-material/Send';
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 type PostData = {
     img: string;
@@ -25,6 +27,15 @@ const PostCard = ({ data}: PostCardProps) => {
         setLikes(isliked ? likes -1 : likes + 1);
         setIsLiked(!isliked);
     };
+    const PopupContent = () => (
+        <div>Popup content here !!</div>
+      );
+    const handleSend = () => {
+        alert('Message Sent');
+        <PopupContent/>
+        
+    };
+
     return (
         <div className="PostCard">
             <div className="postTop">
@@ -37,7 +48,9 @@ const PostCard = ({ data}: PostCardProps) => {
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
                 <CommentIcon/>
-                <SendIcon />
+                <Popup trigger={<SendIcon> Send</SendIcon>} position="right center">
+                    
+                </Popup>
             </div>
             <span>{likes} likes</span>
         </div>

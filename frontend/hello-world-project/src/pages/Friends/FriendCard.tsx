@@ -18,7 +18,8 @@ function FriendsCard({data}: FriendsCardProps) {
       <div className="friendCardUsername">
           <span >{data.name}</span>
       </div>
-      <button className='friendCardButton'>Message</button>
+      <button className='Message'>Message</button>
+      <button className='Unfriend'>Unfriend</button>
     </div>
   )
 }

@@ -10,7 +10,6 @@ export default function profileCard() {
       </div>
       <div className='profileName'>
         <span>Zendaya </span>
-        <span>Actress</span>
       </div>
     </div>
   )

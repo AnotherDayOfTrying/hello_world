@@ -3,12 +3,22 @@ import './posts.css'
 import {PostData} from './data/postsData'
 import PostCard from './PostCard'
 
-export default function Posts() {
+interface PostsProps {
+  data: any;
+}
+
+const Posts: React.FC<PostsProps> = ({ data }) => {
   return (
     <div className="posts">
-        {PostData.map((post, id)=>{
-            return <PostCard data={post}/>
-            })}
+      {data ? 
+      (data.map((post: any, id: number) => {
+        return <PostCard data={post} />})
+      ): 
+      (PostData.map((post: any, id: number) => {
+        return <PostCard data={post} />}))
+    }
     </div>
   )
 }
+
+export default Posts

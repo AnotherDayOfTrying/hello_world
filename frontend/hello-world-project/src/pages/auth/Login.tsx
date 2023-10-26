@@ -2,8 +2,8 @@ import {TextField } from "@mui/material"
 import {useNavigate} from "react-router-dom"
 import { useAuth } from "../../providers/AuthProvider"
 import { useEffect, useState } from "react"
+import { LoginInterface } from "../../api/auth"
 import "./auth.css"
-import { LoginInterface } from "../../api/login"
 
 const Login = () => {
     const navigate = useNavigate()
@@ -17,7 +17,6 @@ const Login = () => {
         username: "",
         password: "",
     })
-
 
     useEffect(() => {
         if (user) {
@@ -34,7 +33,7 @@ const Login = () => {
                 <TextField id="password" label="password" variant="standard" type="password" onChange={(event) => {setLoginData({...loginData, password: event.target.value})}} error={!!errorData.password} helperText={errorData.password} />
                 <div className="button-container">
                     <button className="postButton" onClick={() => {navigate("/signup")}}> SignUp </button>
-                    <button className="postButton" onClick={async (event) => {event.preventDefault(); setErrorData({...await loginUser(true)})}}> Login </button>
+                    <button className="postButton" onClick={async (event) => {event.preventDefault(); setErrorData({...await loginUser(loginData)})}}> Login </button>
                 </div>
             </form>
         </div>

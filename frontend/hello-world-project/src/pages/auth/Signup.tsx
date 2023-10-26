@@ -1,8 +1,8 @@
 import { TextField } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { SignUpInterface } from "../../api/signup"
 import { useAuth } from "../../providers/AuthProvider"
+import { SignUpInterface } from "../../api/auth"
 import "./auth.css"
 
 

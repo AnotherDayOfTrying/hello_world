@@ -36,8 +36,8 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
+    friends = models.ManyToManyField('self',blank=True,related_name='friend')
     
-
     USERNAME_FIELD = 'username'
     def __str__(self):
         return self.username
@@ -45,3 +45,18 @@ class Author(AbstractBaseUser, PermissionsMixin):
     def url(self):
         return self.host + "authors/" + str(self.id)
     objects = UserManager()
+    
+class Post(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    Priv_Choices = [('PUBLIC', 'Public'), ('FRIENDS', 'Friends Only'), ('PRIVATE', 'Private')]
+    privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
+    # For now content is text, but set up options for content 
+    content_choices = [('TEXT', 'Text'), ('IMAGE', 'Image')]
+    content = models.TextField()
+    title = models.CharField(max_length=50)
+    
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    comment = models.TextField()
+    time = models.DateTimeField(auto_now_add=True)

@@ -1,0 +1,27 @@
+.friendSearch{
+    display: flex;
+    gap: 0.75rem;
+    background-color:  rgba(40, 52, 62, 0.07);
+    border-radius: 10px;
+    padding: 5px;
+}
+.friendSearch>input{
+    background-color: transparent;
+    border: none;
+    outline: none;
+    width: 90%;
+}
+.searchIcon{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(98.63deg, #ef5757 0%, #e1ae4a 100%);
+    border-radius: 5px;
+    padding: 4px;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    color: white;
+}
+.searchIcon:hover{
+    cursor: pointer;
+}

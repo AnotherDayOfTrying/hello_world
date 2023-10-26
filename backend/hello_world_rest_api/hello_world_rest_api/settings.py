@@ -135,15 +135,21 @@ REST_FRAMEWORK = {
     ),
 }
 
-# SESSION_COOKIE_HTTPONLY = True
-# CSRF_COOKIE_HTTPONLY = True
-# SESSION_COOKIE_SAMESITE = "Strict"
-# CSRF_COOKIE_SAMESITE = "Strict"
+# Required for setting cookie on client
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
 
 # Required to prevent CORS issues
 
-
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://127.0.0.1:3000', # browser can make a distinction between localhost and 127.0.0.1
     # !!! ADD PROD
 ]

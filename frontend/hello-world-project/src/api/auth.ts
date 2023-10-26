@@ -1,3 +1,4 @@
+import axios, { AxiosError } from "axios"
 import APIURL from "./config"
 
 export interface LoginInterface {
@@ -13,42 +14,54 @@ export interface SignUpInterface {
     github: string,
 }
 
+axios.defaults.withCredentials = true // required to send session cookies with api requests
+axios.defaults.xsrfCookieName = 'csrftoken'
+axios.defaults.xsrfHeaderName = 'x-csrftoken'
+
 
 const login = async (signinDetails: LoginInterface) => {
-    const response = await fetch(`${APIURL}/auth/signin/`, {
-        headers: {
-            "Content-Type": "application/json",
-        },
-        method: 'POST',
-        body: JSON.stringify(signinDetails),
-    })
-
-    return await response.json()
+    try {
+        const response = await axios.post(`${APIURL}/auth/signin/`, signinDetails, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        return await response.data
+    } catch (err: any) {
+        if (err instanceof AxiosError) {
+            return err.response?.data
+        } else {
+            throw err;
+        }
+    }
+    
 }
 
 const signup = async (signupDetails: SignUpInterface) => {
-    const response = await fetch(`${APIURL}/auth/signup/`, {
-        headers: {
-            "Content-Type": "application/json",
-        },
-        method: 'POST',
-        body: JSON.stringify(signupDetails)
-    })
-    return await response.json()
+    try {
+        const response = await axios.post(`${APIURL}/auth/signup/`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(signupDetails),
+        })
+        return await response.data
+    } catch (err: any) {
+        if (err instanceof AxiosError) {
+            return err.response?.data
+        } else {
+            throw err;
+        }
+    }
 }
 
 const verifySession = async() => {
-    const response = await fetch(`${APIURL}/api/session/`, {
-        headers: {
-            "X-CsrfToken": document.cookie
-        }
-    })
-
-    const test = await response.json();
-
-    // console.log(test)
-
-    return response.ok
+    try {
+        const response = await axios.get(`${APIURL}/api/session/`)
+        return response.status === 200
+    } catch (err) {
+        return false
+    }
 }
 
 export {login, signup, verifySession}

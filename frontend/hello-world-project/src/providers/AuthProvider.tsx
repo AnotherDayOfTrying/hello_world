@@ -1,25 +1,29 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { LoginInterface, SignUpInterface, login, signup, verifySession } from "../api/auth";
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { LoginInterface, SignUpInterface, login, signup, verifySession } from "../api/auth"
 
 const AuthContext = createContext<any>({});
 
 export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const [user, setUser] = useState<boolean>(false)
+  const [verifiedSession, setVerifiedSession] = useState<boolean>(false) 
+  const navigate = useNavigate()
 
-  // useEffect(() => {
-  //   verifySession()
-  //     .then((verified) =>{ console.log(verified); setUser(verified) })
-  // },[])
+  useEffect(() => {
+    verifySession()
+      .then((verified) => {
+        setUser(verified);
+        setVerifiedSession(true)
+      })
+  },[]) // only run once on load
 
+  // call this function to sign up a user
   const signupUser = async(data: SignUpInterface) => {
     const response = await signup(data)
     if (await verifySession()) {
-      setUser(true) // !!! change this to user token
+      setUser(true)
       navigate("/home")
     }
-
     return response
   }
 
@@ -30,6 +34,8 @@ export const AuthProvider = ({ children }: any) => {
       setUser(true);
       navigate("/home");
     }
+
+    return response
   };
 
   // call this function to sign out logged in user
@@ -38,6 +44,7 @@ export const AuthProvider = ({ children }: any) => {
     navigate("/login", { replace: true });
   };
 
+  // call this function to verify the current session token
   const verifyUserSession = async () => {
     setUser(await verifySession())
   }
@@ -45,11 +52,13 @@ export const AuthProvider = ({ children }: any) => {
   const value = useMemo(
     () => ({
       user,
+      verifiedSession,
       signupUser,
       loginUser,
       logoutUser,
+      verifyUserSession,
     }),
-    [user]
+    [user, verifiedSession]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

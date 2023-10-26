@@ -19,5 +19,4 @@ class SessionView(ViewSet):
 
     @action(methods=['get'], detail=False, url_path="")
     def session(self, request):
-        print(request)
         return JsonResponse({'isAuthenticated': True})

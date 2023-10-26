@@ -1,11 +1,12 @@
-import { Navigate, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { gsap } from "gsap"
-import "./Root.css"
-import Test1 from "./layer1.svg"
-import Test2 from "./layer2.svg"
-import Test3 from "./layer3.svg"
-import Test4 from "./layer4.svg"
 import { useEffect, useRef, useState } from "react";
+
+import Layer1 from "./layer1.svg"
+import Layer2 from "./layer2.svg"
+import Layer3 from "./layer3.svg"
+import Layer4 from "./layer4.svg"
+import "./Root.css"
 
 const Root = () => {
     const navigate = useNavigate()
@@ -23,16 +24,18 @@ const Root = () => {
         timeline
             .to(button.current, { scale: 1.2})
             .to(root.current, {background: "linear-gradient(30deg, #ef5757 0%, #e1ae4a 100%)"}, 0)
-            .fromTo(".anim-typewriter", 1.5, {
+            .fromTo(".anim-typewriter", {
                 width: "0",
               }, {
                 width: "6.6em", /* same as CSS .line-1 width */
-                ease: "steps(12)"
+                ease: "steps(12)",
+                duration: 1.5,
               }, 0)
-            .fromTo(".anim-typewriter", 0.5, {
+            .fromTo(".anim-typewriter", {
                 "border-right-color": "rgba(243,243,243,0.75)"
               }, {
                 "border-right-color": "rgba(243,243,243,0)",
+                duration: 0.5,
                 repeat: -1,
                 ease: "steps(12)"
               }, 0)
@@ -50,15 +53,12 @@ const Root = () => {
             <p className="line-1 anim-typewriter" ref={text} style={{zIndex: 100, fontFamily: 'monospace'}}>hello world.</p>
             <button style={{zIndex: 100}} ref={button} onMouseEnter={() => {timeline.play()}} onMouseLeave={() => {timeline.reverse()}} className="root-button" onClick={() => navigate("/login")}>login</button>
         </div>
-        <img src={Test1} ref={svg1} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 4, height: "100vh", width: "100vw"}}/>
-        <img src={Test2} ref={svg2} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 3, height: "100vh", width: "100vw"}}/>
-        <img src={Test3} ref={svg3} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 2, height: "100vh", width: "100vw"}}/>
-        <img src={Test4} ref={svg4} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 1, height: "100vh", width: "100vw"}}/>
+        <img src={Layer1} ref={svg1} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 4, height: "100vh", width: "100vw"}}/>
+        <img src={Layer2} ref={svg2} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 3, height: "100vh", width: "100vw"}}/>
+        <img src={Layer3} ref={svg3} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 2, height: "100vh", width: "100vw"}}/>
+        <img src={Layer4} ref={svg4} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 1, height: "100vh", width: "100vw"}}/>
         </>
     )    
-
-    return <Navigate to="/login" />
 }
-
 
 export default Root

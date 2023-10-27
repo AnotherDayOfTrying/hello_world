@@ -39,10 +39,23 @@
     overflow: hidden;
     -webkit-transform: translateY(-50%);
     transform: translateY(-50%);
-    -webkit-box-sizing:content-box;
-    box-sizing:content-box;
+    -webkit-box-sizing: content-box;
+    box-sizing: content-box;
 }
 
 p {
     font-size: 10em;
+}
+
+form {
+    opacity: 0;
+}
+
+.backdrop {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 100vh;
+    background-color: var(--auth-background );
+    z-index: 100;
 }

@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import Author
+from .models import Author, Friendship
 from rest_framework.validators import UniqueValidator
+from django.shortcuts import get_object_or_404
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 20)
@@ -44,5 +45,35 @@ class SignInSerializer(serializers.Serializer):
         data['author'] = author
         return data
 
+class SendFriendRequestSerializer(serializers.Serializer):
+    receiver_id = serializers.UUIDField(write_only=True)
+        
+    def create(self, validated_data):
+        sender = self.context.get('request').user
+        reciverer_id = validated_data['receiver_id']
+        reciver = get_object_or_404(Author, id=reciverer_id)
+        existing = Friendship.objects.filter(sender=sender, reciever=reciver)
+        if existing.exists():
+            raise serializers.ValidationError('Existing relationship or friend request sent')
+        return Friendship.objects.create(sender=sender, reciever=reciver, status=1)
+        
+class RespondFriendRequestSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(choices=['accept', 'decline'], write_only=True)
     
-    
+    def update(self, friendship, validated_data):
+        action = validated_data['action']
+        if action == 'accept':
+            # Check if reciever is following sender to check for bi-directional relationship
+            reverse = Friendship.objects.filter(sender=friendship.reciever, reciever=friendship.sender).first()
+            # Check if request has been accepted on other side
+            if reverse and reverse.status == 2:
+                friendship.status = 3
+                friendship.save()
+                reverse.status = 3
+                reverse.save()
+            else:
+                friendship.status = 2
+                friendship.save()
+        if action == 'decline':
+            friendship.delete()
+        return friendship

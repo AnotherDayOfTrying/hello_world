@@ -1,7 +1,7 @@
 from django.test import TestCase,Client
 
 from django.contrib.auth import get_user_model
-from .models import Author, Post, Comment
+from .models import Author, Post, Comment, Friendship
 from rest_framework import status
 # Create your tests here.
 
@@ -129,3 +129,61 @@ class PostCommentTests(TestCase):
         self.author.delete()
         self.assertEqual(Post.objects.count(), 0)
         
+class FriendrequestTests(TestCase):
+    
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.c = Client()
+        
+    def test_send_friend_request(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Friendship.objects.count(), 0)
+        response = self.c.post(f'/auth/frequests/send/', {'receiver_id': self.author2.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Friendship.objects.count(), 1)
+        response = self.c.post(f'/auth/frequests/send/', {'receiver_id': self.author2.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    def test_send_to_no_user(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Friendship.objects.count(), 0)
+        response = self.c.post(f'/auth/frequests/send/', {'receiver_id': 12121122})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Friendship.objects.count(), 0)
+        
+    def test_respond_accept(self):
+        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.post(f'/auth/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        friendship.refresh_from_db()
+        self.assertEqual(friendship.status, 2)
+        
+    def test_respond_decline(self):
+        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Friendship.objects.count(), 1)
+        response = self.c.post(f'/auth/frequests/respond/{friendship.id}/', {'action': 'decline'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Friendship.objects.count(), 0)
+        
+    def test_respond_friends(self):
+        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 2)
+        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.post(f'/auth/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        friendship.refresh_from_db()
+        self.assertEqual(friendship.status, 3)

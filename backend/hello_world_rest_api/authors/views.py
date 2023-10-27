@@ -1,9 +1,10 @@
-from django.shortcuts import render
-from .serializers import SignUpSerializer, SignInSerializer
+from django.shortcuts import render, get_object_or_404
+from .serializers import SignUpSerializer, SignInSerializer, SendFriendRequestSerializer, RespondFriendRequestSerializer
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import login, authenticate
+from .models import Friendship
 # Create your views here.
 class Signup(generics.CreateAPIView):
     
@@ -38,3 +39,26 @@ class Signin(generics.CreateAPIView):
             return Response(response, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SendFriendRequest(generics.CreateAPIView):
+    
+    serializer_class = SendFriendRequestSerializer
+    
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Request sent'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class FriendRequestResponse(generics.CreateAPIView):
+
+    serializer_class = RespondFriendRequestSerializer
+    
+    def post(self, request, friendship_id):
+        friendship = get_object_or_404(Friendship, id=friendship_id)
+        serializer = self.serializer_class(friendship, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

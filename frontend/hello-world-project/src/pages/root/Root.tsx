@@ -24,6 +24,7 @@ const Root = () => {
         timeline
             .to(button.current, { scale: 1.2})
             .to(root.current, {background: "linear-gradient(30deg, #ef5757 0%, #e1ae4a 100%)"}, 0)
+            /* Credit to: https://gsap.com/community/forums/topic/11361-typewriter-effect/ */
             .fromTo(".anim-typewriter", {
                 width: "0",
               }, {

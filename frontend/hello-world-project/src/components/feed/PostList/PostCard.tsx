@@ -6,9 +6,13 @@ import CommentIcon from '@mui/icons-material/Comment';
 import SendIcon from '@mui/icons-material/Send';
 import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
+import ReactMarkdown from 'react-markdown';
+import { PostData } from './data/postsData';
+import FriendCard from '../../../pages/Friends/FriendCard';
 
 type PostData = {
     img: string;
+    description: string;
     name: string;
     user_img: string;
     likes: number;
@@ -17,6 +21,7 @@ type PostData = {
   
 type PostCardProps = {
     data: PostData;
+    
 };
   
 const PostCard = ({ data}: PostCardProps) => {
@@ -27,12 +32,17 @@ const PostCard = ({ data}: PostCardProps) => {
         setLikes(isliked ? likes -1 : likes + 1);
         setIsLiked(!isliked);
     };
-    const PopupContent = () => (
-        <div>Popup content here !!</div>
-      );
+    const PopupContent: React.FC = () => (
+        <div className='popupContainer'>
+            {PostData.map((friend: any, id: number) => (
+                <FriendCard key={id} data={friend} shareList />
+            ))}
+        </div>
+    );
+        
+    
     const handleSend = () => {
         alert('Message Sent');
-        <PopupContent/>
         
     };
 
@@ -44,12 +54,15 @@ const PostCard = ({ data}: PostCardProps) => {
                     <span >{data.name}</span>
                 </div>
             </div>
-            <img src={data.img} alt="" />
+            {/* check if there is description and if so render it as markdown */}
+            {data.description && <ReactMarkdown className="postText" children={data.description} />}
+
+            {data.img && <img src={data.img} alt="" />}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
                 <CommentIcon/>
                 <Popup trigger={<SendIcon> Send</SendIcon>} position="right center">
-                    
+                    <PopupContent />
                 </Popup>
             </div>
             <span>{likes} likes</span>

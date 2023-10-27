@@ -36,5 +36,14 @@
     display: flex;
     font-weight: bold;
 }
+.popupContainer{
+    background-color: white;
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+    z-index: 9999;
+
+
+
+}
 
 

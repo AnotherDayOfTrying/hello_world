@@ -7,6 +7,8 @@ import ph3 from './person/3.jpg';
 
 export const PostData = [
     {
+        id: 1,
+        description: "This is a post",
         img: pic1,
         name: "User 1",
         user_img: ph1,
@@ -15,7 +17,9 @@ export const PostData = [
 
     },
     {
-        img: pic2,
+        id: 2,
+        description: "This is a **markdown** post",
+        img: "",
         name: "User 2",
         user_img: ph2,
         likes: 40,  
@@ -23,6 +27,8 @@ export const PostData = [
 
     },
     {
+        id: 3,
+        description: "",
         img: pic3,
         name: "User 3",
         user_img: ph3,

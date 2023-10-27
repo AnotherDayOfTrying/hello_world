@@ -14,33 +14,34 @@ interface Friend {
   }
 
 export default function Friends() {
-    const [data, setData] = useState<Friend[]>(PostData);
+    const [data, setData] = useState<Friend[]>([]);
     const handleSearch = (filteredFriend: Friend[]) => {
         setData(filteredFriend); 
       };
-    const GetData = async () => {
-        try {
+      const [firendList, setFriendList] = useState<Friend[]>(PostData);
+    // const GetData = async () => {
+    //     try {
         
-            const response = await fetch('http://.../friendSearch/', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-                });
-            const responseData: Friend[] = await response.json();
-            setData(responseData);
-            console.log(responseData);
-            } catch (error) {
-                console.log(error);
-            }
-        }
+    //         const response = await fetch('http://.../friendSearch/', {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json'
+    //             }
+    //             });
+    //         const responseData: Friend[] = await response.json();
+    //         setData(responseData);
+    //         console.log(responseData);
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }
     
     return (
         <>
             <div className='FriendsContainer'>
                 <Leftbar/>
                 <div className="friendsList">
-                <FriendSearch onSearch={handleSearch} PostData={data}/>
+                <FriendSearch onSearch={handleSearch} PostData={firendList}/>
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
                     {data.length ? 
                     (data.map((data: any, id: number) => {  

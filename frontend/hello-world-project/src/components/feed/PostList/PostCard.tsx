@@ -10,6 +10,8 @@ import ReactMarkdown from 'react-markdown';
 import { PostData } from './data/postsData';
 import FriendCard from '../../../pages/Friends/FriendCard';
 import { Alert } from '@mui/material';
+import * as linkify  from 'linkifyjs';
+import Linkify from 'react-linkify';
 
 
 type PostData = {
@@ -39,6 +41,22 @@ const PostCard = ({ data  }: PostCardProps) => {
         setLikes(isliked ? likes -1 : likes + 1);
         setIsLiked(!isliked);
     };
+    const renderDescription = (description: string) => {
+        if (linkify.test(description)) {
+          return (
+            <div style={{fontSize : 17}}>
+                <Linkify >{description}</Linkify> 
+            </div>
+          );
+        } else {
+          return (
+            <div style={{fontSize : 2}}>
+                <ReactMarkdown>{description}</ReactMarkdown>
+            </div>
+            );
+        }
+      };
+    
     useEffect(() => {
         if (isAlertVisible) {
             const timer = setTimeout(() => {
@@ -67,8 +85,6 @@ const PostCard = ({ data  }: PostCardProps) => {
         }
         
     };
-        
-
     return (
         <div className="PostCard">
             <div className="postTop">
@@ -78,7 +94,7 @@ const PostCard = ({ data  }: PostCardProps) => {
                 </div>
             </div>
             {/* check if there is description and if so render it as markdown */}
-            {data.description && <ReactMarkdown className="postText" children={data.description} />}
+            {data.description && renderDescription(data.description)}
 
             {data.img && <img src={data.img} alt="" />}
             <div className="reactions">

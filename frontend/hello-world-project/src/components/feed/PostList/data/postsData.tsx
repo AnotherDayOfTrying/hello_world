@@ -8,7 +8,7 @@ import ph3 from './person/3.jpg';
 export const PostData = [
     {
         id: 1,
-        description: "This is a post",
+        description: "This is a **markdown** post",
         img: pic1,
         name: "User 1",
         user_img: ph1,
@@ -18,7 +18,7 @@ export const PostData = [
     },
     {
         id: 2,
-        description: "This is a **markdown** post",
+        description: "https://cdn.wikimg.net/en/zeldawiki/images/1/15/TotK_Link_Artwork.png?version=3b82ab3b1da77397c3a3239e57810376",
         img: "",
         name: "User 2",
         user_img: ph2,

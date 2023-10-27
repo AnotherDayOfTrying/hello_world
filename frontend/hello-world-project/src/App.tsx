@@ -31,12 +31,44 @@ const App: React.FC = () => {
                 <Home/>
               </>
             }/>
-            <Route path="/private" element={<Home private/>} />
-            <Route path="/unlisted" element={<Home unlisted/>} />
-            <Route path="/post" element={<Post/>} />
-            <Route path="/messages" element={<Home messages />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/friends" element={<Friends />} />
+            <Route path="/private" element={
+              <>
+                <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                <Home private/>
+              </>
+              }/>
+            <Route path="/unlisted" element={
+              <>
+                <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                <Home unlisted/>
+              </>
+            }/>
+            <Route path="/post" element={
+              <>
+                <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                <Post/>
+              </>} />
+            <Route path="/messages" element={
+              <>
+                <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                <Home messages />
+              </>} />
+            <Route path="/notifications" element={
+              <>
+                <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                <Notifications />
+              </>} />
+            <Route path="/friends" element={
+              <>
+                <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                <Friends /> 
+              </>} />
             </Route>
           </Route>
         </Routes>

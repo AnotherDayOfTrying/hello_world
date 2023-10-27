@@ -1,6 +1,7 @@
-import React from 'react'
+import React, {useState} from 'react'
 import './friendCard.css'
 import { NavLink } from 'react-router-dom';
+
 
 type FriendData = {
   name: string;
@@ -10,23 +11,22 @@ type FriendData = {
 interface FriendsCardProps {
   data: FriendData;
   shareList?: boolean;
+  onClick?: () => void;
 };
 
 
-const FriendsCard : React.FC<FriendsCardProps> = ({data, shareList}: FriendsCardProps) => {
-  const handleShare = () => {
-    alert('Shared');
-  };
+const FriendsCard : React.FC<FriendsCardProps> = ({data, shareList, onClick}: FriendsCardProps) => {
+  
   if (shareList) {
-    return (
-        <div className="shareListCard" onClick={handleShare}>
-            <img src={data.user_img} alt="" className="shareListImg" />
-            <div className="shareListUsername">
-                <span >{data.name}</span>
-            </div>
+    return(
+      <div className="shareListCard" onClick={onClick}>
+        <img src={data.user_img} alt="" className="shareListImg" />
+        <div className="shareListUsername">
+          <span>{data.name}</span>
         </div>
-      
+    </div>
     )
+    
   }
   else {
     return (

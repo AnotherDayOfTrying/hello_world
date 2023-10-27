@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import './postCard.css';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -9,6 +9,8 @@ import 'reactjs-popup/dist/index.css';
 import ReactMarkdown from 'react-markdown';
 import { PostData } from './data/postsData';
 import FriendCard from '../../../pages/Friends/FriendCard';
+import { Alert } from '@mui/material';
+
 
 type PostData = {
     img: string;
@@ -21,30 +23,51 @@ type PostData = {
   
 type PostCardProps = {
     data: PostData;
-    
 };
   
-const PostCard = ({ data}: PostCardProps) => {
+const PostCard = ({ data  }: PostCardProps) => {
     const [likes, setLikes] = React.useState(data.likes);
     const [isliked, setIsLiked] = React.useState(data.liked);
+    const [isAlertVisible, setIsAlertVisible] = useState(false);
+    
+
+    const handleShare = () => {
+        setIsAlertVisible(true);
+      };
 
     const handleLike = () => {
         setLikes(isliked ? likes -1 : likes + 1);
         setIsLiked(!isliked);
     };
-    const PopupContent: React.FC = () => (
-        <div className='popupContainer'>
-            {PostData.map((friend: any, id: number) => (
-                <FriendCard key={id} data={friend} shareList />
-            ))}
-        </div>
-    );
-        
-    
-    const handleSend = () => {
-        alert('Message Sent');
+    useEffect(() => {
+        if (isAlertVisible) {
+            const timer = setTimeout(() => {
+                setIsAlertVisible(false);
+            }, 1000);
+
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [isAlertVisible]);
+
+    const PopupContent: React.FC = () => {
+        if (isAlertVisible) {
+            return(
+            <Alert severity="success">Your message was sent successfully!</Alert>)
+        }
+        else{
+            return(
+                <div className='popupContainer'>
+                    {PostData.map((friend: any, id: number) => (
+                    <FriendCard key={id} data={friend} shareList onClick={handleShare}
+                    />))}
+                </div>
+            )
+        }
         
     };
+        
 
     return (
         <div className="PostCard">
@@ -61,8 +84,8 @@ const PostCard = ({ data}: PostCardProps) => {
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
                 <CommentIcon/>
-                <Popup trigger={<SendIcon> Send</SendIcon>} position="right center">
-                    <PopupContent />
+                <Popup trigger={<SendIcon />} position="right center" >
+                    { <PopupContent />}
                 </Popup>
             </div>
             <span>{likes} likes</span>

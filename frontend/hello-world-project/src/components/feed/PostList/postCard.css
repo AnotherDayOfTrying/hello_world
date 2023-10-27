@@ -41,9 +41,10 @@
     overflow-y: auto; /* Enable vertical scrolling */
     padding: 10px;
     z-index: 9999;
+}
 
-
-
+.postText{
+    font-size: 2px;
 }
 
 

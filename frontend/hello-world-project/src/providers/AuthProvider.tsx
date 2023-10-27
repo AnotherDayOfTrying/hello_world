@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }: any) => {
   useEffect(() => {
     verifySession()
       .then((verified) => {
-        setUser(verified);
+        setUser(verified)
         setVerifiedSession(true)
       })
   },[]) // only run once on load
@@ -20,9 +20,8 @@ export const AuthProvider = ({ children }: any) => {
   // call this function to sign up a user
   const signupUser = async(data: SignUpInterface) => {
     const response = await signup(data)
-    if (await verifySession()) {
-      setUser(true)
-      navigate("/home")
+    if (response.data) {
+      navigate("/login")
     }
     return response
   }

@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom"
 import { useAuth } from "../../providers/AuthProvider"
 import { useEffect, useState } from "react"
 import { LoginInterface } from "../../api/auth"
+import gsap from "gsap"
 import "./auth.css"
 
 const Login = () => {
@@ -13,23 +14,44 @@ const Login = () => {
         password: "",
     })
 
-    const [errorData, setErrorData] = useState<LoginInterface>({
+    const [errorData, setErrorData] = useState<LoginInterface & {non_field_errors: string}>({
         username: "",
         password: "",
+        non_field_errors: "",
     })
 
     // check user authentication state on load
     useEffect(() => {
         if (user && verifiedSession) {
-            navigate("/home")
+            navigateToHome()
         }
     }, [user, verifiedSession])
+
+    useEffect(() => {
+        if (!user) {
+            gsap.to('form', {opacity: 1})
+        }
+    }, [])
+
+    const signupOnClick = (event: any) => {
+        event.preventDefault()
+        gsap.to('form', {opacity: 0, onComplete: () => {
+            navigate("/signup")
+        }})
+    }
+
+    const navigateToHome = () => {
+        gsap.to('form', {opacity: 0})
+        gsap.to('.page', {backgroundColor: "#f3f3f3", onComplete: () => {
+            navigate("/home")
+        }})
+    }
     
     return (
     <div className="page">
         <div className="center-content">
             <form>
-                <h1>Login</h1>
+                <span><h1>Login</h1><span style={{color: "red"}}>{errorData.non_field_errors?.toString()}</span></span>
                 <TextField
                     id="username"
                     label="username"
@@ -48,12 +70,14 @@ const Login = () => {
                 <div className="button-container">
                     <button
                         className="postButton"
-                        onClick={() => {navigate("/signup")}}>
+                        onClick={(event) => {signupOnClick(event)}}
+                        type="button">
                             SignUp
                     </button>
                     <button
                         className="postButton"
-                        onClick={async (event) => {event.preventDefault(); setErrorData({...await loginUser(loginData)})}}>
+                        onClick={async (event) => {event.preventDefault(); setErrorData({...errorData, ...await loginUser(loginData)})}}
+                        type="submit">
                             Login
                     </button>
                 </div>

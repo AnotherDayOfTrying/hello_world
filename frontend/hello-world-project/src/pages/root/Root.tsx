@@ -17,6 +17,7 @@ const Root = () => {
     const svg3 = useRef<any>()
     const svg4 = useRef<any>()
     const text = useRef<any>()
+    const backdrop = useRef<any>()
 
     const [timeline] = useState(gsap.timeline({paused: true}))
 
@@ -47,17 +48,22 @@ const Root = () => {
             .reverse()
     }, [])
 
+    const transition = () => {
+      gsap.to(backdrop.current, {top: "0", onComplete: () => {navigate('/login')}})
+    }
+
 
     return (
         <>
         <div className="root" ref={root}>
             <p className="line-1 anim-typewriter" ref={text} style={{zIndex: 100, fontFamily: 'monospace'}}>hello world.</p>
-            <button style={{zIndex: 100}} ref={button} onMouseEnter={() => {timeline.play()}} onMouseLeave={() => {timeline.reverse()}} className="root-button" onClick={() => navigate("/login")}>login</button>
+            <button style={{zIndex: 100}} ref={button} onMouseEnter={() => {timeline.play()}} onMouseLeave={() => {timeline.reverse()}} className="root-button" onClick={() => transition()}>login</button>
         </div>
         <img src={Layer1} ref={svg1} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 4, height: "100vh", width: "100vw"}}/>
         <img src={Layer2} ref={svg2} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 3, height: "100vh", width: "100vw"}}/>
         <img src={Layer3} ref={svg3} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 2, height: "100vh", width: "100vw"}}/>
         <img src={Layer4} ref={svg4} style={{objectFit:"cover", position:"fixed", top: "100vh", zIndex: 1, height: "100vh", width: "100vw"}}/>
+        <div ref={backdrop}className="backdrop" />
         </>
     )    
 }

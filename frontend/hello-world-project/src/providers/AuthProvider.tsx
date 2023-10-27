@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: any) => {
   // call this function to sign up a user
   const signupUser = async(data: SignUpInterface) => {
     const response = await signup(data)
-    if (response.data) {
+    if (response?.data) {
       navigate("/login")
     }
     return response

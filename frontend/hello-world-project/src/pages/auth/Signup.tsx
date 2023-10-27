@@ -1,8 +1,9 @@
 import { TextField } from "@mui/material"
 import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAuth } from "../../providers/AuthProvider"
 import { SignUpInterface } from "../../api/auth"
+import gsap from "gsap"
 import "./auth.css"
 
 
@@ -25,6 +26,17 @@ const Signup = () => {
         displayName: "",
         github: "",
     });
+
+    useEffect(() => {
+        gsap.to('form', {opacity: 1})
+    }, [])
+
+    const loginOnClick = (event: any) => {
+        event.preventDefault()
+        gsap.to('form', {opacity: 0, onComplete: () => {
+            navigate("/login")
+        }})
+    }
     
     return (
         <div className="page">
@@ -78,13 +90,13 @@ const Signup = () => {
                             className="postButton"
                             onClick={async (event) => {
                                 event.preventDefault();
-                                setErrorData({...await signupUser(signupData)
+                                setErrorData({...errorData, ...await signupUser(signupData)
                             })}}>
                                 SignUp 
                         </button>
                         <button
                             className="postButton"
-                            onClick={() => {navigate("/login")}}>
+                            onClick={(event) => {loginOnClick(event)}}>
                                 Already Have an Account
                         </button>
                     </div>

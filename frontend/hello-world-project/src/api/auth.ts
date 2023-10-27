@@ -39,11 +39,10 @@ const login = async (signinDetails: LoginInterface) => {
 
 const signup = async (signupDetails: SignUpInterface) => {
     try {
-        const response = await axios.post(`${APIURL}/auth/signup/`, {
+        const response = await axios.post(`${APIURL}/auth/signup/`, signupDetails, {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(signupDetails),
         })
         return await response.data
     } catch (err: any) {

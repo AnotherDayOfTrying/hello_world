@@ -18,7 +18,6 @@
     overflow: hidden;
     color: var(--black);
     background-color: #f3f3f3;
-    padding: 1rem 1rem;
 }
 
 .blur{
@@ -43,7 +42,7 @@ button:hover{
     cursor: pointer;
     color: #ef5757;
     background: transparent;
-    border: 2px solid #ef5757;
+    box-shadow: 0 0 0 2px #ef5757; /* prevent buttons from resizing */
 }
 ::-webkit-scrollbar {
     display: none;

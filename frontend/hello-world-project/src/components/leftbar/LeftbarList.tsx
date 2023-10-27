@@ -17,7 +17,7 @@ export default function LeftbarList() {
     <div className="leftwrapper">
           <ul className="leftbarList">
               <li className="leftbarListItem">
-                <NavLink to="/" className="leftbarLink" end> 
+                <NavLink to="/home" className="leftbarLink" end> 
                   <HomeIcon className="leftbarIcon"/>
                   <span className="leftbarListItemText"> Home </span>
                 </NavLink>

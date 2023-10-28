@@ -8,7 +8,6 @@ interface PostsProps {
 }
 
 const Posts: React.FC<PostsProps> = ({ data }) => {
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
   return (
     <div className="posts">
       {data ? 

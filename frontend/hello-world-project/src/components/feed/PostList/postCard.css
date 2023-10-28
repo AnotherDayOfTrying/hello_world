@@ -41,10 +41,11 @@
     overflow-y: auto; /* Enable vertical scrolling */
     padding: 10px;
     z-index: 9999;
+    width: max-content;
 }
 
 .postText{
-    font-size: 2px;
+    font-size: small;
 }
 
 

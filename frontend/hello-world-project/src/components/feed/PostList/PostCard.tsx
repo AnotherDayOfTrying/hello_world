@@ -12,6 +12,7 @@ import FriendCard from '../../../pages/Friends/FriendCard';
 import { Alert } from '@mui/material';
 import * as linkify  from 'linkifyjs';
 import Linkify from 'react-linkify';
+import Comment from './Comment';
 
 
 type PostData = {
@@ -99,7 +100,9 @@ const PostCard = ({ data  }: PostCardProps) => {
             {data.img && <img src={data.img} alt="" />}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
-                <CommentIcon/>
+                <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '50%', height: 'auto' }}>
+                    { <Comment data = {PostData} />}
+                </Popup>
                 <Popup trigger={<SendIcon />} position="right center" >
                     { <PopupContent />}
                 </Popup>

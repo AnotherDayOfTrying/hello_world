@@ -23,7 +23,7 @@ interface FriendSearchProps {
     console.log("Searching for: ", userName);
     // try {
      
-    //   const response = await fetch('http://.../friendSearch/', {
+    //   const response = await fetch('http://.../friendList/', {
     //       method: 'GET',
     //       headers: {
     //         'Content-Type': 'application/json'

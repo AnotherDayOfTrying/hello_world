@@ -15,7 +15,7 @@ function AuthorSearch() {
   const handleSearch = async () => {
     try {
       
-      // const response = await fetch('http://.../authSearch/', {
+      // const response = await fetch('http://.../authList/', {
       //     method: 'GET',
       //     headers: {
       //       'Content-Type': 'application/json'
@@ -28,7 +28,7 @@ function AuthorSearch() {
       //   );
       // setFilteredAuthor(filteredAuthor);
       // try{
-      //   const response = await fetch('http://.../authSearch/', {
+      //   const response = await fetch('http://.../authSendRequest/', {
       //     method: 'POST',
       //     headers: {
       //       'Content-Type': 'application/json'

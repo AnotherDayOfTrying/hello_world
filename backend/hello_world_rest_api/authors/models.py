@@ -36,7 +36,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
-    friends = models.ManyToManyField('self',blank=True,related_name='friend')
+    #friends = models.ManyToManyField('self',blank=True,related_name='friend')
     
     USERNAME_FIELD = 'username'
     def __str__(self):
@@ -60,3 +60,9 @@ class Comment(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.TextField()
     time = models.DateTimeField(auto_now_add=True)
+    
+class Friendship(models.Model):
+    sender = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='sender')
+    reciever = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='reciever')
+    friend_status = [(1, 'Pending'), (2, 'Following'), (3, 'Friends')]
+    status = models.SmallIntegerField(choices=friend_status, default=1)

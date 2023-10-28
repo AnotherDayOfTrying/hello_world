@@ -20,26 +20,9 @@ interface FriendSearchProps {
   const [userName, setUserName] = useState<string>('');
 
   const handleSearch = async () => {
-    console.log("Searching for: ", userName);
-    // try {
-     
-    //   const response = await fetch('http://.../friendList/', {
-    //       method: 'GET',
-    //       headers: {
-    //         'Content-Type': 'application/json'
-    //       }
-    //     });
-    //   const responseData: Friend[] = await response.json();
-    //   console.log(responseData);
     const filteredFriend = PostData.filter((friend) =>
     { return (friend.name.toLowerCase().includes(userName.toLowerCase()))});
     onSearch(filteredFriend);
-    
-
-      
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
   };
   
   return (

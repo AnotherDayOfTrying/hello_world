@@ -22,7 +22,7 @@ export default function Friends() {
     // const GetData = async () => {
     //     try {
         
-    //         const response = await fetch('http://.../friendSearch/', {
+    //         const response = await fetch('http://.../friendList/', {
     //             method: 'GET',
     //             headers: {
     //                 'Content-Type': 'application/json'

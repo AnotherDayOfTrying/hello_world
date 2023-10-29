@@ -1,8 +1,10 @@
 from django.test import TestCase,Client
 
 from django.contrib.auth import get_user_model
-from .models import Author, Post, Comment, Friendship
+from .models import *
 from rest_framework import status
+from rest_framework.test import APIClient
+from .serializers import *
 # Create your tests here.
 
 class CustomUserTests(TestCase):
@@ -228,3 +230,8 @@ class CommentTest(TestCase):
         response= self.c.post(f'/auth/comments/{500}/', {'comment': 'Test comment'})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Comment.objects.count(), 0)
+
+class GetAllAuthorsTest(TestCase):
+
+    def setUp(self):
+

@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404
-from .serializers import SignUpSerializer, SignInSerializer, SendFriendRequestSerializer, RespondFriendRequestSerializer, PostCommentSerializer
+from .serializers import *
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import login, authenticate
-from .models import Friendship, Post, Author
+from .models import *
+from rest_framework.decorators import api_view
+
 # Create your views here.
 class Signup(generics.CreateAPIView):
     
@@ -75,4 +77,13 @@ class PostComment(generics.CreateAPIView):
             serializer.save()
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+@api_view(['GET'])
+def getAllAuthors(request):
+    authors = Author.objects.all()
+    serializer = AuthorSerializer(authors, many=True)
+    response = {
+        "type": "authors",
+        "items": serializer.data
+    }
+    return Response(response, status=status.HTTP_200_OK)

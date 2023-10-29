@@ -91,7 +91,7 @@ class PostCommentSerializer(serializers.ModelSerializer):
         return comment
 
 class AuthorSerializer(serializers.ModelSerializer):
-    type = serializers.CharField(default='author', read_only=True)
+    
     id = serializers.URLField(source = "url",read_only=True)
     url = serializers.URLField(read_only=True)
     displayName = serializers.CharField(read_only=True, allow_blank=True, allow_null=True)

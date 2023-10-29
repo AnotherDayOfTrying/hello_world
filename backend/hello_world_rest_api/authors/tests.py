@@ -1,7 +1,7 @@
 from django.test import TestCase,Client
 
 from django.contrib.auth import get_user_model
-from .models import Author, Post, Comment, Friendship
+from .models import Author, Post, Comment, Friendship, Like
 from rest_framework import status
 # Create your tests here.
 
@@ -109,7 +109,7 @@ class PostCommentTests(TestCase):
             privacy='PUBLIC'
         )
         
-        Comment.objects.create(
+        self.comment = Comment.objects.create(
             post=self.post,
             author=self.author,
             comment='Test Comment'
@@ -228,3 +228,58 @@ class CommentTest(TestCase):
         response= self.c.post(f'/auth/comments/{500}/', {'comment': 'Test comment'})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Comment.objects.count(), 0)
+        
+class LikingTests(TestCase):
+    
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.post = Post.objects.create(
+            author=self.author,
+            content='text',
+            privacy='PUBLIC'
+        )
+        self.comment = Comment.objects.create(
+            post=self.post,
+            author=self.author2,
+            comment='Test Comment'
+        )
+        
+        self.c = Client()
+        
+    def test_like_post(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/auth/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        self.assertEqual(Like.objects.get().liker, self.author2)
+        self.assertEqual(Like.objects.get().content_object, self.post)
+        
+    def test_like_comment(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/auth/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        self.assertEqual(Like.objects.get().liker, self.author)
+        self.assertEqual(Like.objects.get().content_object, self.comment)
+        
+    def test_unliking(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/auth/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        response=self.c.post(f'/auth/unlike/{Like.objects.get().id}/')
+        self.assertEqual(Like.objects.count(), 0)

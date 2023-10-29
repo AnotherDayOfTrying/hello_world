@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import Author, Friendship, Comment
+from .models import Author, Friendship, Comment, Like, Post
 from rest_framework.validators import UniqueValidator
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -89,3 +90,22 @@ class PostCommentSerializer(serializers.ModelSerializer):
         comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
         comment.save()
         return comment
+    
+class LikeingSerializer(serializers.Serializer):
+    content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
+    content_id = serializers.IntegerField()
+    
+    def create(self, validated_data):
+        author = self.context['author']
+        content_type = ContentType.objects.get(model=validated_data['content_type'])
+        if validated_data['content_type'] == 'post':
+            content = get_object_or_404(Post, id=validated_data['content_id'])
+        elif validated_data['content_type'] == 'comment':
+            content = get_object_or_404(Comment, id=validated_data['content_id'])
+        return Like.objects.create(liker=author, content_type=content_type, content_object=content)
+    
+class UnlikingSerializer(serializers.Serializer):
+    
+    def update(self, like, validated_data):
+        like.delete()
+        return like

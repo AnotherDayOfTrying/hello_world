@@ -103,3 +103,9 @@ class LikeingSerializer(serializers.Serializer):
         elif validated_data['content_type'] == 'comment':
             content = get_object_or_404(Comment, id=validated_data['content_id'])
         return Like.objects.create(liker=author, content_type=content_type, content_object=content)
+    
+class UnlikingSerializer(serializers.Serializer):
+    
+    def update(self, like, validated_data):
+        like.delete()
+        return like

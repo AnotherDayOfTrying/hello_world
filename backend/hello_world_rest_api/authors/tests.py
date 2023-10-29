@@ -274,3 +274,12 @@ class LikingTests(TestCase):
         self.assertEqual(Like.objects.count(), 1)
         self.assertEqual(Like.objects.get().liker, self.author)
         self.assertEqual(Like.objects.get().content_object, self.comment)
+        
+    def test_unliking(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/auth/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        response=self.c.post(f'/auth/unlike/{Like.objects.get().id}/')
+        self.assertEqual(Like.objects.count(), 0)

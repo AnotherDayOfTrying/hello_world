@@ -187,3 +187,44 @@ class FriendrequestTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         friendship.refresh_from_db()
         self.assertEqual(friendship.status, 3)
+        
+class CommentTest(TestCase):
+    
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.post = Post.objects.create(
+            author=self.author,
+            content='text',
+            privacy='PUBLIC'
+        )
+        self.c = Client()
+        
+    def test_post_comment(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Comment.objects.count(), 0)
+        response= self.c.post(f'/auth/comments/{self.post.id}/', {'comment': 'Test comment'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(Comment.objects.get().comment, 'Test comment')
+        self.assertEqual(Comment.objects.get().author, self.author2)
+        self.assertEqual(Comment.objects.get().post.author, self.author)
+        
+        
+        
+    def test_post_comment_post_dne(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Comment.objects.count(), 0)
+        response= self.c.post(f'/auth/comments/{500}/', {'comment': 'Test comment'})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(Comment.objects.count(), 0)

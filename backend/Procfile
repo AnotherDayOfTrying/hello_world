@@ -1,1 +1,2 @@
 web: gunicorn --chdir hello_world_rest_api hello_world_rest_api.wsgi
+release: python hello_world_rest_api/manage.py migrate

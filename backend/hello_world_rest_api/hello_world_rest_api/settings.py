@@ -152,7 +152,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000', # browser can make a distinction between localhost and 127.0.0.1
-    # !!! ADD PROD
+    'https://cmput404-project-backend-a299a47993fd.herokuapp.com',
 ]
 
 django_on_heroku.settings(locals())

@@ -12,7 +12,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 20)
     password = serializers.CharField(write_only = True, required = True, validators = [validate_password])
     password2 = serializers.CharField(write_only = True, required = True)
-    displayName = serializers.CharField(required = False, allow_blank = True, max_length = 50)
+    displayName = serializers.CharField(required = True, max_length = 50)
     github = serializers.URLField(required = False, allow_blank = True, max_length = 255)
     class Meta:
         model = Author

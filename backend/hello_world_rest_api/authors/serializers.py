@@ -1,16 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import Author, Friendship, Comment, Like, Post
-from rest_framework.validators import UniqueValidator
+from .models import *
+from rest_framework.validators import UniqueValidator, ValidationError
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from .serializers import *
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 20)
     password = serializers.CharField(write_only = True, required = True, validators = [validate_password])
     password2 = serializers.CharField(write_only = True, required = True)
-    displayName = serializers.CharField(required = False, allow_blank = True, max_length = 50)
+    displayName = serializers.CharField(required = True, max_length = 50)
     github = serializers.URLField(required = False, allow_blank = True, max_length = 255)
     class Meta:
         model = Author
@@ -90,6 +92,19 @@ class PostCommentSerializer(serializers.ModelSerializer):
         comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
         comment.save()
         return comment
+
+class AuthorSerializer(serializers.ModelSerializer):
+    
+    
+    url = serializers.URLField(read_only=True)
+    displayName = serializers.CharField(allow_null=True)
+    github = serializers.URLField(allow_blank = True, allow_null = True)
+    class Meta:
+        model = Author
+        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github')
+
+
+        
     
 class LikeingSerializer(serializers.Serializer):
     content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
@@ -109,8 +124,7 @@ class UnlikingSerializer(serializers.Serializer):
     def update(self, like, validated_data):
         like.delete()
         return like
-    
-class AuthorSerializer(serializers.ModelSerializer):
+class FriendShipSerializer(serializers.Serializer):
     class Meta:
-        model = Author
-        fields = ('id', 'username', 'displayName', 'github','host', 'url')
+        model: Friendship
+        fields = ('sender', 'reciever', 'status')

@@ -1,11 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from .serializers import AuthorSerializer, SignUpSerializer, SignInSerializer, SendFriendRequestSerializer, RespondFriendRequestSerializer, PostCommentSerializer, LikeingSerializer, UnlikingSerializer
+from .serializers import *
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import login, authenticate
-from .models import Friendship, Post, Author, Like
-from django.http import JsonResponse
+from .models import *
+from rest_framework.decorators import api_view
 
 # Create your views here.
 class Signup(generics.CreateAPIView):
@@ -77,7 +77,37 @@ class PostComment(generics.CreateAPIView):
             serializer.save()
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def getAllAuthors(request):
+    authors = Author.objects.all()
+    serializer = AuthorSerializer(authors, many=True)
+    response = {
+        "type": "authors",
+        "items": serializer.data
+    }
+    return Response(response, status=status.HTTP_200_OK)
+
+@api_view(['GET','POST'])
+def getOneAuthor(request, author_id):
+    author = Author.objects.get(id=author_id)
+    if request.method == 'GET':
+        serializer = AuthorSerializer(author)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = AuthorSerializer(instance=author, data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['GET'])
+def getFriendRequests(request,author_id):
+    author = Author.objects.get(id=author_id)
+    friends = Friendship.objects.filter(reciever=author,status=1)
+    serializer = FriendShipSerializer(friends, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 class Liking(generics.CreateAPIView):
     
     serializer_class = LikeingSerializer
@@ -101,12 +131,3 @@ class Unliking(generics.CreateAPIView):
             serializer.save()
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class ListAuthors(APIView):
-
-    serializer_class = AuthorSerializer
-
-    def get(self, request):
-        authors = Author.objects.filter(is_approved=True, is_active=True, is_staff=False)
-        serializer = self.serializer_class(authors, many=True)  
-        return JsonResponse({'authors': serializer.data}, safe=False)

@@ -124,3 +124,7 @@ class UnlikingSerializer(serializers.Serializer):
     def update(self, like, validated_data):
         like.delete()
         return like
+class FriendShipSerializer(serializers.Serializer):
+    class Meta:
+        model: Friendship
+        fields = ('sender', 'reciever', 'status')

@@ -101,6 +101,13 @@ def getOneAuthor(request, author_id):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['GET'])
+def getFriendRequests(request,author_id):
+    author = Author.objects.get(id=author_id)
+    friends = Friendship.objects.filter(reciever=author,status=1)
+    serializer = FriendShipSerializer(friends, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 class Liking(generics.CreateAPIView):
     
     serializer_class = LikeingSerializer

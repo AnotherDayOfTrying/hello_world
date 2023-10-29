@@ -283,7 +283,31 @@ class GetOneAuthorTest(TestCase):
         author1 = Author.objects.get(id=self.author.id)
         self.assertEqual(author1.displayName, data['displayName'])
           
-
+class GetFriendRequestsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author)
+    def test_get_friend_requests(self):
+        url = reverse('authors:getfriendrequests', args=[self.author.id])
+        response = self.client.get(url)
+        friendships = Friendship.objects.filter(reciever=self.author, status=1)
+        serializer = FriendShipSerializer(friendships, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        
         
 class LikingTests(TestCase):
     

@@ -7,6 +7,7 @@ class AuthorAdmin(admin.ModelAdmin):
     list_display =('username','is_approved')
     list_filter = ('is_approved',)
     actions = ['approve_authors', 'disapprove_authors']
+    readonly_fields = ('id',)
 
     def approve_authors(self, request, queryset):
         queryset.update(is_approved=True)

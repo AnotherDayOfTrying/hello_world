@@ -1,1 +1,1 @@
-web: export ENV=prod && serve -s build
+web: serve -s build

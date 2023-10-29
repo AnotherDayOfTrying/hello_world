@@ -1,0 +1,1 @@
+web: gunicorn --chdir /hello_world_rest_api hello_world_rest_api.wsgi

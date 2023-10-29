@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import Author, Friendship
+from .models import Author, Friendship, Comment
 from rest_framework.validators import UniqueValidator
 from django.shortcuts import get_object_or_404
 
@@ -77,3 +77,15 @@ class RespondFriendRequestSerializer(serializers.Serializer):
         if action == 'decline':
             friendship.delete()
         return friendship
+    
+class PostCommentSerializer(serializers.ModelSerializer):
+    comment = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = Comment
+        fields = ('comment', 'time')
+        
+    def create(self, validated_data):
+        comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
+        comment.save()
+        return comment

@@ -109,3 +109,8 @@ class UnlikingSerializer(serializers.Serializer):
     def update(self, like, validated_data):
         like.delete()
         return like
+    
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ('id', 'username', 'displayName', 'github','host', 'url')

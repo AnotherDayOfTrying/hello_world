@@ -87,3 +87,27 @@ def getAllAuthors(request):
         "items": serializer.data
     }
     return Response(response, status=status.HTTP_200_OK)
+    
+class Liking(generics.CreateAPIView):
+    
+    serializer_class = LikeingSerializer
+    
+    def post(self, request):
+        author = request.user
+        serializer = self.serializer_class(data=request.data, context={'author': author})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class Unliking(generics.CreateAPIView):
+    
+    serializer_class = UnlikingSerializer
+    
+    def post(self, request, like_id):
+        like = get_object_or_404(Like, id=like_id)
+        serializer = self.serializer_class(like, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

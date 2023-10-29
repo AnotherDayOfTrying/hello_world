@@ -3,20 +3,24 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.14 # This is the action
+      - uses: akhileshns/heroku-deploy@v3.12.14 # Deploy backend
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "YOUR APP's NAME" #Must be unique in Heroku
+          heroku_app_name: "cmput404-project-backend"
           heroku_email: "jjavier@ualberta.ca"
-      - uses: akhileshns/heroku-deploy@v3.12.14 # This is the action
+      - name: "Run migrations"
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku run --app cmput404-project-backend python hello_world_rest_api/manage.py migrate
+      - uses: akhileshns/heroku-deploy@v3.12.14 # Deploy frontend
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "YOUR APP's NAME" #Must be unique in Heroku
+          heroku_app_name: "cmput404-project-frontend"
           heroku_email: "jjavier@ualberta.ca"

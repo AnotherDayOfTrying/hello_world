@@ -97,7 +97,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     
     
     url = serializers.URLField(read_only=True)
-    displayName = serializers.CharField(read_only=True, allow_blank=True, allow_null=True)
+    displayName = serializers.CharField(allow_null=True)
     github = serializers.URLField(allow_blank = True, allow_null = True)
     class Meta:
         model = Author

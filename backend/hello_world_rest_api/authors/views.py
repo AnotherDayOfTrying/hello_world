@@ -95,10 +95,10 @@ def getOneAuthor(request, author_id):
         serializer = AuthorSerializer(author)
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        serializer = AuthorSerializer(author, data=request.data,partial=True)
+        serializer = AuthorSerializer(instance=author, data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class Liking(generics.CreateAPIView):

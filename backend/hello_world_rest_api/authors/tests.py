@@ -261,12 +261,13 @@ class GetOneAuthorTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
             username='will',
             password='testpass123',
             displayName='will',
             github='',
         )
-        self.url = reverse('getoneauthor', args=[self.author.id])
+        self.url = reverse('authors:getoneauthor', args=[self.author.id])
     def test_get_one_author(self):
         response = self.client.get(self.url)
         author = Author.objects.get(id=self.author.id)
@@ -279,8 +280,8 @@ class GetOneAuthorTest(TestCase):
         }
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        author = Author.objects.get(id=self.author.id)
-        self.assertEqual(author.name, data['displayName'])
+        author1 = Author.objects.get(id=self.author.id)
+        self.assertEqual(author1.displayName, data['displayName'])
           
 
         

@@ -11,5 +11,5 @@ urlpatterns = [
     path('likes/', views.Liking.as_view(), name = 'liking'),
     path('unlike/<int:like_id>/', views.Unliking.as_view(), name = 'unliking'),
     path('authors/', views.getAllAuthors, name = 'get-all-authors'),
-    path('authors/<uuid:id>',views.getOneAuthor, name = 'getoneauthor')
+    path('authors/<uuid:author_id>',views.getOneAuthor, name = 'getoneauthor')
 ]

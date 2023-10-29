@@ -1,8 +1,10 @@
 from django.test import TestCase,Client
 
 from django.contrib.auth import get_user_model
-from .models import Author, Post, Comment, Friendship, Like
+from .models import *
 from rest_framework import status
+from rest_framework.test import APIClient
+from .serializers import *
 # Create your tests here.
 
 class CustomUserTests(TestCase):
@@ -45,18 +47,18 @@ class SignupTests(TestCase):
     github = ''
     c = Client()
     def test_signup_correct(self):
-        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
+        response = self.c.post('/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Author.objects.filter(username = self.username).exists())
     def test_signup_wrongpassword(self):
-        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.wrongpassword2, 'displayName': self.displayName, 'github': self.github})
+        response = self.c.post('/signup/', {'username': self.username, 'password': self.password, 'password2': self.wrongpassword2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 400)
         self.assertFalse(Author.objects.filter(username = self.username).exists())
     def test_signup_sameusername(self):
-        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
+        response = self.c.post('/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 201)
         self.assertTrue(Author.objects.filter(username = self.username).exists())
-        response = self.c.post('/auth/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
+        response = self.c.post('/signup/', {'username': self.username, 'password': self.password, 'password2': self.password2, 'displayName': self.displayName, 'github': self.github})
         self.assertEqual(response.status_code, 400)
         self.assertTrue(Author.objects.filter(username = self.username).exists())
         
@@ -78,18 +80,18 @@ class SiginTests(TestCase):
         self.c = Client()
         
     def test_signin_correct(self):
-        response = self.c.post('/auth/signin/', {'username': 'superadmin', 'password':'testpass123'})
+        response = self.c.post('/signin/', {'username': 'superadmin', 'password':'testpass123'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('message', response.data)
         self.assertTrue('data', response.data)
         self.assertEqual(response.data['message'], 'User logged in successfully')
         
     def test_signin_fail(self):
-        response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass543'})
+        response = self.c.post('/signin/', {'username': 'will', 'password':'testpass543'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
     def test_signin_not_approved(self):
-        response = self.c.post('/auth/signin/', {'username': 'will', 'password':'testpass123'})
+        response = self.c.post('/signin/', {'username': 'will', 'password':'testpass123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
 class PostCommentTests(TestCase):
@@ -149,23 +151,23 @@ class FriendrequestTests(TestCase):
     def test_send_friend_request(self):
         self.c.login(username='will', password='testpass123')
         self.assertEqual(Friendship.objects.count(), 0)
-        response = self.c.post(f'/auth/frequests/send/', {'receiver_id': self.author2.id})
+        response = self.c.post(f'/frequests/send/', {'receiver_id': self.author2.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Friendship.objects.count(), 1)
-        response = self.c.post(f'/auth/frequests/send/', {'receiver_id': self.author2.id})
+        response = self.c.post(f'/frequests/send/', {'receiver_id': self.author2.id})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
     def test_send_to_no_user(self):
         self.c.login(username='will', password='testpass123')
         self.assertEqual(Friendship.objects.count(), 0)
-        response = self.c.post(f'/auth/frequests/send/', {'receiver_id': 12121122})
+        response = self.c.post(f'/frequests/send/', {'receiver_id': 12121122})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Friendship.objects.count(), 0)
         
     def test_respond_accept(self):
         friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
         self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/auth/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'accept'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         friendship.refresh_from_db()
         self.assertEqual(friendship.status, 2)
@@ -174,7 +176,7 @@ class FriendrequestTests(TestCase):
         friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
         self.c.login(username='Joe', password='testpass123')
         self.assertEqual(Friendship.objects.count(), 1)
-        response = self.c.post(f'/auth/frequests/respond/{friendship.id}/', {'action': 'decline'})
+        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'decline'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Friendship.objects.count(), 0)
         
@@ -183,7 +185,7 @@ class FriendrequestTests(TestCase):
         friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
 
         self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/auth/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'accept'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         friendship.refresh_from_db()
         self.assertEqual(friendship.status, 3)
@@ -213,7 +215,7 @@ class CommentTest(TestCase):
     def test_post_comment(self):
         self.c.login(username='Joe', password='testpass123')
         self.assertEqual(Comment.objects.count(), 0)
-        response= self.c.post(f'/auth/comments/{self.post.id}/', {'comment': 'Test comment'})
+        response= self.c.post(f'/comments/{self.post.id}/', {'comment': 'Test comment'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Comment.objects.count(), 1)
         self.assertEqual(Comment.objects.get().comment, 'Test comment')
@@ -225,9 +227,87 @@ class CommentTest(TestCase):
     def test_post_comment_post_dne(self):
         self.c.login(username='Joe', password='testpass123')
         self.assertEqual(Comment.objects.count(), 0)
-        response= self.c.post(f'/auth/comments/{500}/', {'comment': 'Test comment'})
+        response= self.c.post(f'/comments/{500}/', {'comment': 'Test comment'})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Comment.objects.count(), 0)
+
+class GetAllAuthorsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+    
+    def test_get_all_authors(self):
+        response = self.client.get('/authors/')
+        authors = Author.objects.all()
+        serializer = AuthorSerializer(authors, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {
+            "type": "authors",
+            "items": serializer.data
+        })
+
+class GetOneAuthorTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.url = reverse('authors:getoneauthor', args=[self.author.id])
+    def test_get_one_author(self):
+        response = self.client.get(self.url)
+        author = Author.objects.get(id=self.author.id)
+        serializer = AuthorSerializer(author)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_update_author(self):
+        data = {
+            'displayName': 'will2',
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        author1 = Author.objects.get(id=self.author.id)
+        self.assertEqual(author1.displayName, data['displayName'])
+          
+class GetFriendRequestsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author)
+    def test_get_friend_requests(self):
+        url = reverse('authors:getfriendrequests', args=[self.author.id])
+        response = self.client.get(url)
+        friendships = Friendship.objects.filter(reciever=self.author, status=1)
+        serializer = FriendShipSerializer(friendships, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        
         
 class LikingTests(TestCase):
     
@@ -260,7 +340,7 @@ class LikingTests(TestCase):
     def test_like_post(self):
         self.c.login(username='Joe', password='testpass123')
         self.assertEqual(Like.objects.count(), 0)
-        response= self.c.post(f'/auth/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Like.objects.count(), 1)
         self.assertEqual(Like.objects.get().liker, self.author2)
@@ -269,7 +349,7 @@ class LikingTests(TestCase):
     def test_like_comment(self):
         self.c.login(username='will', password='testpass123')
         self.assertEqual(Like.objects.count(), 0)
-        response= self.c.post(f'/auth/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        response= self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Like.objects.count(), 1)
         self.assertEqual(Like.objects.get().liker, self.author)
@@ -278,8 +358,8 @@ class LikingTests(TestCase):
     def test_unliking(self):
         self.c.login(username='Joe', password='testpass123')
         self.assertEqual(Like.objects.count(), 0)
-        response= self.c.post(f'/auth/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Like.objects.count(), 1)
-        response=self.c.post(f'/auth/unlike/{Like.objects.get().id}/')
+        response=self.c.post(f'/unlike/{Like.objects.get().id}/')
         self.assertEqual(Like.objects.count(), 0)

@@ -217,6 +217,10 @@ class CommentTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Comment.objects.count(), 1)
         self.assertEqual(Comment.objects.get().comment, 'Test comment')
+        self.assertEqual(Comment.objects.get().author, self.author2)
+        self.assertEqual(Comment.objects.get().post.author, self.author)
+        
+        
         
     def test_post_comment_post_dne(self):
         self.c.login(username='Joe', password='testpass123')

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from .models import Author, Friendship, Comment
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueValidator, ValidationError
 from django.shortcuts import get_object_or_404
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -89,3 +89,16 @@ class PostCommentSerializer(serializers.ModelSerializer):
         comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
         comment.save()
         return comment
+
+class AuthorSerializer(serializers.ModelSerializer):
+    type = serializers.CharField(default='author', read_only=True)
+    id = serializers.URLField(source = "url",read_only=True)
+    url = serializers.URLField(read_only=True)
+    displayName = serializers.CharField(read_only=True, allow_blank=True, allow_null=True)
+    github = serializers.URLField(read_only=True, required=False)
+    class Meta:
+        model = Author
+        fields = ('type', 'id', 'url', 'displayName', 'github')
+
+
+        

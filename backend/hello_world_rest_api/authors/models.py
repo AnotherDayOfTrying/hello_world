@@ -37,7 +37,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
-    
+    profilePicture = models.ImageField(upload_to='media/profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'
     def __str__(self):
         return self.username

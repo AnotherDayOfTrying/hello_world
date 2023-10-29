@@ -1,9 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from .serializers import *
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, logout
 from .models import *
 from rest_framework.decorators import api_view
 
@@ -41,6 +41,13 @@ class Signin(generics.CreateAPIView):
             return Response(response, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class Signout(generics.CreateAPIView):
+    
+    def post(self, request):
+        logout(request)
+        return Response(None, status=status.HTTP_200_OK)
+        
 
 class SendFriendRequest(generics.CreateAPIView):
     

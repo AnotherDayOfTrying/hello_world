@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 import uuid
+from PIL import Image
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -42,6 +43,8 @@ class Author(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
     @property
+    def type(self):
+        return "author"
     def url(self):
         return self.host + "authors/" + str(self.id)
     objects = UserManager()

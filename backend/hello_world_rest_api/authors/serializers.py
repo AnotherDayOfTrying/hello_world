@@ -98,7 +98,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     github = serializers.URLField(read_only=True, required=False)
     class Meta:
         model = Author
-        fields = ('type', 'id', 'url', 'displayName', 'github')
+        fields = ('type', 'id', 'url', 'displayName', 'profilePicture' 'github')
 
 
         

@@ -15,6 +15,10 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "cmput404-project-backend"
           heroku_email: "jjavier@ualberta.ca"
+      - name: "Run migrations"
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: heroku run --app cmput404-project-backend python hello_world_rest_api/manage.py migrate
       - uses: akhileshns/heroku-deploy@v3.12.14 # Deploy frontend
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}

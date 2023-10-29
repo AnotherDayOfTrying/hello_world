@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="48"
+   height="48"
+   viewBox="0 0 12.7 12.7"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient6">
+      <stop
+         style="stop-color:#f95f35;stop-opacity:1;"
+         offset="0"
+         id="stop8" />
+      <stop
+         style="stop-color:#f9a225;stop-opacity:1;"
+         offset="1"
+         id="stop7" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient6"
+       id="linearGradient8"
+       x1="3.2680175"
+       y1="6.3500004"
+       x2="9.431982"
+       y2="6.3500004"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     id="layer1">
+    <rect
+       style="fill:#30122d;stroke:#870700;stroke-width:0;stroke-opacity:0;fill-opacity:1"
+       id="rect1"
+       width="10.962332"
+       height="10.640541"
+       x="0.86883414"
+       y="1.0297295"
+       ry="1.0297297" />
+    <text
+       xml:space="preserve"
+       style="font-size:12.7px;font-family:Monospace;-inkscape-font-specification:Monospace;fill:url(#linearGradient8);stroke:#870700;stroke-width:0;stroke-opacity:0;fill-opacity:1"
+       x="2.418457"
+       y="10.5823"
+       id="text1"><tspan
+         id="tspan1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.7px;font-family:'Bauhaus 93';-inkscape-font-specification:'Bauhaus 93, ';stroke-width:0;fill:url(#linearGradient8);fill-opacity:1"
+         x="2.418457"
+         y="10.5823">H</tspan></text>
+  </g>
+</svg>

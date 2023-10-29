@@ -3,6 +3,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, Permis
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 import uuid
+from PIL import Image
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -39,11 +40,13 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
-    
+    profilePicture = models.ImageField(upload_to='media/profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'
     def __str__(self):
         return self.username
     @property
+    def type(self):
+        return "author"
     def url(self):
         return self.host + "authors/" + str(self.id)
     objects = UserManager()

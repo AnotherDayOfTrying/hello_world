@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 import uuid
 
 # Create your models here.
@@ -66,3 +68,10 @@ class Friendship(models.Model):
     reciever = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='reciever')
     friend_status = [(1, 'Pending'), (2, 'Following'), (3, 'Friends')]
     status = models.SmallIntegerField(choices=friend_status, default=1)
+    
+class Like(models.Model):
+    liker = models.ForeignKey(Author, on_delete=models.CASCADE)
+    # Use generic content type since one can like post or comment
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')

@@ -21,7 +21,7 @@ axios.defaults.xsrfHeaderName = 'x-csrftoken'
 
 const login = async (signinDetails: LoginInterface) => {
     try {
-        const response = await axios.post(`${APIURL}/auth/signin/`, signinDetails, {
+        const response = await axios.post(`${APIURL}/signin/`, signinDetails, {
             headers: {
                 "Content-Type": "application/json",
             },
@@ -39,7 +39,7 @@ const login = async (signinDetails: LoginInterface) => {
 
 const signup = async (signupDetails: SignUpInterface) => {
     try {
-        const response = await axios.post(`${APIURL}/auth/signup/`, signupDetails, {
+        const response = await axios.post(`${APIURL}/signup/`, signupDetails, {
             headers: {
                 "Content-Type": "application/json",
             },

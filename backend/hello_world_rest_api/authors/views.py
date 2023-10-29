@@ -87,7 +87,7 @@ class PostComment(generics.CreateAPIView):
 
 @api_view(['GET'])
 def getAllAuthors(request):
-    authors = Author.objects.all()
+    authors = Author.objects.filter(is_approved=True, is_active=True, is_staff=False, displayName__isnull=False)
     serializer = AuthorSerializer(authors, many=True)
     response = {
         "type": "authors",

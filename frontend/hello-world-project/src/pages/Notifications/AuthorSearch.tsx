@@ -6,9 +6,12 @@ import axios, { AxiosError } from "axios"
 import send from 'send';
 
 
+
+
 axios.defaults.withCredentials = true // required to send session cookies with api requests
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'x-csrftoken'
+
 
 
 
@@ -18,13 +21,15 @@ function AuthorSearch() {
   const [filteredAuthor, setFilteredAuthor] = useState<any[]>([]);
 
   const handleSearch = async (): Promise<any[] | undefined> => {
+  
     try {
-      const response = await axios.get(`${APIURL}/auth/authors/`, {
+      const response = await axios.get(`${APIURL}/authors/`, {
         headers: {
           "Content-Type": "application/json",
+          
         },
       });
-      const responseData: any[]  = response.data.authors;
+      const responseData: any[]  = response.data.items;
       if (responseData) {
         console.log('Fetched authors:', responseData);
         const filteredAuthor = responseData.filter((author) =>
@@ -51,7 +56,7 @@ function AuthorSearch() {
   const sendFriendRequest = async (authorId: string): Promise<any[] | undefined> => {
           console.log('Author ID:', authorId);
           try {
-            const response = await axios.post(`${APIURL}/auth/frequests/send/`,
+            const response = await axios.post(`${APIURL}/frequests/send/`,
             {
               receiver_id: authorId,
             },

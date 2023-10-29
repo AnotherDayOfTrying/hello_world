@@ -5,21 +5,45 @@ import Leftbar from '../../components/leftbar/Leftbar';
 import './friends.css'
 import FriendSearch from './FriendSearch';
 
-
+interface Friend {
+    img: string;
+    name: string;
+    user_img: string;
+    likes: number;
+    liked: boolean;
+  }
 
 export default function Friends() {
-    const [data, setData] = useState<any>(null);
-
-    //get data from api
+    const [data, setData] = useState<Friend[]>([]);
+    const handleSearch = (filteredFriend: Friend[]) => {
+        setData(filteredFriend); 
+      };
+      const [firendList, setFriendList] = useState<Friend[]>(PostData);
+    // const GetData = async () => {
+    //     try {
+        
+    //         const response = await fetch('http://.../friendList/', {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json'
+    //             }
+    //             });
+    //         const responseData: Friend[] = await response.json();
+    //         setData(responseData);
+    //         console.log(responseData);
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }
     
     return (
         <>
             <div className='FriendsContainer'>
                 <Leftbar/>
                 <div className="friendsList">
-                <FriendSearch/>
+                <FriendSearch onSearch={handleSearch} PostData={firendList}/>
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
-                    {data ? 
+                    {data.length ? 
                     (data.map((data: any, id: number) => {  
                         return <FriendsCard data={data} />})
                     ): 

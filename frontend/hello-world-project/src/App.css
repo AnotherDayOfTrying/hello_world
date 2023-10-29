@@ -28,6 +28,7 @@
     border-radius: 50%;
     background-color: #a6ddf0 ;
     filter: blur(72px);
+    
 }
 button{
     display: flex;

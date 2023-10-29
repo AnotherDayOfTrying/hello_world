@@ -87,6 +87,19 @@ def getAllAuthors(request):
         "items": serializer.data
     }
     return Response(response, status=status.HTTP_200_OK)
+
+@api_view(['GET','POST'])
+def getOneAuthor(request, author_id):
+    author = Author.objects.get(id=author_id)
+    if request.method == 'GET':
+        serializer = AuthorSerializer(author)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = AuthorSerializer(author, data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class Liking(generics.CreateAPIView):
     

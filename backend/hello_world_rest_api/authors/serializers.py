@@ -5,6 +5,8 @@ from .models import *
 from rest_framework.validators import UniqueValidator, ValidationError
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from .serializers import *
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 20)
@@ -93,13 +95,13 @@ class PostCommentSerializer(serializers.ModelSerializer):
 
 class AuthorSerializer(serializers.ModelSerializer):
     
-    id = serializers.URLField(source = "url",read_only=True)
+    
     url = serializers.URLField(read_only=True)
     displayName = serializers.CharField(read_only=True, allow_blank=True, allow_null=True)
-    github = serializers.URLField(read_only=True, required=False)
+    github = serializers.URLField(allow_blank = True, allow_null = True)
     class Meta:
         model = Author
-        fields = ('type', 'id', 'url', 'displayName', 'profilePicture' 'github')
+        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github')
 
 
         

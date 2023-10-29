@@ -10,4 +10,6 @@ urlpatterns = [
     path('comments/<int:post_id>/', views.PostComment.as_view(), name = 'post-comment'),
     path('likes/', views.Liking.as_view(), name = 'liking'),
     path('unlike/<int:like_id>/', views.Unliking.as_view(), name = 'unliking'),
+    path('authors/', views.getAllAuthors, name = 'get-all-authors'),
+    path('authors/<uuid:id>',views.getOneAuthor, name = 'getoneauthor')
 ]

@@ -16,7 +16,7 @@ type NotificationData = {
   };
   
   type NotificationCardProps = {
-    data: NotificationData;
+    data: any;
     getFriendRequests: () => Promise<void>;
   };
 

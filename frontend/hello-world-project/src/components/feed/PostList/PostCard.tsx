@@ -14,18 +14,9 @@ import * as linkify  from 'linkifyjs';
 import Linkify from 'react-linkify';
 import Comment from './Comment';
 
-
-type PostData = {
-    img: string;
-    description: string;
-    name: string;
-    user_img: string;
-    likes: number;
-    liked: boolean;
-};
   
 type PostCardProps = {
-    data: PostData;
+    data: any;
 };
   
 const PostCard = ({ data  }: PostCardProps) => {
@@ -35,12 +26,15 @@ const PostCard = ({ data  }: PostCardProps) => {
     
 
     const handleShare = () => {
+        // send api req
         setIsAlertVisible(true);
+
       };
 
     const handleLike = () => {
         setLikes(isliked ? likes -1 : likes + 1);
         setIsLiked(!isliked);
+        // send api req
     };
     const renderDescription = (description: string) => {
         if (linkify.test(description)) {

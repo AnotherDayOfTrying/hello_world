@@ -173,6 +173,7 @@ class UploadPost(generics.CreateAPIView):
             serializer.save()
             response = {
                 'message': 'Post created successfully',
+                'id': serializer.data['id'],
                 'data': serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)

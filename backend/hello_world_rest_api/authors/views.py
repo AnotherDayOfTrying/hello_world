@@ -55,10 +55,10 @@ class SendFriendRequest(generics.CreateAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Request sent'}, status=status.HTTP_200_OK)
+            response = serializer.save()
+            return Response({'message': 'Request sent', 'friendship_id': response.id}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class FriendRequestResponse(generics.CreateAPIView):
 
     serializer_class = RespondFriendRequestSerializer

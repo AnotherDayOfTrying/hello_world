@@ -3,24 +3,14 @@ import './notificationCard.css'
 import APIURL from "../../api/config"
 import axios, { AxiosError } from "axios"
 
-type NotificationData = {
-  id: number,
-  reciever: string,
-  status: number,
-  sender: {type: string,
-  id: string,
-  url: string,
-  displayName: string,
-  profilePicture: string,
-  github: string,}
-  };
   
   type NotificationCardProps = {
-    data: NotificationData;
+    data: any;
     getFriendRequests: () => Promise<void>;
   };
 
 function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
+  const profilePicture = data.sender.profile_picture ? data.sender.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
   const handleAccept  = async (Id: number): Promise<any[] | undefined> => {
     try {
       const response = await axios.post(`${APIURL}/frequests/respond/${Id}/`,
@@ -66,7 +56,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
   console.log("data: ",data);
   return (
     <div className="notificationCard">
-      <img src={data.sender.profilePicture} alt="" className="notificationCardImg" />
+      <img src={profilePicture} alt="" className="notificationCardImg" />
       <div className="notificationCardUsername">
           <span >{data.sender.displayName}</span>
       </div>

@@ -249,12 +249,14 @@ class GetAllAuthorsTest(TestCase):
             password='testpass123',
             displayName='will',
             github='',
+            is_approved=True,
         )
         self.author2 = Author.objects.create_user(
             username='Joe',
             password='testpass123',
             displayName='will',
             github='',
+            is_approved=True,
         )
     
     def test_get_all_authors(self):
@@ -317,7 +319,38 @@ class GetFriendRequestsTest(TestCase):
         serializer = FriendShipSerializer(friendships, many=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
-        
+class GetFriendsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.author3 = Author.objects.create_user(
+            username='Joe2',
+            password='testpass123',
+            displayName='joe2',
+            github='',
+        )
+        self.friendship2 = Friendship.objects.create(sender=self.author3, reciever=self.author, status=3)
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status=2)
+    def test_get_friends(self):
+        # get API response
+        response = self.client.get(reverse('authors:getfriends', args=[self.author.id]))
+        # get data from db
+        friends = Friendship.objects.filter(reciever=self.author, status__in=[2,3])
+        serializer = FriendShipSerializer(friends, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
 class LikingTests(TestCase):
     

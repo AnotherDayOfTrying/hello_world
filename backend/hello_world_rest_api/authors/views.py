@@ -98,7 +98,7 @@ class PostComment(generics.CreateAPIView):
 
 @api_view(['GET'])
 def getAllAuthors(request):
-    authors = Author.objects.filter(is_approved=True, is_active=True, is_staff=False, displayName__isnull=False)
+    authors = authors = Author.objects.filter(is_approved=True,displayName__isnull=False)
     serializer = AuthorSerializer(authors, many=True)
     response = {
         "type": "authors",
@@ -108,7 +108,7 @@ def getAllAuthors(request):
 
 @api_view(['GET','POST'])
 def getOneAuthor(request, author_id):
-    author = Author.objects.get(id=author_id)
+    author = get_object_or_404(Author,id=author_id)
     if request.method == 'GET':
         serializer = AuthorSerializer(author)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -120,11 +120,19 @@ def getOneAuthor(request, author_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
-def getFriendRequests(request, author_id):
-    author = Author.objects.get(id=author_id)
+def getFriendRequests(request,author_id):
+    author = get_object_or_404(Author,id=author_id)
     friends = Friendship.objects.filter(reciever=author,status=1)
     serializer = FriendShipSerializer(friends, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getFriends(request,author_id):
+    author = get_object_or_404(Author,id=author_id)
+    friends = Friendship.objects.filter(reciever=author,status__in=[2,3])
+    serializer = FriendShipSerializer(friends, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class Liking(generics.CreateAPIView):
     

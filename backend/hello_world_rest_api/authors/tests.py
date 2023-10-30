@@ -333,7 +333,7 @@ class GetFriendsTest(TestCase):
         self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status=2)
     def test_get_friends(self):
         # get API response
-        response = self.client.get(reverse('authors:get_friends', args=[self.author.id]))
+        response = self.client.get(reverse('authors:getfriends', args=[self.author.id]))
         # get data from db
         friends = Friendship.objects.filter(reciever=self.author, status__in=[2,3])
         serializer = FriendShipSerializer(friends, many=True)

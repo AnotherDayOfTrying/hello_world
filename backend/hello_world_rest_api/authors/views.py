@@ -71,6 +71,18 @@ class FriendRequestResponse(generics.CreateAPIView):
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class DeleteFriend(generics.CreateAPIView):
+    
+    serializer_class = DeleteFriendSerializer
+    
+    def post(self, request, friendship_id):
+        friendship = get_object_or_404(Friendship, id=friendship_id)
+        serializer = self.serializer_class(friendship, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class PostComment(generics.CreateAPIView):
     
     serializer_class = PostCommentSerializer

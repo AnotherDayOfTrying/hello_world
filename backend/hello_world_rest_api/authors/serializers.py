@@ -81,6 +81,16 @@ class RespondFriendRequestSerializer(serializers.Serializer):
             friendship.delete()
         return friendship
     
+class DeleteFriendSerializer(serializers.Serializer):
+    
+    def update(self, friendship, validated_data):
+        reverse = Friendship.objects.filter(sender=friendship.reciever, reciever=friendship.sender).first()
+        if reverse and reverse.status == 3:
+            reverse.status = 2
+            reverse.save()
+        friendship.delete()
+        return friendship
+    
 class PostCommentSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(write_only=True)
     

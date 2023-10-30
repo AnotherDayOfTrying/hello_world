@@ -155,8 +155,12 @@ class Liking(generics.CreateAPIView):
         author = request.user
         serializer = self.serializer_class(data=request.data, context={'author': author})
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            like_instance = serializer.save()
+            response = {
+                'message': 'success',
+                'like_id': like_instance.id,
+            }
+            return Response(response, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class Unliking(generics.CreateAPIView):

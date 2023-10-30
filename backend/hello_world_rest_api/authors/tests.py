@@ -239,12 +239,14 @@ class GetAllAuthorsTest(TestCase):
             password='testpass123',
             displayName='will',
             github='',
+            is_approved=True,
         )
         self.author2 = Author.objects.create_user(
             username='Joe',
             password='testpass123',
             displayName='will',
             github='',
+            is_approved=True,
         )
     
     def test_get_all_authors(self):

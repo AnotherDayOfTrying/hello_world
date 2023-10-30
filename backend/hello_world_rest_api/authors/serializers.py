@@ -167,3 +167,18 @@ class EditPostSerializer(serializers.Serializer):
         instance.image_url = validated_data['image_url']
         instance.save()
         return instance
+
+class LikeSerializer(serializers.ModelSerializer):
+    
+    content_object = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Like
+        fields = ('liker', 'content_type', 'object_id', 'content_object')
+        
+    def get_content_object(self, object):
+        if isinstance(object.content_object, Post):
+            return {'post_id': object.content_object.id}
+        if isinstance(object.content_object, Comment):
+            return {'comment_id': object.content_object.id}
+        return str(object.content_object)

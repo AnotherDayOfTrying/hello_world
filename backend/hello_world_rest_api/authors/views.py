@@ -190,3 +190,22 @@ class DeletePost(generics.CreateAPIView):
         post = get_object_or_404(Post, id=post_id)
         post.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET'])
+def getlikesonpost(request, author_id, post_id):
+    post_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=post_id)
+    serializer = LikeSerializer(post_likes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def getlikesoncomment(request, author_id, post_id, comment_id):
+    comment_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=comment_id)
+    serializer = LikeSerializer(comment_likes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getlikesfromauthor(request, author_id):
+    author = Author.objects.get(id=author_id)
+    likes = Like.objects.filter(liker=author)
+    serializer = LikeSerializer(likes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

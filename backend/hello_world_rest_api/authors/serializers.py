@@ -81,6 +81,16 @@ class RespondFriendRequestSerializer(serializers.Serializer):
             friendship.delete()
         return friendship
     
+class DeleteFriendSerializer(serializers.Serializer):
+    
+    def update(self, friendship, validated_data):
+        reverse = Friendship.objects.filter(sender=friendship.reciever, reciever=friendship.sender).first()
+        if reverse and reverse.status == 3:
+            reverse.status = 2
+            reverse.save()
+        friendship.delete()
+        return friendship
+    
 class PostCommentSerializer(serializers.ModelSerializer):
     comment = serializers.CharField(write_only=True)
     
@@ -104,8 +114,6 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github')
 
 
-        
-    
 class LikeingSerializer(serializers.Serializer):
     content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
     content_id = serializers.IntegerField()
@@ -124,10 +132,10 @@ class UnlikingSerializer(serializers.Serializer):
     def update(self, like, validated_data):
         like.delete()
         return like
-class FriendShipSerializer(serializers.Serializer):
+class FriendShipSerializer(serializers.ModelSerializer):
     class Meta:
-        model: Friendship
-        fields = ('sender', 'reciever', 'status')
+        model = Friendship
+        fields = ('id','sender', 'reciever', 'status')
 
 class UploadPostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -159,3 +167,18 @@ class EditPostSerializer(serializers.Serializer):
         instance.image_url = validated_data['image_url']
         instance.save()
         return instance
+
+class LikeSerializer(serializers.ModelSerializer):
+    
+    content_object = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Like
+        fields = ('liker', 'content_type', 'object_id', 'content_object')
+        
+    def get_content_object(self, object):
+        if isinstance(object.content_object, Post):
+            return {'post_id': object.content_object.id}
+        if isinstance(object.content_object, Comment):
+            return {'comment_id': object.content_object.id}
+        return str(object.content_object)

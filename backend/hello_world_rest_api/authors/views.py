@@ -71,6 +71,18 @@ class FriendRequestResponse(generics.CreateAPIView):
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class DeleteFriend(generics.CreateAPIView):
+    
+    serializer_class = DeleteFriendSerializer
+    
+    def post(self, request, friendship_id):
+        friendship = get_object_or_404(Friendship, id=friendship_id)
+        serializer = self.serializer_class(friendship, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class PostComment(generics.CreateAPIView):
     
     serializer_class = PostCommentSerializer
@@ -121,29 +133,7 @@ def getFriends(request,author_id):
     serializer = FriendShipSerializer(friends, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET','PUT','DELETE'])
-def oneFriend(request,author_id,friend_id):
-    if request.method == 'GET':
-        author = get_object_or_404(Author,id=author_id)
-        try:
-            is_follower = Friendship.objects.filter(sender = friend_id, reciever = author_id, status__in=[2,3]).exists()
-        except Friendship.DoesNotExist:
-            is_follower = False
-        data = {"is_follower":is_follower}
-        return Response(data, status=status.HTTP_200_OK)
-    elif request.method == 'DELETE':
-        author = get_object_or_404(Author,id=author_id)
-        friend = get_object_or_404(Author,id=friend_id)
-        try:
-            friendship = Friendship.objects.get(sender=friend,reciever=author)
-            reverse_friendship = Friendship.objects.get(sender=author,reciever=friend)
-            friendship.delete()
-            if reverse_friendship.status == 3:
-                reverse_friendship.status = 2
-                reverse_friendship.save()
-        except Friendship.DoesNotExist:
-            return Response(status=status.HTTP_400_BAD_REQUEST)       
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class Liking(generics.CreateAPIView):
     
     serializer_class = LikeingSerializer
@@ -208,3 +198,22 @@ class DeletePost(generics.CreateAPIView):
         post = get_object_or_404(Post, id=post_id)
         post.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET'])
+def getlikesonpost(request, author_id, post_id):
+    post_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=post_id)
+    serializer = LikeSerializer(post_likes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def getlikesoncomment(request, author_id, post_id, comment_id):
+    comment_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=comment_id)
+    serializer = LikeSerializer(comment_likes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getlikesfromauthor(request, author_id):
+    author = Author.objects.get(id=author_id)
+    likes = Like.objects.filter(liker=author)
+    serializer = LikeSerializer(likes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

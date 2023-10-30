@@ -137,3 +137,44 @@ class Unliking(generics.CreateAPIView):
             serializer.save()
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UploadPost(generics.CreateAPIView):
+
+    serializer_class = UploadPostSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'author': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            response = {
+                'message': 'Post created successfully',
+                'data': serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class EditPost(generics.CreateAPIView):
+
+    serializer_class = EditPostSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'author': request.user})
+        if serializer.is_valid():
+            #serializer.save()
+            response = {
+                'message': 'Post updated successfully',
+                'data': serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+class DeletePost(generics.CreateAPIView):
+
+    serializer_class = EditPostSerializer
+
+    def delete(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        post.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)

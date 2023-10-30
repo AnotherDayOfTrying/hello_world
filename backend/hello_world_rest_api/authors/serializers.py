@@ -128,3 +128,34 @@ class FriendShipSerializer(serializers.Serializer):
     class Meta:
         model: Friendship
         fields = ('sender', 'reciever', 'status')
+
+class UploadPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ('title', 'content_type', 'text', 'image_url', 'image')
+
+    def create(self, validated_data):
+        uploadPost = Post.objects.create(
+            author = self.context['author'],
+            title = validated_data['title'],
+            content_type = validated_data['content_type'],
+            text = validated_data['text'],
+            image_url = validated_data['image_url'],
+            image = validated_data['image'],
+        )
+        return uploadPost
+    
+class EditPostSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=50, required = False, allow_blank = True)
+    content_type = serializers.ChoiceField([('TEXT', 'Text'), ('IMAGE', 'Image')], required = False,)
+    text = serializers.CharField(max_length=200, required = False, allow_blank = True)
+    image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
+
+    def update(self, instance, validated_data):
+        instance.author = self.context['author'],
+        instance.title = validated_data['title'],
+        instance.content_type = validated_data['content_type'],
+        instance.text = validated_data['text']
+        instance.image_url = validated_data['image_url']
+        instance.save()
+        return instance

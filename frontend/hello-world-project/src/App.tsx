@@ -18,7 +18,7 @@ const App: React.FC = () => {
     <div className="App">
       <Router>
         <Routes>
-          <Route element={<AuthLayout />} errorElement={<RootError/>}>
+          <Route element={<AuthLayout />}>
           <Route path="/" element={<Root/>} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
@@ -71,6 +71,7 @@ const App: React.FC = () => {
               </>} />
             </Route>
           </Route>
+          <Route path="*" element={<RootError />}/>
         </Routes>
       </Router>
     </div>

@@ -14,4 +14,7 @@ urlpatterns = [
     path('authors/', views.getAllAuthors, name = 'get-all-authors'),
     path('authors/<uuid:author_id>',views.getOneAuthor, name = 'getoneauthor'),
     path('authors/<uuid:author_id>/requests/', views.getFriendRequests, name = 'getfriendrequests'),
+    path('post/upload/', views.UploadPost.as_view(), name = 'upload-post'),
+    path('post/edit/', views.EditPost.as_view(), name = 'edit-post'),
+    path('post/delete/<int:post_id>/', views.DeletePost.as_view(), name = 'delete-post')
 ]

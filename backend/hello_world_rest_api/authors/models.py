@@ -53,12 +53,15 @@ class Author(AbstractBaseUser, PermissionsMixin):
     
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
     Priv_Choices = [('PUBLIC', 'Public'), ('FRIENDS', 'Friends Only'), ('PRIVATE', 'Private')]
     privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
     # For now content is text, but set up options for content 
     content_choices = [('TEXT', 'Text'), ('IMAGE', 'Image')]
-    content = models.TextField()
-    title = models.CharField(max_length=50)
+    content_type = models.CharField(max_length=10, choices=content_choices, default='TEXT')
+    text = models.CharField(max_length=200, blank=True, null=True)
+    image_url = models.URLField(max_length=200, blank=True, null=True)
+    image = models.ImageField(upload_to='media/postimages/', blank=True, null=True)
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

@@ -1,9 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from .serializers import *
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, logout
 from .models import *
 from rest_framework.decorators import api_view
 
@@ -41,6 +41,13 @@ class Signin(generics.CreateAPIView):
             return Response(response, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class Signout(generics.CreateAPIView):
+    
+    def post(self, request):
+        logout(request)
+        return Response(None, status=status.HTTP_200_OK)
+        
 
 class SendFriendRequest(generics.CreateAPIView):
     
@@ -161,3 +168,44 @@ class Unliking(generics.CreateAPIView):
             serializer.save()
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UploadPost(generics.CreateAPIView):
+
+    serializer_class = UploadPostSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'author': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            response = {
+                'message': 'Post created successfully',
+                'data': serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class EditPost(generics.CreateAPIView):
+
+    serializer_class = EditPostSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data, context={'author': request.user})
+        if serializer.is_valid():
+            #serializer.save()
+            response = {
+                'message': 'Post updated successfully',
+                'data': serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+class DeletePost(generics.CreateAPIView):
+
+    serializer_class = EditPostSerializer
+
+    def delete(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        post.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)

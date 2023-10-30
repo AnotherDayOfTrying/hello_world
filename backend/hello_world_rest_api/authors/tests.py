@@ -107,7 +107,7 @@ class PostCommentTests(TestCase):
         
         self.post = Post.objects.create(
             author=self.author,
-            content='text',
+            text='text',
             privacy='PUBLIC'
         )
         
@@ -207,7 +207,7 @@ class CommentTest(TestCase):
         )
         self.post = Post.objects.create(
             author=self.author,
-            content='text',
+            text='text',
             privacy='PUBLIC'
         )
         self.c = Client()
@@ -357,7 +357,7 @@ class LikingTests(TestCase):
         )
         self.post = Post.objects.create(
             author=self.author,
-            content='text',
+            text='text',
             privacy='PUBLIC'
         )
         self.comment = Comment.objects.create(
@@ -394,3 +394,53 @@ class LikingTests(TestCase):
         self.assertEqual(Like.objects.count(), 1)
         response=self.c.post(f'/unlike/{Like.objects.get().id}/')
         self.assertEqual(Like.objects.count(), 0)
+
+class PostTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.title1='coding'
+        self.title2='warriors'
+        self.content_type1='TEXT'
+        self.content_type2='IMAGE'
+        self.wrong_content_type = 'RANDOM'
+        self.text1='Hello World'
+        self.text2='Goodbye World'
+        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.image_url2 = 'https://images.pexels.com/photos/757889/pexels-photo-757889.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.c = Client()
+    
+    def test_upload_post_success(self):
+        self.c.login(username='will', password='testpass123')
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(response.data['data']['title'], self.title1)
+        self.assertEqual(response.status_code, 200)
+
+    def test_upload_post_fail(self):
+        self.c.login(username='will', password='testpass123')
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.wrong_content_type, 'text': self.text1})
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_post_success(self):
+        self.c.login(username='will', password='testpass123')
+        response = self.c.post(f'/post/edit/', {'title': self.title2, 'content_type': self.content_type2, 'text': self.text2})
+        self.assertEqual(response.data['data']['title'], self.title2)
+        self.assertEqual(response.data['data']['content_type'], self.content_type2)
+        self.assertEqual(response.data['data']['text'], self.text2)
+        self.assertEqual(response.status_code, 200)
+        response = self.c.post(f'/post/edit/', {'image_url': self.image_url2})
+        self.assertEqual(response.data['data']['image_url'], self.image_url2)
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_post_success(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Post.objects.count(), 0)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Post.objects.count(), 1)
+        response=self.c.delete(f'/post/delete/{Post.objects.get().id}/')
+        self.assertEqual(Post.objects.count(), 0)

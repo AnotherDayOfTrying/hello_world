@@ -182,13 +182,23 @@ class FriendrequestTests(TestCase):
         
     def test_respond_friends(self):
         friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 2)
-        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2)
 
         self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        response = self.c.post(f'/frequests/respond/{friendship2.id}/', {'action': 'accept'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         friendship.refresh_from_db()
         self.assertEqual(friendship.status, 3)
+        
+    def test_delete_friend(self):
+        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 3)
+        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2, status = 3)
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.post(f'/frequests/delete/{friendship2.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Friendship.objects.count(), 1)
+        friendship.refresh_from_db()
+        self.assertEqual(friendship.status, 2)
         
 class CommentTest(TestCase):
     
@@ -239,12 +249,14 @@ class GetAllAuthorsTest(TestCase):
             password='testpass123',
             displayName='will',
             github='',
+            is_approved=True,
         )
         self.author2 = Author.objects.create_user(
             username='Joe',
             password='testpass123',
             displayName='will',
             github='',
+            is_approved=True,
         )
     
     def test_get_all_authors(self):
@@ -307,7 +319,38 @@ class GetFriendRequestsTest(TestCase):
         serializer = FriendShipSerializer(friendships, many=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
-        
+class GetFriendsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.author3 = Author.objects.create_user(
+            username='Joe2',
+            password='testpass123',
+            displayName='joe2',
+            github='',
+        )
+        self.friendship2 = Friendship.objects.create(sender=self.author3, reciever=self.author, status=3)
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status=2)
+    def test_get_friends(self):
+        # get API response
+        response = self.client.get(reverse('authors:getfriends', args=[self.author.id]))
+        # get data from db
+        friends = Friendship.objects.filter(reciever=self.author, status__in=[2,3])
+        serializer = FriendShipSerializer(friends, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         
 class LikingTests(TestCase):
     
@@ -363,6 +406,40 @@ class LikingTests(TestCase):
         self.assertEqual(Like.objects.count(), 1)
         response=self.c.post(f'/unlike/{Like.objects.get().id}/')
         self.assertEqual(Like.objects.count(), 0)
+        
+    def test_get_likes_on_post(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        url = reverse('authors:getlikesonpost', args=[self.author.id, self.post.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=self.post.id)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        
+    def test_get_likes_on_comment(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        url = reverse('authors:getlikesoncomment', args=[self.author2.id, self.post.id, self.comment.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=self.comment.id)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        
+    def test_get_likes_from_author(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        url = reverse('authors:getlikesfromauthor', args=[self.author.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(liker=self.author)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
 
 class PostTest(TestCase):
     def setUp(self):

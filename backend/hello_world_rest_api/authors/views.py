@@ -98,7 +98,7 @@ class PostComment(generics.CreateAPIView):
 
 @api_view(['GET'])
 def getAllAuthors(request):
-    authors = Author.objects.all()
+    authors = Author.objects.filter(is_approved=True, is_active=True, is_staff=False, displayName__isnull=False)
     serializer = AuthorSerializer(authors, many=True)
     response = {
         "type": "authors",
@@ -120,8 +120,8 @@ def getOneAuthor(request, author_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
-def getFriendRequests(request,author_id):
-    author = Author.objects.get(id=author_id)
+def getFriendRequests(request):
+    author = request.user
     friends = Friendship.objects.filter(reciever=author,status=1)
     serializer = FriendShipSerializer(friends, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

@@ -114,8 +114,6 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github')
 
 
-        
-    
 class LikeingSerializer(serializers.Serializer):
     content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
     content_id = serializers.IntegerField()
@@ -134,10 +132,10 @@ class UnlikingSerializer(serializers.Serializer):
     def update(self, like, validated_data):
         like.delete()
         return like
-class FriendShipSerializer(serializers.Serializer):
+class FriendShipSerializer(serializers.ModelSerializer):
     class Meta:
-        model: Friendship
-        fields = ('sender', 'reciever', 'status')
+        model = Friendship
+        fields = ('id','sender', 'reciever', 'status')
 
 class UploadPostSerializer(serializers.ModelSerializer):
     class Meta:

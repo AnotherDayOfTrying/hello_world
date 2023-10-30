@@ -75,7 +75,7 @@ class DeleteFriend(generics.CreateAPIView):
     
     serializer_class = DeleteFriendSerializer
     
-    def post(self, request, friendship_id):
+    def delete(self, request, friendship_id):
         friendship = get_object_or_404(Friendship, id=friendship_id)
         serializer = self.serializer_class(friendship, data=request.data)
         if serializer.is_valid():

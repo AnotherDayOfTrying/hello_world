@@ -194,7 +194,7 @@ class FriendrequestTests(TestCase):
         friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 3)
         friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2, status = 3)
         self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/frequests/delete/{friendship2.id}/')
+        response = self.c.delete(f'/frequests/delete/{friendship2.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Friendship.objects.count(), 1)
         friendship.refresh_from_db()

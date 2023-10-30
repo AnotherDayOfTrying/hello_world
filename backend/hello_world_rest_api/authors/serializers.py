@@ -92,7 +92,7 @@ class DeleteFriendSerializer(serializers.Serializer):
         return friendship
     
 class PostCommentSerializer(serializers.ModelSerializer):
-    comment = serializers.CharField(write_only=True)
+    comment = serializers.CharField()
     
     class Meta:
         model = Comment
@@ -138,9 +138,10 @@ class FriendShipSerializer(serializers.ModelSerializer):
         fields = ('id','sender', 'reciever', 'status')
 
 class UploadPostSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=False)
     class Meta:
         model = Post
-        fields = ('title', 'content_type', 'privacy', 'text', 'image_url', 'image')
+        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
 
     def create(self, validated_data):
         uploadPost = Post.objects.create(
@@ -150,7 +151,7 @@ class UploadPostSerializer(serializers.ModelSerializer):
             privacy = validated_data['privacy'],
             text = validated_data['text'],
             image_url = validated_data['image_url'],
-            image = validated_data['image'],
+            #image = validated_data['image'],
         )
         return uploadPost
     
@@ -168,3 +169,18 @@ class EditPostSerializer(serializers.Serializer):
         instance.image_url = validated_data['image_url']
         instance.save()
         return instance
+
+class LikeSerializer(serializers.ModelSerializer):
+    
+    content_object = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Like
+        fields = ('liker', 'content_type', 'object_id', 'content_object')
+        
+    def get_content_object(self, object):
+        if isinstance(object.content_object, Post):
+            return {'post_id': object.content_object.id}
+        if isinstance(object.content_object, Comment):
+            return {'comment_id': object.content_object.id}
+        return str(object.content_object)

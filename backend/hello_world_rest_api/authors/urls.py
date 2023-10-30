@@ -13,4 +13,5 @@ urlpatterns = [
     path('authors/', views.getAllAuthors, name = 'get-all-authors'),
     path('authors/<uuid:author_id>',views.getOneAuthor, name = 'getoneauthor'),
     path('authors/<uuid:author_id>/requests/', views.getFriendRequests, name = 'getfriendrequests'),
+    path('authors/<uuid:author_id>/friends/', views.getFriends, name = 'getfriends'),
 ]

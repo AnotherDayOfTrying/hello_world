@@ -90,7 +90,7 @@ def getAllAuthors(request):
 
 @api_view(['GET','POST'])
 def getOneAuthor(request, author_id):
-    author = Author.objects.get(id=author_id)
+    author = get_object_or_404(Author,id=author_id)
     if request.method == 'GET':
         serializer = AuthorSerializer(author)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -103,10 +103,18 @@ def getOneAuthor(request, author_id):
     
 @api_view(['GET'])
 def getFriendRequests(request,author_id):
-    author = Author.objects.get(id=author_id)
+    author = get_object_or_404(Author,id=author_id)
     friends = Friendship.objects.filter(reciever=author,status=1)
     serializer = FriendShipSerializer(friends, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getFriends(request,author_id):
+    author = get_object_or_404(Author,id=author_id)
+    friends = Friendship.objects.filter(reciever=author,status=[2,3])
+    serializer = FriendShipSerializer(friends, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class Liking(generics.CreateAPIView):
     

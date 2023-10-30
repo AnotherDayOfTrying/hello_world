@@ -175,7 +175,7 @@ class LikeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Like
-        fields = ('liker', 'content_type', 'object_id', 'content_object')
+        fields = ('id', 'liker', 'content_type', 'object_id', 'content_object')
         
     def get_content_object(self, object):
         if isinstance(object.content_object, Post):

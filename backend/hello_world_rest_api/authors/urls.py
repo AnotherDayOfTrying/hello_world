@@ -9,6 +9,7 @@ urlpatterns = [
     path('frequests/send/', views.SendFriendRequest.as_view(), name = 'send-friend-request'),
     path('frequests/respond/<int:friendship_id>/', views.FriendRequestResponse.as_view(), name = 'respond-friend-request'),
     path('frequests/delete/<int:friendship_id>/', views.DeleteFriend.as_view(), name = 'delete-friend'),
+    path('comments/get/<int:post_id>', views.GetComment.as_view(), name = 'get-comment'),
     path('comments/<int:post_id>/', views.PostComment.as_view(), name = 'post-comment'),
     path('likes/', views.Liking.as_view(), name = 'liking'),
     path('unlike/<int:like_id>/', views.Unliking.as_view(), name = 'unliking'),

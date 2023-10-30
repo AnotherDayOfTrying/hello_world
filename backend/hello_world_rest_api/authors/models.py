@@ -61,7 +61,7 @@ class Post(models.Model):
     content_type = models.CharField(max_length=10, choices=content_choices, default='TEXT')
     text = models.CharField(max_length=200, blank=True, null=True)
     image_url = models.URLField(max_length=200, blank=True, null=True)
-    image = models.ImageField(upload_to='media/postimages/', blank=True, null=True)
+    image = models.ImageField(upload_to='postimages/', blank=True, null=True)
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

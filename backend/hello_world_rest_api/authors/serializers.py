@@ -138,7 +138,6 @@ class FriendShipSerializer(serializers.ModelSerializer):
         fields = ('id','sender', 'reciever', 'status')
 
 class UploadPostSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(required=False)
     class Meta:
         model = Post
         fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
@@ -151,7 +150,7 @@ class UploadPostSerializer(serializers.ModelSerializer):
             privacy = validated_data['privacy'],
             text = validated_data['text'],
             image_url = validated_data['image_url'],
-            #image = validated_data['image'],
+            image = validated_data['image'],
         )
         return uploadPost
     

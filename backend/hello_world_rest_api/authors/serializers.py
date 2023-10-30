@@ -140,13 +140,14 @@ class FriendShipSerializer(serializers.ModelSerializer):
 class UploadPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('title', 'content_type', 'text', 'image_url', 'image')
+        fields = ('title', 'content_type', 'privacy', 'text', 'image_url', 'image')
 
     def create(self, validated_data):
         uploadPost = Post.objects.create(
             author = self.context['author'],
             title = validated_data['title'],
             content_type = validated_data['content_type'],
+            privacy = validated_data['privacy'],
             text = validated_data['text'],
             image_url = validated_data['image_url'],
             image = validated_data['image'],

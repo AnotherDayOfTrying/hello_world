@@ -131,10 +131,18 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication 
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'api.authentication.CsrfExemptSessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
@@ -146,7 +154,8 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
+# CSRF_COOKIE_HTTPONLY = True
+# CSRF_USE_SESSIONS = True
 
 # Required to prevent CORS issues
 
@@ -164,5 +173,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://cmput404-project-backend-a299a47993fd.herokuapp.com',
     'https://cmput404-project-frontend-31e44b042044.herokuapp.com',
 ]
+
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 django_on_heroku.settings(locals())

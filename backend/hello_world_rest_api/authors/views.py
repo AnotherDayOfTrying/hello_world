@@ -11,7 +11,6 @@ from rest_framework.decorators import api_view
 class Signup(generics.CreateAPIView):
     
     serializer_class = SignUpSerializer
-    #permission_classes = (AllowAny,)
 
     def post(self,request):
         serializer = self.serializer_class(data = request.data)

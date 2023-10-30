@@ -182,13 +182,23 @@ class FriendrequestTests(TestCase):
         
     def test_respond_friends(self):
         friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 2)
-        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2)
 
         self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        response = self.c.post(f'/frequests/respond/{friendship2.id}/', {'action': 'accept'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         friendship.refresh_from_db()
         self.assertEqual(friendship.status, 3)
+        
+    def test_delete_friend(self):
+        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 3)
+        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2, status = 3)
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.post(f'/frequests/delete/{friendship2.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Friendship.objects.count(), 1)
+        friendship.refresh_from_db()
+        self.assertEqual(friendship.status, 2)
         
 class CommentTest(TestCase):
     

@@ -141,13 +141,14 @@ class UploadPostSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content_type', 'text', 'image_url', 'image')
+        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
 
     def create(self, validated_data):
         uploadPost = Post.objects.create(
             author = self.context['author'],
             title = validated_data['title'],
             content_type = validated_data['content_type'],
+            privacy = validated_data['privacy'],
             text = validated_data['text'],
             image_url = validated_data['image_url'],
             #image = validated_data['image'],
@@ -175,7 +176,7 @@ class LikeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Like
-        fields = ('liker', 'content_type', 'object_id', 'content_object')
+        fields = ('id', 'liker', 'content_type', 'object_id', 'content_object')
         
     def get_content_object(self, object):
         if isinstance(object.content_object, Post):

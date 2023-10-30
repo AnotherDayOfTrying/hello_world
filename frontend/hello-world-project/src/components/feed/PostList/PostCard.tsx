@@ -4,7 +4,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import SendIcon from '@mui/icons-material/Send';
-import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 import ReactMarkdown from 'react-markdown';
 import { PostData } from './data/postsData';
@@ -13,19 +12,13 @@ import { Alert } from '@mui/material';
 import * as linkify  from 'linkifyjs';
 import Linkify from 'react-linkify';
 import Comment from './Comment';
+import Popup from 'reactjs-popup';
+import axios, { AxiosError } from "axios"
+import APIURL from "../../../api/config"
 
-
-type PostData = {
-    img: string;
-    description: string;
-    name: string;
-    user_img: string;
-    likes: number;
-    liked: boolean;
-};
   
 type PostCardProps = {
-    data: PostData;
+    data: any;
 };
   
 const PostCard = ({ data  }: PostCardProps) => {
@@ -35,13 +28,60 @@ const PostCard = ({ data  }: PostCardProps) => {
     
 
     const handleShare = () => {
+        // send api post req
         setIsAlertVisible(true);
+
       };
 
-    const handleLike = () => {
-        setLikes(isliked ? likes -1 : likes + 1);
-        setIsLiked(!isliked);
-    };
+    const handleLike = async () => {
+        if (isliked) {
+            setLikes(likes - 1);
+            setIsLiked(!isliked);
+            // try {
+        //     const response = await axios.post(`${APIURL}/likes/`,
+        //     {
+        //         content_type: "post",
+        //         content_id: data.id
+        //     },
+        //     {
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     }
+        //     });
+        //     const responseData: any = response.data;
+        //     console.log('like response: ', responseData);
+        //     return responseData;
+        // } catch (error: any) {
+        //     console.log(error);
+            
+        // };
+            
+        } else {
+            setLikes(likes + 1);
+            setIsLiked(!isliked);
+            // try {
+        //     const response = await axios.post(`${APIURL}/unlike/`,
+        //     {
+        //         content_type: "post",
+        //         content_id: data.id
+        //     },
+        //     {
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     }
+        //     });
+        //     const responseData: any = response.data;
+        //     console.log('like response: ', responseData);
+        //     return responseData;
+        // } catch (error: any) {
+        //     console.log(error);
+            
+        // };
+        }
+        
+
+};
+
     const renderDescription = (description: string) => {
         if (linkify.test(description)) {
           return (

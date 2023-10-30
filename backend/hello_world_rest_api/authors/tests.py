@@ -298,23 +298,27 @@ class GetOneAuthorTest(TestCase):
           
 class GetFriendRequestsTest(TestCase):
     def setUp(self):
-        self.client = APIClient()
+        self.client = Client()
         self.author = Author.objects.create_user(
             id = '631f3ebe-d976-4248-a808-db2442a22168',
             username='will',
             password='testpass123',
             displayName='will',
             github='',
+            is_approved = True,
         )
         self.author2 = Author.objects.create_user(
             username='Joe',
             password='testpass123',
             displayName='joe',
             github='',
+            is_approved = True,
         )
+
         self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author)
     def test_get_friend_requests(self):
-        url = reverse('authors:getfriendrequests', args=[self.author.id])
+        self.client.login(username='will', password='testpass123')
+        url = reverse('authors:getfriendrequests')
         response = self.client.get(url)
         friendships = Friendship.objects.filter(reciever=self.author, status=1)
         serializer = FriendShipSerializer(friendships, many=True)
@@ -322,7 +326,7 @@ class GetFriendRequestsTest(TestCase):
         self.assertEqual(response.data, serializer.data)
 class GetFriendsTest(TestCase):
     def setUp(self):
-        self.client = APIClient()
+        self.client = Client()
         self.author = Author.objects.create_user(
             id = '631f3ebe-d976-4248-a808-db2442a22168',
             username='will',
@@ -346,7 +350,8 @@ class GetFriendsTest(TestCase):
         self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status=2)
     def test_get_friends(self):
         # get API response
-        response = self.client.get(reverse('authors:getfriends', args=[self.author.id]))
+        self.client.login(username='will', password='testpass123')
+        response = self.client.get(reverse('authors:getfriends'))
         # get data from db
         friends = Friendship.objects.filter(reciever=self.author, status__in=[2,3])
         serializer = FriendShipSerializer(friends, many=True)

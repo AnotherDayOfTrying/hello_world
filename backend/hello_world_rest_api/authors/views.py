@@ -55,10 +55,10 @@ class SendFriendRequest(generics.CreateAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Request sent'}, status=status.HTTP_200_OK)
+            response = serializer.save()
+            return Response({'message': 'Request sent', 'friendship_id': response.id}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class FriendRequestResponse(generics.CreateAPIView):
 
     serializer_class = RespondFriendRequestSerializer
@@ -111,7 +111,7 @@ class PostComment(generics.CreateAPIView):
 
 @api_view(['GET'])
 def getAllAuthors(request):
-    authors = authors = Author.objects.filter(is_approved=True,displayName__isnull=False)
+    authors  = Author.objects.filter(is_approved=True,displayName__isnull=False)
     serializer = AuthorSerializer(authors, many=True)
     response = {
         "type": "authors",
@@ -140,8 +140,8 @@ def getFriendRequests(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def getFriends(request,author_id):
-    author = get_object_or_404(Author,id=author_id)
+def getFriends(request):
+    author = request.user
     friends = Friendship.objects.filter(reciever=author,status__in=[2,3])
     serializer = FriendShipSerializer(friends, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -155,8 +155,12 @@ class Liking(generics.CreateAPIView):
         author = request.user
         serializer = self.serializer_class(data=request.data, context={'author': author})
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            like_instance = serializer.save()
+            response = {
+                'message': 'success',
+                'like_id': like_instance.id,
+            }
+            return Response(response, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class Unliking(generics.CreateAPIView):

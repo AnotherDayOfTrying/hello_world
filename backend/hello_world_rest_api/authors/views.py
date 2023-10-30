@@ -115,7 +115,29 @@ def getFriends(request,author_id):
     serializer = FriendShipSerializer(friends, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-
+@api_view(['GET','PUT','DELETE'])
+def oneFriend(request,author_id,friend_id):
+    if request.method == 'GET':
+        author = get_object_or_404(Author,id=author_id)
+        try:
+            is_follower = Friendship.objects.filter(sender = friend_id, reciever = author_id, status__in=[2,3]).exists()
+        except Friendship.DoesNotExist:
+            is_follower = False
+        data = {"is_follower":is_follower}
+        return Response(data, status=status.HTTP_200_OK)
+    elif request.method == 'DELETE':
+        author = get_object_or_404(Author,id=author_id)
+        friend = get_object_or_404(Author,id=friend_id)
+        try:
+            friendship = Friendship.objects.get(sender=friend,reciever=author)
+            reverse_friendship = Friendship.objects.get(sender=author,reciever=friend)
+            friendship.delete()
+            if reverse_friendship.status == 3:
+                reverse_friendship.status = 2
+                reverse_friendship.save()
+        except Friendship.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)       
+        return Response(status=status.HTTP_204_NO_CONTENT)
 class Liking(generics.CreateAPIView):
     
     serializer_class = LikeingSerializer

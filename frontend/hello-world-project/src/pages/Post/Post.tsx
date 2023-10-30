@@ -27,29 +27,30 @@ export default function PostShare() {
         setText(event.target.value); 
     };
 
-    const handlePostSubmit = async (): Promise<any[] | undefined> => {
-        const postData = {
-            title: "Post Title",
-            content_type: 'TEXT',
-            text: text,
-            image_url: image.image,
-            image: ImageRef.current?.files ? ImageRef.current.files[0] : null,
-        }
+    const handlePostSubmit = async (privacy: string)  => {
+        // const postData = {
+        //     title: "Post Title",
+        //     content_type: 'TEXT',
+        //     privacy: privacy,
+        //     text: text,
+        //     image_url: image.image,
+        //     image: ImageRef.current?.files ? ImageRef.current.files[0] : null,
+        // }
         
-        try {
-            const response = await axios.post(`${APIURL}/post/upload/`, postData
-            ,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              }
-            });
-            const responseData: any = response.data;
-            console.log('post upload response:', responseData);
-            return responseData;
-          } catch (error: any) {
-            console.log(error);
-          };
+        // try {
+        //     const response = await axios.post(`${APIURL}/post/upload/`, postData
+        //     ,
+        //     {
+        //       headers: {
+        //         'Content-Type': 'application/json',
+        //       }
+        //     });
+        //     const responseData: any = response.data;
+        //     console.log('post upload response:', responseData);
+        //     return responseData;
+        //   } catch (error: any) {
+        //     console.log(error);
+        //   };
             
 
     };
@@ -72,9 +73,9 @@ export default function PostShare() {
                             <ImageIcon/>
                             Photo
                         </div>
-                        <button className="postButton">Friends Only Post</button>
-                        <button className="postButton" onClick={handlePostSubmit}>Public Post</button>
-                        <button className="postButton">Unlisted Post</button>
+                        <button className="postButton" onClick={() => handlePostSubmit('PRIVATE')}>Friends Only Post</button>
+                        <button className="postButton" onClick={() => handlePostSubmit('PUBLIC')}>Public Post</button>
+                        <button className="postButton" onClick={() => handlePostSubmit('UNLISTED')}>Unlisted Post</button>
                         <div style={{display: "none"}}>
                             <input 
                             type="file" 

@@ -373,6 +373,40 @@ class LikingTests(TestCase):
         self.assertEqual(Like.objects.count(), 1)
         response=self.c.post(f'/unlike/{Like.objects.get().id}/')
         self.assertEqual(Like.objects.count(), 0)
+        
+    def test_get_likes_on_post(self):
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        url = reverse('authors:getlikesonpost', args=[self.author.id, self.post.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=self.post.id)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        
+    def test_get_likes_on_comment(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        url = reverse('authors:getlikesoncomment', args=[self.author2.id, self.post.id, self.comment.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=self.comment.id)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        
+    def test_get_likes_from_author(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        url = reverse('authors:getlikesfromauthor', args=[self.author.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(liker=self.author)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
 
 class PostTest(TestCase):
     def setUp(self):

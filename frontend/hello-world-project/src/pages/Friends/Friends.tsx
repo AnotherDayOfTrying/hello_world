@@ -1,54 +1,65 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import FriendsCard from './FriendCard'
-import {PostData} from '../../components/feed/PostList/data/postsData'
 import Leftbar from '../../components/leftbar/Leftbar';
 import './friends.css'
 import FriendSearch from './FriendSearch';
+import APIURL from "../../api/config"
+import axios, { AxiosError } from "axios"
 
-interface Friend {
-    img: string;
-    name: string;
-    user_img: string;
-    likes: number;
-    liked: boolean;
-  }
+
 
 export default function Friends() {
-    const [data, setData] = useState<Friend[]>([]);
-    const handleSearch = (filteredFriend: Friend[]) => {
+    const [data, setData] = useState<any>(null);
+
+    const handleSearch = (filteredFriend: any) => {
         setData(filteredFriend); 
-      };
-      const [firendList, setFriendList] = useState<Friend[]>(PostData);
-    // const GetData = async () => {
-    //     try {
-        
-    //         const response = await fetch('http://.../friendList/', {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Content-Type': 'application/json'
-    //             }
-    //             });
-    //         const responseData: Friend[] = await response.json();
-    //         setData(responseData);
-    //         console.log(responseData);
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
+    };
+
+    const getFriends =  useCallback(async () => { 
+        try {
+        const response = await axios.get(`${APIURL}/authors/friends/`, {
+            headers: {
+            "Content-Type": "application/json",
+            
+            },
+        });
+        const friends: any[] = response.data;
+
+        const FriendInfo = await Promise.all(
+            friends.map(async (request) => {
+            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`);
+            const authorData = {
+              ...request,
+              sender: authorResponse.data,
+            };
+            console.log('Friend Data:', authorData);
+            return authorData;
+          })
+        );
+        console.log('Friends:', FriendInfo);
+        setData(FriendInfo);
+
+      } catch (error) {
+        console.log(error);
+      }
+    }, []);
+
+    useEffect(() => {
+        getFriends();
+      }, [getFriends]);
     
     return (
         <>
             <div className='FriendsContainer'>
                 <Leftbar/>
                 <div className="friendsList">
-                <FriendSearch onSearch={handleSearch} PostData={firendList}/>
+                <FriendSearch onSearch={handleSearch} getFriends={getFriends} data={data}/>
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
-                    {data.length ? 
+                    {data ? 
                     (data.map((data: any, id: number) => {  
-                        return <FriendsCard data={data} />})
+                        return <FriendsCard data={data}  getFriends={getFriends} key={id}/>})
                     ): 
-                    (PostData.map((data: any, id: number) => {
-                    return <FriendsCard data={data}/>}))
+                    (<h4 style={{alignSelf: 'center' }}>No Friends</h4>)
                     }
                 </div>
             </div>

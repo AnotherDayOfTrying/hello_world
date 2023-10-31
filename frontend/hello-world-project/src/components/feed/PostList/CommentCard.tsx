@@ -2,19 +2,11 @@ import React from 'react';
 import './comment.css';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import APIURL from "../../../api/config"
 
-type typePostData = {
-    id: number;
-    description: string;
-    img: string;
-    name: string;
-    user_img: string;
-    likes: number;
-    liked: boolean;
-}
 
 type CommentCardProps = {
-    post: typePostData; 
+    post: any; 
 };
 
 const CommentCard: React.FC<CommentCardProps> = ({ post }) => {
@@ -29,10 +21,10 @@ const CommentCard: React.FC<CommentCardProps> = ({ post }) => {
     return (
         <div className="comment">
             <div className="comment_user">
-                <img src={post.user_img} alt="" />
+                <img src={`${APIURL}${post.author.profilePicture}`} alt="" />
                 <div className="comment_content">
-                    <h3>{post.name}</h3>
-                    <p>{post.description}</p>
+                    <h3>{post.author.displayName}</h3>
+                    <p>{post.comment}</p>
                 </div>
                 <div className='Likes'>
                     {isliked ? <FavoriteIcon className='commentLike' onClick={handleLike}/>: <FavoriteBorderIcon className='commentLike' onClick={handleLike}/>}  

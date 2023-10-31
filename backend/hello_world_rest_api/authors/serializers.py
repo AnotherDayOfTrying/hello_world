@@ -96,7 +96,7 @@ class PostCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Comment
-        fields = ('comment', 'time')
+        fields = ('comment', 'time', 'author')
         
     def create(self, validated_data):
         comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
@@ -153,6 +153,23 @@ class UploadPostSerializer(serializers.ModelSerializer):
             image = validated_data['image'],
         )
         return uploadPost
+    
+class GetPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
+
+    def create(self, validated_data):
+        GetPost = Post.objects.create(
+            author = self.context['author'],
+            title = validated_data['title'],
+            content_type = validated_data['content_type'],
+            privacy = validated_data['privacy'],
+            text = validated_data['text'],
+            image_url = validated_data['image_url'],
+            image = validated_data['image'],
+        )
+        return GetPost
     
 class EditPostSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50, required = False, allow_blank = True)

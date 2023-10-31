@@ -28,30 +28,29 @@ export default function PostShare() {
     };
 
     const handlePostSubmit = async (privacy: string)  => {
-        // const postData = {
-        //     title: "Post Title",
-        //     content_type: 'TEXT',
-        //     privacy: privacy,
-        //     text: text,
-        //     image_url: image.image,
-        //     image: ImageRef.current?.files ? ImageRef.current.files[0] : null,
-        // }
-        
-        // try {
-        //     const response = await axios.post(`${APIURL}/post/upload/`, postData
-        //     ,
-        //     {
-        //       headers: {
-        //         'Content-Type': 'application/json',
-        //       }
-        //     });
-        //     const responseData: any = response.data;
-        //     console.log('post upload response:', responseData);
-        //     return responseData;
-        //   } catch (error: any) {
-        //     console.log(error);
-        //   };
+        const formData = new FormData();
+        formData.append('title', 'Post Title');
+        formData.append('content_type', 'TEXT');
+        formData.append('privacy', privacy);
+        formData.append('text', text);
+        if (ImageRef.current && ImageRef.current.files) {
+            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+            formData.append('image', ImageRef.current.files[0]);
             
+        }
+
+        try {
+            const response = await axios.post(`${APIURL}/post/upload/`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', 
+                }
+            });
+            const responseData: any = response.data;
+            console.log('post upload response:', responseData);
+            return responseData;
+        } catch (error: any) {
+            console.log(error);
+        };      
 
     };
 

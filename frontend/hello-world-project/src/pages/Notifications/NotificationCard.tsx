@@ -10,7 +10,7 @@ import axios, { AxiosError } from "axios"
   };
 
 function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
-  const profilePicture = data.sender.profile_picture ? data.sender.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
+  const profilePicture = data.sender.profile_picture 
   const handleAccept  = async (Id: number): Promise<any[] | undefined> => {
     try {
       const response = await axios.post(`${APIURL}/frequests/respond/${Id}/`,
@@ -56,7 +56,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
   console.log("data: ",data);
   return (
     <div className="notificationCard">
-      <img src={profilePicture} alt="" className="notificationCardImg" />
+      <img src={`${APIURL}${data.sender.profilePicture}`} alt="" className="notificationCardImg" />
       <div className="notificationCardUsername">
           <span >{data.sender.displayName}</span>
       </div>

@@ -81,7 +81,7 @@ class RespondFriendRequestSerializer(serializers.Serializer):
             friendship.delete()
         return friendship
     
-class DeleteFriendSerializer(serializers.Serializer):
+""" class DeleteFriendSerializer(serializers.Serializer):
     
     def update(self, friendship, validated_data):
         reverse = Friendship.objects.filter(sender=friendship.reciever, reciever=friendship.sender).first()
@@ -89,7 +89,7 @@ class DeleteFriendSerializer(serializers.Serializer):
             reverse.status = 2
             reverse.save()
         friendship.delete()
-        return friendship
+        return friendship """
     
 class PostCommentSerializer(serializers.ModelSerializer):
     comment = serializers.CharField()
@@ -127,11 +127,11 @@ class LikeingSerializer(serializers.Serializer):
             content = get_object_or_404(Comment, id=validated_data['content_id'])
         return Like.objects.create(liker=author, content_type=content_type, content_object=content)
     
-class UnlikingSerializer(serializers.Serializer):
+# class UnlikingSerializer(serializers.Serializer):
     
-    def update(self, like, validated_data):
-        like.delete()
-        return like
+#     def update(self, like, validated_data):
+#         like.delete()
+#         return like
 class FriendShipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship

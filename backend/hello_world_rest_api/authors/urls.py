@@ -20,6 +20,7 @@ urlpatterns = [
     path('post/upload/', views.UploadPost.as_view(), name = 'upload-post'),
     path('post/edit/', views.EditPost.as_view(), name = 'edit-post'),
     path('post/delete/<int:post_id>/', views.DeletePost.as_view(), name = 'delete-post'),
+    path('post/getpublic/', views.GetPublicPost.as_view(), name = 'get-public-post'),
     path('authors/<uuid:author_id>/posts/<int:post_id>/likes/', views.getlikesonpost, name = 'getlikesonpost'),
     path('authors/<uuid:author_id>/posts/<int:post_id>/comments/<int:comment_id>/likes/', views.getlikesoncomment, name = 'getlikesoncomment'),
     path('authors/<uuid:author_id>/likes/', views.getlikesfromauthor, name = 'getlikesfromauthor'),

@@ -196,7 +196,7 @@ class FriendrequestTests(TestCase):
         friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2, status = 3)
         self.c.login(username='Joe', password='testpass123')
         response = self.c.delete(f'/frequests/delete/{friendship2.id}/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Friendship.objects.count(), 1)
         friendship.refresh_from_db()
         self.assertEqual(friendship.status, 2)
@@ -410,7 +410,7 @@ class LikingTests(TestCase):
         response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Like.objects.count(), 1)
-        response=self.c.post(f'/unlike/{Like.objects.get().id}/')
+        response=self.c.delete(f'/unlike/{Like.objects.get().id}/')
         self.assertEqual(Like.objects.count(), 0)
         
     def test_get_likes_on_post(self):
@@ -470,7 +470,8 @@ class PostTest(TestCase):
     
     def test_upload_post_success(self):
         self.c.login(username='will', password='testpass123')
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': self.image})
+        print(response.data)
         self.assertEqual(response.data['data']['title'], self.title1)
         self.assertEqual(response.status_code, 200)
 
@@ -497,4 +498,14 @@ class PostTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Post.objects.count(), 1)
         response=self.c.delete(f'/post/delete/{Post.objects.get().id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Post.objects.count(), 0)
+
+    def test_get_public_post(self):
+        self.c.login(username='will', password='testpass123')
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.get('/post/getpublic/')
+        posts = Post.objects.filter(privacy='PUBLIC')
+        serializer = UploadPostSerializer(posts, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['items'], serializer.data)

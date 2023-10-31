@@ -73,15 +73,21 @@ class FriendRequestResponse(generics.CreateAPIView):
     
 class DeleteFriend(generics.CreateAPIView):
     
-    serializer_class = DeleteFriendSerializer
+    #serializer_class = DeleteFriendSerializer
     
     def delete(self, request, friendship_id):
         friendship = get_object_or_404(Friendship, id=friendship_id)
-        serializer = self.serializer_class(friendship, data=request.data)
+        """serializer = self.serializer_class(friendship, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) """
+        reverse = Friendship.objects.filter(sender=friendship.reciever, reciever=friendship.sender).first()
+        if reverse and reverse.status == 3:
+            reverse.status = 2
+            reverse.save()
+        friendship.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
 
 class GetComment(generics.ListAPIView):
     
@@ -165,15 +171,19 @@ class Liking(generics.CreateAPIView):
     
 class Unliking(generics.CreateAPIView):
     
-    serializer_class = UnlikingSerializer
+    # serializer_class = UnlikingSerializer
     
-    def post(self, request, like_id):
+    def delete(self, request, like_id):
         like = get_object_or_404(Like, id=like_id)
-        serializer = self.serializer_class(like, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        like.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
+        # serializer = self.serializer_class(like, data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 
 class UploadPost(generics.CreateAPIView):
 
@@ -216,6 +226,20 @@ class DeletePost(generics.CreateAPIView):
         post = get_object_or_404(Post, id=post_id)
         post.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class GetPublicPost(generics.CreateAPIView):
+
+    serializer_class = UploadPostSerializer
+
+    def get(self, request):
+        public_posts = Post.objects.filter(privacy='PUBLIC')
+        serializer = self.serializer_class(public_posts, many=True)
+        response = {
+            "type": "posts",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 def getlikesonpost(request, author_id, post_id):

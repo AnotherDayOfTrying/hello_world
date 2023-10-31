@@ -127,11 +127,11 @@ class LikeingSerializer(serializers.Serializer):
             content = get_object_or_404(Comment, id=validated_data['content_id'])
         return Like.objects.create(liker=author, content_type=content_type, content_object=content)
     
-class UnlikingSerializer(serializers.Serializer):
+# class UnlikingSerializer(serializers.Serializer):
     
-    def update(self, like, validated_data):
-        like.delete()
-        return like
+#     def update(self, like, validated_data):
+#         like.delete()
+#         return like
 class FriendShipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship

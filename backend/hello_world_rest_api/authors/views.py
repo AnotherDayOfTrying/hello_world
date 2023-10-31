@@ -171,15 +171,17 @@ class Liking(generics.CreateAPIView):
     
 class Unliking(generics.CreateAPIView):
     
-    serializer_class = UnlikingSerializer
+    # serializer_class = UnlikingSerializer
     
-    def post(self, request, like_id):
+    def delete(self, request, like_id):
         like = get_object_or_404(Like, id=like_id)
-        serializer = self.serializer_class(like, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        like.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
+        # serializer = self.serializer_class(like, data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 

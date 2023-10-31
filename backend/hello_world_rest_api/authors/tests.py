@@ -410,7 +410,7 @@ class LikingTests(TestCase):
         response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Like.objects.count(), 1)
-        response=self.c.post(f'/unlike/{Like.objects.get().id}/')
+        response=self.c.delete(f'/unlike/{Like.objects.get().id}/')
         self.assertEqual(Like.objects.count(), 0)
         
     def test_get_likes_on_post(self):

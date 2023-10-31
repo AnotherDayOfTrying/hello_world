@@ -6,16 +6,9 @@ import axios, { AxiosError } from "axios"
 import Popup from 'reactjs-popup';
 
 
-
-
-
 axios.defaults.withCredentials = true // required to send session cookies with api requests
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'x-csrftoken'
-
-
-
-
 
 function AuthorSearch() {
   const [displayName, setDisplayName] = useState<string>('');
@@ -102,13 +95,11 @@ function AuthorSearch() {
         <div className="searchIcon">
             <SearchIcon onClick={handleSearch}/>
         </div>
-        <Popup  open={open} >
+        <Popup  open={open}  >
           <p>{message}</p>
         </Popup>
     
     </div>
-    
-      
     
   )
 

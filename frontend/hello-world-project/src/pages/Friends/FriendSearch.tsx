@@ -1,35 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import './friendSearch.css'
 import SearchIcon from '@mui/icons-material/Search';
-import { PostData } from '../../components/feed/PostList/data/postsData';
+import { get } from 'http';
 
-interface Friend {
-  img: string;
-  name: string;
-  user_img: string;
-  likes: number;
-  liked: boolean;
+
+
+type FriendSearchProps = {
+  onSearch: (filteredFriends: any) => void;
+  getFriends: () => void;
+  data: any[];
 }
 
-interface FriendSearchProps {
-  onSearch: (filteredFriends: Friend[]) => void;
-  PostData: Friend[];
-}
-
- function FriendSearch({ onSearch, PostData }: FriendSearchProps) {
-  const [userName, setUserName] = useState<string>('');
+ function FriendSearch({ onSearch, getFriends, data }: FriendSearchProps) {
+  const [displayName, setdisplayName] = useState<string>('');
 
   const handleSearch = async () => {
-    const filteredFriend = PostData.filter((friend) =>
-    { return (friend.name.toLowerCase().includes(userName.toLowerCase()))});
-    onSearch(filteredFriend);
+    const filteredFriend = data.filter((item) =>
+    item.sender.displayName.toLowerCase() === displayName.toLowerCase());
+    if (filteredFriend.length > 0) {
+      console.log('Filtered Friend:', filteredFriend);
+      onSearch(filteredFriend);
+    }
+    else {  
+      console.log('No Friend Found');
+      getFriends();
+    }
   };
   
   return (
     <div className="friendSearch">
         <input type="text" placeholder="Search for a friend" 
-          value={userName}
-          onChange={(e) => {setUserName(e.target.value);}}/>
+          value={displayName}
+          onChange={(e) => {setdisplayName(e.target.value);}}/>
         <div className="searchIcon">
             <SearchIcon onClick={ handleSearch }/>
         </div>

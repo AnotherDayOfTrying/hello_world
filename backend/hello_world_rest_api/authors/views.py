@@ -230,7 +230,7 @@ class DeletePost(generics.CreateAPIView):
 
 class GetPublicPost(generics.CreateAPIView):
 
-    serializer_class = UploadPostSerializer
+    serializer_class = GetPostSerializer
 
     def get(self, request):
         public_posts = Post.objects.filter(privacy='PUBLIC')

@@ -13,113 +13,35 @@ interface FeedProps {
 const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, messages: ismessages}: FeedProps) => {
   const [data, setData] = useState<any>(null);
 
-  if (isPrivate) { 
-    // get data from api
-  //   const getPrivatePosts = async (): Promise<any[] | undefined> => {
-  //   try {
-  //     const response = await axios.get(`${APIURL}/posts/private/`, {
-  //       headers: {
-  //         "Content-Type": "application/json",
-          
-  //       },
-  //     });
-  //     const responseData: any[]  = response.data;
-  //     if (responseData) {
-  //       console.log('private posts:', responseData);
-  //       setData(responseData);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let response;
+        if (isPrivate) {
+          response = await axios.get(`${APIURL}/posts/private/`);
+        } else if (isUnlisted) {
+          response = await axios.get(`${APIURL}/posts/unlisted/`);
+        } else if (ismessages) {
+          response = await axios.get(`${APIURL}/author/messages/`);
+        } else {
+          response = await axios.get(`${APIURL}/post/getpublic/`);
+        }
 
-  //     }
-  //     return responseData;
-  //   } catch (err: any) {
-  //     if (err instanceof AxiosError) {
-  //       return err.response?.data;
-  //     } else {
-  //       throw err;
-  //     }
-  //   }
-  // };
-    
-  }
-  else if (isUnlisted) {
-    // get data from api
-    // const getUnlistedPosts = async (): Promise<any[] | undefined> => {
-    //   try {
-    //     const response = await axios.get(`${APIURL}/posts/unlisted/`, {
-    //       headers: {
-    //         "Content-Type": "application/json",
-            
-    //       },
-    //     });
-    //     const responseData: any[]  = response.data;
-    //     if (responseData) {
-    //       console.log('unlisted posts:', responseData);
-    //       setData(responseData);
-  
-    //     }
-    //     return responseData;
-    //   } catch (err: any) {
-    //     if (err instanceof AxiosError) {
-    //       return err.response?.data;
-    //     } else {
-    //       throw err;
-    //     }
-    //   }
-    // };
-    
-  }
-  else if (ismessages) {
-    // get data from api
-    // const getMessagesPosts = async (): Promise<any[] | undefined> => {
-    //   try {
-    //     const response = await axios.get(`${APIURL}/author/messages/`, {
-    //       headers: {
-    //         "Content-Type": "application/json",
-            
-    //       },
-    //     });
-    //     const responseData: any[]  = response.data;
-    //     if (responseData) {
-    //       console.log('message posts:', responseData);
-    //       setData(responseData);
-  
-    //     }
-    //     return responseData;
-    //   } catch (err: any) {
-    //     if (err instanceof AxiosError) {
-    //       return err.response?.data;
-    //     } else {
-    //       throw err;
-    //     }
-    //   }
-    // };
-  }
-  else {
-    // get data from api
-    // const getPublicPosts = async (): Promise<any[] | undefined> => {
-    //   try {
-    //     const response = await axios.get(`${APIURL}/posts/public/`, {
-    //       headers: {
-    //         "Content-Type": "application/json",
-            
-    //       },
-    //     });
-    //     const responseData: any[]  = response.data;
-    //     if (responseData) {
-    //       console.log('public posts:', responseData);
-    //       setData(responseData);
-  
-    //     }
-    //     return responseData;
-    //   } catch (err: any) {
-    //     if (err instanceof AxiosError) {
-    //       return err.response?.data;
-    //     } else {
-    //       throw err;
-    //     }
-    //   }
-    // };
-    
-  }
+        const responseData: any[] = response.data.items;
+        setData(responseData);
+        console.log('Fetched posts:', responseData[0]);
+      } catch (err: any) {
+        if (err instanceof AxiosError) {
+          console.error('API Error:', err.response?.data);
+        } else {
+          console.error('Unknown Error:', err);
+        }
+      }
+    };
+
+    fetchData();
+  }, [isPrivate, isUnlisted, ismessages]);
+
   
   return (
     <div className='feed'>

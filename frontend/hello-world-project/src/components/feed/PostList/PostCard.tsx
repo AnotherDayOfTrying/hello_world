@@ -6,7 +6,6 @@ import CommentIcon from '@mui/icons-material/Comment';
 import SendIcon from '@mui/icons-material/Send';
 import 'reactjs-popup/dist/index.css';
 import ReactMarkdown from 'react-markdown';
-import { PostData } from './data/postsData';
 import FriendCard from '../../../pages/Friends/FriendCard';
 import { Alert } from '@mui/material';
 import * as linkify  from 'linkifyjs';
@@ -16,15 +15,19 @@ import Popup from 'reactjs-popup';
 import axios, { AxiosError } from "axios"
 import APIURL from "../../../api/config"
 
+
   
 type PostCardProps = {
     data: any;
 };
   
 const PostCard = ({ data  }: PostCardProps) => {
-    const [likes, setLikes] = React.useState(data.likes);
-    const [isliked, setIsLiked] = React.useState(data.liked);
+    const [likes, setLikes] = React.useState(120);
+    const [isliked, setIsLiked] = React.useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
+    const [friendsList, setFriendsList] = useState<any[]>([]);
+    const [userInfo, setUserInfo] = useState<any>({});
+    const [likeId, setLikeId] = useState<number>(0);
     
 
     const handleShare = () => {
@@ -37,50 +40,64 @@ const PostCard = ({ data  }: PostCardProps) => {
         if (isliked) {
             setLikes(likes - 1);
             setIsLiked(!isliked);
-            // try {
-        //     const response = await axios.post(`${APIURL}/likes/`,
-        //     {
-        //         content_type: "post",
-        //         content_id: data.id
-        //     },
-        //     {
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     }
-        //     });
-        //     const responseData: any = response.data;
-        //     console.log('like response: ', responseData);
-        //     return responseData;
-        // } catch (error: any) {
-        //     console.log(error);
+            try {
+            const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
+            {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+            });
+            const responseData: any = response.data;
+            console.log('unlike response: ', responseData);
+            setIsLiked(false);
+            return responseData;
+        } catch (error: any) {
+            console.log(error);
             
-        // };
+        };
             
         } else {
             setLikes(likes + 1);
             setIsLiked(!isliked);
-            // try {
-        //     const response = await axios.post(`${APIURL}/unlike/`,
-        //     {
-        //         content_type: "post",
-        //         content_id: data.id
-        //     },
-        //     {
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     }
-        //     });
-        //     const responseData: any = response.data;
-        //     console.log('like response: ', responseData);
-        //     return responseData;
-        // } catch (error: any) {
-        //     console.log(error);
+            try {
+            const response = await axios.post(`${APIURL}/likes/`,
+            {
+                content_type: "post",
+                content_id: data.id
+            },
+            {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+            });
+            const responseData: any = response.data;
+            console.log('like response: ', responseData);
+            setLikeId(responseData.like_id)
+            setIsLiked(true);
+            return responseData;
+        } catch (error: any) {
+            console.log(error);
             
-        // };
+        };
         }
         
 
 };
+const fetchUserInfo = async () => {
+    console.log('Fetching user information...', data.author);
+    try {
+        const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`);
+        console.log('Author Data:', authorResponse.data);
+      setUserInfo(authorResponse.data); 
+        return authorResponse.data;
+    } catch (error) {
+      console.error('Error fetching user information: ', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserInfo(); // Fetch user information when component mounts
+  }, [data]);
 
     const renderDescription = (description: string) => {
         if (linkify.test(description)) {
@@ -110,15 +127,47 @@ const PostCard = ({ data  }: PostCardProps) => {
         }
     }, [isAlertVisible]);
 
+    const getFriendList = async () => {
+        try {
+            const response = await axios.get(`${APIURL}/authors/friends/`, {
+                headers: {
+                "Content-Type": "application/json",
+                
+                },
+            });
+            const friends: any[] = response.data;
+            const authorFriends: any[] = []
+            await Promise.all(
+                friends.map(async (request) => {
+                    try {
+                        const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`);
+                        const authorData = {
+                            sender: authorResponse.data,
+                        };
+                        authorFriends.push(authorData); // Use push() instead of append() to add elements to an array
+                    } catch (error) {
+                        console.log("Error fetching author data:", error);
+                    }
+                })
+            );
+            setFriendsList(authorFriends)
+            console.log('Friends:', authorFriends);
+    
+          } catch (error) {
+            console.log(error);
+          }
+    }
+
     const PopupContent: React.FC = () => {
         if (isAlertVisible) {
             return(
             <Alert severity="success">Your message was sent successfully!</Alert>)
         }
         else{
+            getFriendList()
             return(
                 <div className='popupContainer'>
-                    {PostData.map((friend: any, id: number) => (
+                    {friendsList.map((friend: any, id: number) => (
                     <FriendCard key={id} data={friend} shareList onClick={handleShare}
                     />))}
                 </div>
@@ -129,19 +178,19 @@ const PostCard = ({ data  }: PostCardProps) => {
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={data.user_img} alt="" className="postProfileImg" />
+                <img src={`${APIURL}${userInfo.profilePicture}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
-                    <span >{data.name}</span>
+                    <span >{userInfo.displayName}</span>
                 </div>
             </div>
             {/* check if there is description and if so render it as markdown */}
-            {data.description && renderDescription(data.description)}
-
-            {data.img && <img src={data.img} alt="" />}
+            {data.text && renderDescription(data.text)}
+            {console.log("data image: ",data.image)}
+            {data.image && <img src={`${APIURL}${data.image}`} alt="title" />}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
-                <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '50%', height: 'auto' }}>
-                    { <Comment data = {PostData} />}
+                <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '40%', height: 'auto' }}>
+                    { <Comment postID = {data.id} />}
                 </Popup>
                 <Popup trigger={<SendIcon />} position="right center" >
                     { <PopupContent />}

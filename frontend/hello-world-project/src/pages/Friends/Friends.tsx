@@ -23,10 +23,10 @@ export default function Friends() {
             
             },
         });
-        const firends: any[] = response.data;
+        const friends: any[] = response.data;
 
         const FriendInfo = await Promise.all(
-            firends.map(async (request) => {
+            friends.map(async (request) => {
             const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`);
             const authorData = {
               ...request,
@@ -36,7 +36,7 @@ export default function Friends() {
             return authorData;
           })
         );
-        console.log('Friend Requests:', FriendInfo);
+        console.log('Friends:', FriendInfo);
         setData(FriendInfo);
 
       } catch (error) {

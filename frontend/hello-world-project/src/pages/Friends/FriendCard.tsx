@@ -32,7 +32,7 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
 
   const handleUnfriend = async () => {
     try {
-      const response = await axios.post(`${APIURL}/frequests/delete/${data.id}/`, {
+      const response = await axios.delete(`${APIURL}/frequests/delete/${data.id}/`, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -49,7 +49,7 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
   if (shareList) {
     return(
       <div className="shareListCard" onClick={onClick}>
-        <img src={profilePicture} alt="" className="shareListImg" />
+        <img src={`${APIURL}${data.sender.profilePicture}`} alt="" className="shareListImg" />
         <div className="shareListUsername">
           <span>{data.sender.displayName}</span>
         </div>
@@ -61,7 +61,7 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
     return (
       
       <div className="FriendCard">
-        <img src={profilePicture} alt="" className="friendCardImg" />
+        <img src={`${APIURL}${data.sender.profilePicture}`} alt="" className="friendCardImg" />
         <div className="friendCardUsername">
             <span >{data.sender.displayName}</span>
         </div>

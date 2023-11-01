@@ -63,4 +63,13 @@ const verifySession = async() => {
     }
 }
 
-export {login, signup, verifySession}
+const logout = async() => {
+    try {
+        const response = await axios.post(`${APIURL}/signout/`)
+        return response.status === 200
+    } catch (err) {
+        return false
+    }
+}
+
+export {login, signup, verifySession, logout}

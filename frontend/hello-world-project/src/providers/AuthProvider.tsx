@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { LoginInterface, SignUpInterface, login, signup, verifySession } from "../api/auth"
+import { LoginInterface, SignUpInterface, login, signup, verifySession, logout } from "../api/auth"
 
 const AuthContext = createContext<any>({});
 
@@ -38,9 +38,10 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   // call this function to sign out logged in user
-  const logoutUser = () => {
-    setUser(false);
-    navigate("/login", { replace: true });
+  const logoutUser = async () => {
+    await logout()
+    setUser(false)
+    navigate("/login", { replace: true })
   };
 
   // call this function to verify the current session token

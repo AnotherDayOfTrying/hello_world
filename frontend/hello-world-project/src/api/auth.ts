@@ -65,7 +65,7 @@ const verifySession = async() => {
 
 const logout = async() => {
     try {
-        const response = await axios.get(`${APIURL}/signout/`)
+        const response = await axios.post(`${APIURL}/signout/`)
         return response.status === 200
     } catch (err) {
         return false

@@ -91,7 +91,7 @@ class DeleteFriend(generics.CreateAPIView):
 
 class GetComment(generics.ListAPIView):
     
-    serializer_class = PostCommentSerializer
+    serializer_class = GetCommentSerializer
     
     def get(self, request, post_id):
         authors = Comment.objects.filter(post=post_id)

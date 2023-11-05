@@ -5,14 +5,14 @@ import { LoginInterface, SignUpInterface, login, signup, verifySession, logout }
 const AuthContext = createContext<any>({});
 
 export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState<boolean>(false)
+  const [user, setUser] = useState<string>('')
   const [verifiedSession, setVerifiedSession] = useState<boolean>(false) 
   const navigate = useNavigate()
 
   useEffect(() => {
     verifySession()
-      .then((verified) => {
-        setUser(verified)
+      .then((data) => {
+        setUser(localStorage.getItem('user_token') || '')
         setVerifiedSession(true)
       })
   },[]) // only run once on load
@@ -20,7 +20,9 @@ export const AuthProvider = ({ children }: any) => {
   // call this function to sign up a user
   const signupUser = async(data: SignUpInterface) => {
     const response = await signup(data)
-    if (response?.data) {
+    setUser(response.token)
+    localStorage.setItem('user_token', response.token || '')
+    if (response.token) {
       navigate("/login")
     }
     return response
@@ -29,9 +31,10 @@ export const AuthProvider = ({ children }: any) => {
   // call this function when you want to authenticate the user
   const loginUser = async (data: LoginInterface) => {
     const response = await login(data);
+    setUser(response.token)
+    localStorage.setItem('user_token', response.token || '')
     if (await verifySession()) {
-      setUser(true);
-      navigate("/home");
+      navigate("/home")
     }
 
     return response
@@ -40,14 +43,9 @@ export const AuthProvider = ({ children }: any) => {
   // call this function to sign out logged in user
   const logoutUser = async () => {
     await logout()
-    setUser(false)
+    setUser('')
     navigate("/login", { replace: true })
   };
-
-  // call this function to verify the current session token
-  const verifyUserSession = async () => {
-    setUser(await verifySession())
-  }
 
   const value = useMemo(
     () => ({
@@ -56,7 +54,6 @@ export const AuthProvider = ({ children }: any) => {
       signupUser,
       loginUser,
       logoutUser,
-      verifyUserSession,
     }),
     [user, verifiedSession]
   );

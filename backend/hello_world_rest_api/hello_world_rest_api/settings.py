@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'authors',
     'drf_yasg',
     'api',
@@ -140,9 +141,8 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
-        'api.authentication.CsrfExemptSessionAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
@@ -177,3 +177,13 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
 django_on_heroku.settings(locals())
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}

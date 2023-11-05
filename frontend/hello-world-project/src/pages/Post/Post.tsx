@@ -4,7 +4,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import ClearIcon from '@mui/icons-material/Clear';
 import Leftbar from '../../components/leftbar/Leftbar';
 import axios, { AxiosError } from "axios";
-import APIURL from "../../api/config";
+import APIURL, { getAuthorizationHeader } from "../../api/config";
 
 
 export default function PostShare() {
@@ -42,7 +42,8 @@ export default function PostShare() {
         try {
             const response = await axios.post(`${APIURL}/post/upload/`, formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data', 
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: getAuthorizationHeader(),
                 }
             });
             const responseData: any = response.data;

@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import './friendCard.css'
 import { NavLink } from 'react-router-dom';
-import APIURL from "../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
 
 
@@ -35,6 +35,7 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
       const response = await axios.delete(`${APIURL}/frequests/delete/${data.id}/`, {
         headers: {
           "Content-Type": "application/json",
+          Authorization: getAuthorizationHeader(),
         },
       });
       const responseData = await response.data;

@@ -1,15 +1,11 @@
 import React, {useState} from 'react'
 import SearchIcon from '@mui/icons-material/Search';
 import './authorSearch.css'
-import APIURL from "../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import Popup from 'reactjs-popup';
 import { Alert } from '@mui/material';
 
-
-axios.defaults.withCredentials = true // required to send session cookies with api requests
-axios.defaults.xsrfCookieName = 'csrftoken'
-axios.defaults.xsrfHeaderName = 'x-csrftoken'
 
 function AuthorSearch() {
   const [displayName, setDisplayName] = useState<string>('');
@@ -24,7 +20,7 @@ function AuthorSearch() {
       const response = await axios.get(`${APIURL}/authors/`, {
         headers: {
           "Content-Type": "application/json",
-          
+          Authorization: getAuthorizationHeader(),
         },
       });
       const responseData: any[]  = response.data.items;
@@ -71,6 +67,7 @@ function AuthorSearch() {
             {
               headers: {
                 'Content-Type': 'application/json',
+                Authorization: getAuthorizationHeader(),
               }
             });
             const status = response.status;

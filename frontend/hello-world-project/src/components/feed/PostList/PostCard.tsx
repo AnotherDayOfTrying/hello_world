@@ -13,7 +13,7 @@ import Linkify from 'react-linkify';
 import Comment from './Comment';
 import Popup from 'reactjs-popup';
 import axios, { AxiosError } from "axios"
-import APIURL from "../../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../../api/config"
 
 
   
@@ -45,6 +45,7 @@ const PostCard = ({ data  }: PostCardProps) => {
             {
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: getAuthorizationHeader(),
             }
             });
             const responseData: any = response.data;
@@ -68,6 +69,7 @@ const PostCard = ({ data  }: PostCardProps) => {
             {
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: getAuthorizationHeader(),
             }
             });
             const responseData: any = response.data;
@@ -86,7 +88,7 @@ const PostCard = ({ data  }: PostCardProps) => {
 const fetchUserInfo = async () => {
     console.log('Fetching user information...', data.author);
     try {
-        const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`);
+        const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
         console.log('Author Data:', authorResponse.data);
       setUserInfo(authorResponse.data); 
         return authorResponse.data;
@@ -132,7 +134,7 @@ const fetchUserInfo = async () => {
             const response = await axios.get(`${APIURL}/authors/friends/`, {
                 headers: {
                 "Content-Type": "application/json",
-                
+                Authorization: getAuthorizationHeader(),
                 },
             });
             const friends: any[] = response.data;
@@ -140,7 +142,7 @@ const fetchUserInfo = async () => {
             await Promise.all(
                 friends.map(async (request) => {
                     try {
-                        const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`);
+                        const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
                         const authorData = {
                             sender: authorResponse.data,
                         };

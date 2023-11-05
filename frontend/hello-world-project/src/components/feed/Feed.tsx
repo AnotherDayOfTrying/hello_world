@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import './feed.css'
 import Share from '../../pages/Post/Post'
 import Posts from './PostList/Posts'
-import APIURL from "../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
 
 interface FeedProps {
@@ -18,13 +18,13 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
       try {
         let response;
         if (isPrivate) {
-          response = await axios.get(`${APIURL}/posts/private/`);
+          response = await axios.get(`${APIURL}/posts/private/`, {headers: {Authorization: getAuthorizationHeader()}});
         } else if (isUnlisted) {
-          response = await axios.get(`${APIURL}/posts/unlisted/`);
+          response = await axios.get(`${APIURL}/posts/unlisted/`, {headers: {Authorization: getAuthorizationHeader()}});
         } else if (ismessages) {
-          response = await axios.get(`${APIURL}/author/messages/`);
+          response = await axios.get(`${APIURL}/author/messages/`, {headers: {Authorization: getAuthorizationHeader()}});
         } else {
-          response = await axios.get(`${APIURL}/post/getpublic/`);
+          response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});
         }
 
         const responseData: any[] = response.data.items;

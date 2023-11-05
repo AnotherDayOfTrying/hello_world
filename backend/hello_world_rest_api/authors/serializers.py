@@ -96,6 +96,18 @@ class PostCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Comment
+        fields = ('comment', 'time')
+        
+    def create(self, validated_data):
+        comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
+        comment.save()
+        return comment
+
+class GetCommentSerializer(serializers.ModelSerializer):
+    comment = serializers.CharField()
+    
+    class Meta:
+        model = Comment
         fields = ('comment', 'time', 'author')
         
     def create(self, validated_data):

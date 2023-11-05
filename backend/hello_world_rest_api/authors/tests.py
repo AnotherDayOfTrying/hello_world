@@ -63,7 +63,7 @@ class SignupTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertTrue(Author.objects.filter(username = self.username).exists())
         
-class SiginTests(TestCase):
+class SigninTests(TestCase):
     
     def setUp(self):
         self.author = self.author = Author.objects.create_user(

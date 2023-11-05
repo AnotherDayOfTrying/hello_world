@@ -53,7 +53,7 @@ class Signin(generics.CreateAPIView):
 class SendFriendRequest(generics.CreateAPIView):
     
     serializer_class = SendFriendRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
@@ -65,7 +65,7 @@ class SendFriendRequest(generics.CreateAPIView):
 class FriendRequestResponse(generics.CreateAPIView):
 
     serializer_class = RespondFriendRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, friendship_id):
         friendship = get_object_or_404(Friendship, id=friendship_id)
@@ -78,7 +78,7 @@ class FriendRequestResponse(generics.CreateAPIView):
 class DeleteFriend(generics.CreateAPIView):
     
     #serializer_class = DeleteFriendSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def delete(self, request, friendship_id):
         friendship = get_object_or_404(Friendship, id=friendship_id)
@@ -97,7 +97,7 @@ class DeleteFriend(generics.CreateAPIView):
 class GetComment(generics.ListAPIView):
     
     serializer_class = PostCommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, post_id):
         authors = Comment.objects.filter(post=post_id)
@@ -111,7 +111,7 @@ class GetComment(generics.ListAPIView):
 class PostComment(generics.CreateAPIView):
     
     serializer_class = PostCommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, post_id):
         post = get_object_or_404(Post, id=post_id)
@@ -123,7 +123,7 @@ class PostComment(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getAllAuthors(request):
     authors  = Author.objects.filter(is_approved=True,displayName__isnull=False)
     serializer = AuthorSerializer(authors, many=True)
@@ -134,7 +134,7 @@ def getAllAuthors(request):
     return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET','POST'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getOneAuthor(request, author_id):
     author = get_object_or_404(Author,id=author_id)
     if request.method == 'GET':
@@ -148,7 +148,7 @@ def getOneAuthor(request, author_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getFriendRequests(request):
     author = request.user
     friends = Friendship.objects.filter(reciever=author,status=1)
@@ -156,7 +156,7 @@ def getFriendRequests(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getFriends(request):
     author = request.user
     friends = Friendship.objects.filter(reciever=author,status__in=[2,3])
@@ -167,7 +167,7 @@ def getFriends(request):
 class Liking(generics.CreateAPIView):
     
     serializer_class = LikeingSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         author = request.user
@@ -184,7 +184,7 @@ class Liking(generics.CreateAPIView):
 class Unliking(generics.CreateAPIView):
     
     # serializer_class = UnlikingSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     
     def delete(self, request, like_id):
         like = get_object_or_404(Like, id=like_id)
@@ -201,7 +201,7 @@ class Unliking(generics.CreateAPIView):
 class UploadPost(generics.CreateAPIView):
 
     serializer_class = UploadPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'author': request.user})
@@ -219,7 +219,7 @@ class UploadPost(generics.CreateAPIView):
 class EditPost(generics.CreateAPIView):
 
     serializer_class = EditPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'author': request.user})
         if serializer.is_valid():
@@ -236,7 +236,7 @@ class EditPost(generics.CreateAPIView):
 class DeletePost(generics.CreateAPIView):
 
     serializer_class = EditPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, post_id):
         post = get_object_or_404(Post, id=post_id)
@@ -247,7 +247,7 @@ class DeletePost(generics.CreateAPIView):
 class GetPublicPost(generics.CreateAPIView):
 
     serializer_class = GetPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         public_posts = Post.objects.filter(privacy='PUBLIC')
@@ -259,21 +259,21 @@ class GetPublicPost(generics.CreateAPIView):
         return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getlikesonpost(request, author_id, post_id):
     post_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=post_id)
     serializer = LikeSerializer(post_likes, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getlikesoncomment(request, author_id, post_id, comment_id):
     comment_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=comment_id)
     serializer = LikeSerializer(comment_likes, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
+# @permission_classes([permissions.IsAuthenticated])
 def getlikesfromauthor(request, author_id):
     author = Author.objects.get(id=author_id)
     likes = Like.objects.filter(liker=author)

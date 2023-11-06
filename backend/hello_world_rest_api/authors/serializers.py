@@ -16,7 +16,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     github = serializers.URLField(required = False, allow_blank = True, max_length = 255)
     class Meta:
         model = Author
-        fields = ('username', 'password','password2', 'displayName','github')
+        fields = ('id', 'username', 'password','password2', 'displayName','github')
     def create(self, validated_data):
         user = Author.objects.create_user(
             username = validated_data['username'],
@@ -212,3 +212,8 @@ class LikeSerializer(serializers.ModelSerializer):
         if isinstance(object.content_object, Comment):
             return {'comment_id': object.content_object.id}
         return str(object.content_object)
+
+from rest_framework.authtoken.models import Token
+
+for user in Author.objects.all():
+    Token.objects.get_or_create(user=user)

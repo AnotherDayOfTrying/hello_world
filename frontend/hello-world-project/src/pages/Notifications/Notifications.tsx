@@ -5,11 +5,7 @@ import NotificationCard from './NotificationCard';
 import './notifications.css';
 import { PostData } from '../../components/feed/PostList/data/postsData';
 import axios, { AxiosError } from "axios";
-import APIURL from "../../api/config";
-
-axios.defaults.withCredentials = true; // required to send session cookies with api requests
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'x-csrftoken';
+import APIURL, { getAuthorizationHeader } from "../../api/config";
 
 export default function Notifications() {
   const [data, setData] = useState<any>(null);
@@ -19,13 +15,14 @@ export default function Notifications() {
         const response = await axios.get(`${APIURL}/authors/requests/`, {
           headers: {
             "Content-Type": "application/json",
+            Authorization: getAuthorizationHeader(),
           },
         });
         const friendRequests: any[] = response.data;
 
         const requestsWithAuthors = await Promise.all(
           friendRequests.map(async (request) => {
-            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`);
+            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
             const authorData = {
               ...request,
               sender: authorResponse.data,

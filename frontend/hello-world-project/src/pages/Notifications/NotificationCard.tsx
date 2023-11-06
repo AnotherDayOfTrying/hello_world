@@ -1,6 +1,6 @@
 import React from 'react'
 import './notificationCard.css'
-import APIURL from "../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
 
   
@@ -20,6 +20,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
       {
         headers: {
           'Content-Type': 'application/json',
+          Authorization: getAuthorizationHeader(),
         }
       });
       const responseData: any = response.data;
@@ -41,6 +42,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
       {
         headers: {
           'Content-Type': 'application/json',
+          Authorization: getAuthorizationHeader(),
         }
       });
       const responseData: any = response.data;

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from rest_framework.authtoken.admin import TokenAdmin
 # Register your models here.
 
 @admin.register(Author)
@@ -18,3 +19,5 @@ admin.site.register(Post)
 admin.site.register(Comment)
 admin.site.register(Like)
 admin.site.register(Friendship)
+
+TokenAdmin.raw_id_fields = ['user']

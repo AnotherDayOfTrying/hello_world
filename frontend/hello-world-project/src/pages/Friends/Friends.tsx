@@ -3,7 +3,7 @@ import FriendsCard from './FriendCard'
 import Leftbar from '../../components/leftbar/Leftbar';
 import './friends.css'
 import FriendSearch from './FriendSearch';
-import APIURL from "../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
 
 
@@ -20,14 +20,14 @@ export default function Friends() {
         const response = await axios.get(`${APIURL}/authors/friends/`, {
             headers: {
             "Content-Type": "application/json",
-            
+            Authorization: getAuthorizationHeader(),
             },
         });
         const friends: any[] = response.data;
 
         const FriendInfo = await Promise.all(
             friends.map(async (request) => {
-            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`);
+            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
             const authorData = {
               ...request,
               sender: authorResponse.data,

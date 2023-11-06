@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import './comment.css';
 import CommentCard from './CommentCard';
 import axios, { AxiosError } from "axios"
-import APIURL from "../../../api/config"
+import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import SendIcon from '@mui/icons-material/Send';
 import { setTokenSourceMapRange } from 'typescript';
 
@@ -22,14 +22,14 @@ const Comment: React.FC<CommentProps> = ({ postID }) => {
       const response = await axios.get(`${APIURL}/comments/get/${postID}`, {
           headers: {
           "Content-Type": "application/json",
-          
+          Authorization: getAuthorizationHeader(),
           },
       });
       const comments: any[] = response.data.items;
 
       const commentsWithAuthors = await Promise.all(
           comments.map(async (request) => {
-          const authorResponse = await axios.get(`${APIURL}/authors/${request.author}`);
+          const authorResponse = await axios.get(`${APIURL}/authors/${request.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
           const authorData = {
             ...request,
             author: authorResponse.data,
@@ -61,6 +61,7 @@ const Comment: React.FC<CommentProps> = ({ postID }) => {
       {
       headers: {
           'Content-Type': 'application/json',
+          Authorization: getAuthorizationHeader(),
       }
       });
       const responseData: any = response.data;

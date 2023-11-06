@@ -14,10 +14,6 @@ export interface SignUpInterface {
     github: string,
 }
 
-axios.defaults.withCredentials = true // required to send session cookies with api requests
-axios.defaults.xsrfCookieName = 'csrftoken'
-axios.defaults.xsrfHeaderName = 'x-csrftoken'
-
 
 const login = async (signinDetails: LoginInterface) => {
     try {
@@ -56,8 +52,12 @@ const signup = async (signupDetails: SignUpInterface) => {
 
 const verifySession = async() => {
     try {
-        const response = await axios.get(`${APIURL}/api/session/`)
-        return response.status === 200
+        const response = await axios.get(`${APIURL}/api/session/`, {
+            headers: {
+                "Authorization": "Token " + localStorage.getItem('user_token'),
+            }
+        })
+        return response.status === 200;
     } catch (err) {
         return false
     }
@@ -65,8 +65,8 @@ const verifySession = async() => {
 
 const logout = async() => {
     try {
-        const response = await axios.post(`${APIURL}/signout/`)
-        return response.status === 200
+        localStorage.removeItem('user_token')
+        return true
     } catch (err) {
         return false
     }

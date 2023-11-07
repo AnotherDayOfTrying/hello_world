@@ -56,7 +56,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    Priv_Choices = [('PUBLIC', 'Public'), ('FRIENDS', 'Friends Only'), ('PRIVATE', 'Private')]
+    Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]
     privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
     # For now content is text, but set up options for content 
     content_choices = [('TEXT', 'Text'), ('IMAGE', 'Image')]

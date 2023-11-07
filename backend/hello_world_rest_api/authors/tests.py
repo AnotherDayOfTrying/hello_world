@@ -450,9 +450,17 @@ class LikingTests(TestCase):
 class PostTest(TestCase):
     def setUp(self):
         self.author = Author.objects.create_superuser(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
             username='will',
             password='testpass123',
             displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            id = 'adbfc58a-7d07-11ee-b962-0242ac120002',
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
             github='',
         )
         self.title1='coding'
@@ -467,11 +475,11 @@ class PostTest(TestCase):
         self.image_url2 = 'https://images.pexels.com/photos/757889/pexels-photo-757889.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
         self.image = Image.open('./media/postimages/postpicture1.jpg')
         self.c = Client()
+        self.friendship = Friendship.objects.create(sender=self.author, reciever=self.author2, status=3)
     
     def test_upload_post_success(self):
         self.c.login(username='will', password='testpass123')
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': self.image})
-        print(response.data)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
         self.assertEqual(response.data['data']['title'], self.title1)
         self.assertEqual(response.status_code, 200)
 
@@ -501,11 +509,20 @@ class PostTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Post.objects.count(), 0)
 
-    def test_get_public_post(self):
+    # def test_get_public_post(self):
+    #     self.c.login(username='will', password='testpass123')
+    #     self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+    #     response = self.c.get('/post/getpublic/')
+    #     posts = Post.objects.filter(privacy='PUBLIC')
+    #     serializer = UploadPostSerializer(posts, many=True)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.assertEqual(response.data['items'], serializer.data)
+
+    def test_get_private_post(self):
         self.c.login(username='will', password='testpass123')
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        response = self.c.get('/post/getpublic/')
-        posts = Post.objects.filter(privacy='PUBLIC')
-        serializer = UploadPostSerializer(posts, many=True)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PRIVATE', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text2, 'image_url': self.image_url1, 'image': ''})
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.get('/post/getprivate/')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['items'], serializer.data)

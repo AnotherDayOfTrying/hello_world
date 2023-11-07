@@ -259,6 +259,27 @@ class GetPublicPost(generics.CreateAPIView):
         return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
+def getPrivatePost(request):
+    author = request.user
+    friends = Friendship.objects.filter(reciever=author,status__in=[2,3])
+    serializer = FriendShipSerializer(friends, many=True)
+    friends = []
+    for friendship in serializer.data:
+        friends.append(friendship['sender'])
+        friends.append(friendship['reciever'])
+    friends = set(friends)
+    response = {"type": "posts",}
+    num = 1
+    for friend in friends:
+        author = Author.objects.filter(id=friend)
+        posts = Post.objects.filter(author__in = author, privacy='PRIVATE')
+        serializer = GetPostSerializer(posts, many = True)
+        if serializer.data:
+            response[f"friend{num}"] = serializer.data
+            num += 1
+    return Response(response, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])
 def getlikesonpost(request, author_id, post_id):
     post_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=post_id)

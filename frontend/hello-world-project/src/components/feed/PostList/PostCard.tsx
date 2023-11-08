@@ -12,15 +12,22 @@ import * as linkify  from 'linkifyjs';
 import Linkify from 'react-linkify';
 import Comment from './Comment';
 import Popup from 'reactjs-popup';
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 import APIURL, { getAuthorizationHeader } from "../../../api/config"
+import Slider from "react-slick";
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
+type Image = {
+    id: number;
+    image: string;
+  }
 
-  
 type PostCardProps = {
     data: any;
 };
-  
+
+
 const PostCard = ({ data  }: PostCardProps) => {
     const [likes, setLikes] = React.useState(120);
     const [isliked, setIsLiked] = React.useState(false);
@@ -85,37 +92,37 @@ const PostCard = ({ data  }: PostCardProps) => {
         
 
 };
-const fetchUserInfo = async () => {
-    console.log('Fetching user information...', data.author);
-    try {
-        const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
-        console.log('Author Data:', authorResponse.data);
-      setUserInfo(authorResponse.data); 
-        return authorResponse.data;
-    } catch (error) {
-      console.error('Error fetching user information: ', error);
-    }
-  };
+    const fetchUserInfo = async () => {
+        console.log('Fetching user information...', data.author);
+        try {
+            const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
+            console.log('Author Data:', authorResponse.data);
+        setUserInfo(authorResponse.data); 
+            return authorResponse.data;
+        } catch (error) {
+        console.error('Error fetching user information: ', error);
+        }
+    };
 
-  useEffect(() => {
-    fetchUserInfo(); // Fetch user information when component mounts
-  }, [data]);
+    useEffect(() => {
+        fetchUserInfo(); // Fetch user information when component mounts
+    }, [data]);
 
     const renderDescription = (description: string) => {
         if (linkify.test(description)) {
-          return (
-            <div style={{fontSize : 17}}>
+            return (
+            <div style={{fontSize : 17, wordWrap: 'break-word'}}>
                 <Linkify >{description}</Linkify> 
             </div>
-          );
+            );
         } else {
-          return (
+            return (
             <div style={{fontSize : 2}}>
                 <ReactMarkdown>{description}</ReactMarkdown>
             </div>
             );
         }
-      };
+        };
     
     useEffect(() => {
         if (isAlertVisible) {
@@ -146,7 +153,7 @@ const fetchUserInfo = async () => {
                         const authorData = {
                             sender: authorResponse.data,
                         };
-                        authorFriends.push(authorData); // Use push() instead of append() to add elements to an array
+                        authorFriends.push(authorData); 
                     } catch (error) {
                         console.log("Error fetching author data:", error);
                     }
@@ -177,6 +184,17 @@ const fetchUserInfo = async () => {
         }
         
     };
+
+    const settings = {
+        dots: true,
+        infinite: true,
+        speed: 500,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        swipeToSlide: true,
+        arrows: true,
+    };
+
     return (
         <div className="PostCard">
             <div className="postTop">
@@ -187,8 +205,12 @@ const fetchUserInfo = async () => {
             </div>
             {/* check if there is description and if so render it as markdown */}
             {data.text && renderDescription(data.text)}
-            {console.log("data image: ",data.image)}
-            {data.image && <img src={`${APIURL}${data.image}`} alt="title" />}
+            {console.log("data image: ",data.images)}
+            <Slider {...settings}>
+                {data.images && data.images.map((image: Image) => (
+                    <img className="postImage" key={image.id} src={`${APIURL}${image.image}`} alt="title" />
+                    ))}
+            </Slider>
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
                 <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '40%', height: 'auto' }}>

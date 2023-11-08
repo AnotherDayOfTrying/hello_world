@@ -96,7 +96,7 @@ class DeleteFriend(generics.CreateAPIView):
 
 class GetComment(generics.ListAPIView):
     
-    serializer_class = PostCommentSerializer
+    serializer_class = GetCommentSerializer
     # permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request, post_id):
@@ -204,16 +204,29 @@ class UploadPost(generics.CreateAPIView):
     # permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data, context={'author': request.user})
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'message': 'Post created successfully',
-                'id': serializer.data['id'],
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        title = request.data.get('title')
+        content_type = request.data.get('content_type')
+        privacy = request.data.get('privacy')
+        text = request.data.get('text')
+        image_files = request.FILES.getlist('images')
+        post = Post.objects.create(
+            author=request.user,
+            title=title,
+            content_type=content_type,
+            privacy=privacy,
+            text=text,
+            
+        )
+        image_files = request.FILES.getlist('images')
+        for image_file in image_files:
+            post_image = PostImage.objects.create(post=post, image=image_file)
+            post.images.add(post_image)
+        serializer = self.serializer_class(post)
+        response_data = {
+            'message': 'Post created successfully',
+            'data': serializer.data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
     
 
 class EditPost(generics.CreateAPIView):

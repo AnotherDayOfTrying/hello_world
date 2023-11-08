@@ -26,7 +26,7 @@ const Comment: React.FC<CommentProps> = ({ postID }) => {
           },
       });
       const comments: any[] = response.data.items;
-
+      console.log('comments:', comments);
       const commentsWithAuthors = await Promise.all(
           comments.map(async (request) => {
           const authorResponse = await axios.get(`${APIURL}/authors/${request.author}`, {headers: {Authorization: getAuthorizationHeader(),}});

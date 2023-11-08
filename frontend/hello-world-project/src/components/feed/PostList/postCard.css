@@ -1,16 +1,17 @@
 .PostCard{
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding: 1.5rem;
     background-color: rgba(255, 255, 255, 0.64);
     gap: 1rem;
 }
 
-.PostCard>img{
+.postImage{
     width: 100%;
     max-height: 20rem;
-    object-fit: cover;
+    object-fit: fill;
     border-radius: 0.5rem;
+
 }
 
 .reactions{
@@ -46,6 +47,29 @@
 
 .postText{
     font-size: small;
+}
+
+
+.slick-next:before {
+  color: #bababa!important;
+
+}
+
+.slick-prev:before{
+    color: #bababa!important;
+}
+
+.slick-next{
+    margin-right: 3px;
+}
+
+.slick-prev{
+    margin-left: 3px;
+}
+
+/* remove hover effect */
+.slick-next:hover, .slick-prev:hover {
+    display: none!important;
 }
 
 

@@ -5,23 +5,31 @@ import ClearIcon from '@mui/icons-material/Clear';
 import Leftbar from '../../components/leftbar/Leftbar';
 import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
+import Popup from 'reactjs-popup';
+import { Alert } from '@mui/material';
 
 
 export default function PostShare() {
-    const [image, setImage] = useState<any | null>(null);
+    const [images, setImages] = useState<any[]>([]);
     const ImageRef = React.createRef<HTMLInputElement>()
     const [text, setText] = useState<string>('');
+    const [open, setOpen] = useState<boolean>(false);
     
 
 
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        if (event.target.files && event.target.files[0]) {
-          let img: File = event.target.files[0];
-          setImage({
-            image: URL.createObjectURL(img),
-          });
-        }
-      }
+        if (event.target.files) {
+            const newImages: Array<any> = [];
+            for (let i = 0; i < event.target.files.length; i++) {
+                const img: File = event.target.files[i];
+                newImages.push({
+                    id: i,
+                    image: URL.createObjectURL(img),
+                    imageFile: img,
+                });
+            }
+            setImages(newImages);
+        }}
 
     const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>): void => {
         setText(event.target.value); 
@@ -33,11 +41,9 @@ export default function PostShare() {
         formData.append('content_type', 'TEXT');
         formData.append('privacy', privacy);
         formData.append('text', text);
-        if (ImageRef.current && ImageRef.current.files) {
-            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
-            formData.append('image', ImageRef.current.files[0]);
-            
-        }
+        const postImages = images.map((image) => image.imageFile);
+        postImages.forEach((image) => formData.append('images', image));
+        console.log('Form Data:', formData);
 
         try {
             const response = await axios.post(`${APIURL}/post/upload/`, formData, {
@@ -47,12 +53,28 @@ export default function PostShare() {
                 }
             });
             const responseData: any = response.data;
+            showPopUp();
             console.log('post upload response:', responseData);
             return responseData;
         } catch (error: any) {
             console.log(error);
         };      
 
+    };
+    const showPopUp = () => {
+        setImages([]);
+        setText('');
+        setOpen(true);
+        console.log('Open:', open);
+        // Close the popup after 3 seconds (3000 milliseconds)
+        setTimeout(() => {
+        setOpen(false);
+      }, 3000);
+      }
+    
+    const removeImage = (id: number) => {
+        const updatedImages = images.filter((img) => img.id !== id);
+        setImages(updatedImages);
     };
 
   return (
@@ -82,15 +104,23 @@ export default function PostShare() {
                             name="imagePost" 
                             accept=".png,.jpeg,.jpg" 
                             ref={ImageRef} 
-                            onChange={onImageChange} />
+                            onChange={onImageChange}
+                            multiple />
                         </div>
                     </div>
-                    {image && (
-                        <div className="imagePreview">
-                            <ClearIcon onClick={() => setImage(null)}/>
-                            <img src={image.image} alt="" />
+                    {images.length > 0 && (
+                        <div className="images">
+                            {images.map((img) => (
+                                <div key={img.id} className="imagePreview">
+                                    <ClearIcon onClick={() => removeImage(img.id)} />
+                                    <img src={img.image} alt="" />
+                                </div>
+                            ))}
                         </div>
                     )}
+                    <Popup  open={open} contentStyle={{width: "50%"}}  >
+                        <Alert severity={"success"}>Post created successfully!</Alert>
+                    </Popup>
                 </div>
             
             </div>

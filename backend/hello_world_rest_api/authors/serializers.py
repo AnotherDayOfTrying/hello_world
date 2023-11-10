@@ -167,11 +167,6 @@ class UploadPostSerializer(serializers.ModelSerializer):
         for image_data in images_data:
             PostImage.objects.create(post=post, **image_data)
         return post
-    
-class PostImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PostImage
-        fields = ('id', 'image')
 
 class GetPostSerializer(serializers.ModelSerializer):
     images = PostImageSerializer(many=True)

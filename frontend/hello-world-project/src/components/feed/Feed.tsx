@@ -18,15 +18,15 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
       try {
         let response;
         if (isPrivate) {
-          response = await axios.get(`${APIURL}/posts/private/`, {headers: {Authorization: getAuthorizationHeader()}});
+          response = await axios.get(`${APIURL}/post/getprivate/`, {headers: {Authorization: getAuthorizationHeader()}});
         } else if (isUnlisted) {
-          response = await axios.get(`${APIURL}/posts/unlisted/`, {headers: {Authorization: getAuthorizationHeader()}});
+          response = await axios.get(`${APIURL}/post/getunlisted/`, {headers: {Authorization: getAuthorizationHeader()}});
         } else if (ismessages) {
-          response = await axios.get(`${APIURL}/author/messages/`, {headers: {Authorization: getAuthorizationHeader()}});
+          response = await axios.get(`${APIURL}/author/getmessages/`, {headers: {Authorization: getAuthorizationHeader()}});
         } else {
           response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});
         }
-
+        console.log('Response:', response.data);
         const responseData: any[] = response.data.items;
         setData(responseData);
         console.log('Fetched posts:', responseData[0]);

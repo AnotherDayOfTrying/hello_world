@@ -29,7 +29,6 @@ type PostCardProps = {
 
 
 const PostCard = ({ data  }: PostCardProps) => {
-    const [likes, setLikes] = React.useState(120);
     const [isliked, setIsLiked] = React.useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [friendsList, setFriendsList] = useState<any[]>([]);
@@ -45,7 +44,6 @@ const PostCard = ({ data  }: PostCardProps) => {
 
     const handleLike = async () => {
         if (isliked) {
-            setLikes(likes - 1);
             setIsLiked(!isliked);
             try {
             const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
@@ -65,7 +63,6 @@ const PostCard = ({ data  }: PostCardProps) => {
         };
             
         } else {
-            setLikes(likes + 1);
             setIsLiked(!isliked);
             try {
             const response = await axios.post(`${APIURL}/likes/`,
@@ -105,7 +102,7 @@ const PostCard = ({ data  }: PostCardProps) => {
     };
 
     useEffect(() => {
-        fetchUserInfo(); // Fetch user information when component mounts
+        fetchUserInfo(); 
     }, [data]);
 
     const renderDescription = (description: string) => {
@@ -220,7 +217,6 @@ const PostCard = ({ data  }: PostCardProps) => {
                     { <PopupContent />}
                 </Popup>
             </div>
-            <span>{likes} likes</span>
         </div>
     );
 };

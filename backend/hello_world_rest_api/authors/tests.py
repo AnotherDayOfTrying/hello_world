@@ -516,7 +516,9 @@ class PostTest(TestCase):
 
     def test_upload_post_fail(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.wrong_content_type, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(Post.objects.count(), 0)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.wrong_content_type, 'privacy': 'wrong privcay', 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(Post.objects.count(), 0)
         self.assertEqual(response.status_code, 400)
         self.c.credentials()
 
@@ -543,14 +545,14 @@ class PostTest(TestCase):
         self.assertEqual(Post.objects.count(), 0)
         self.c.credentials()
 
-    # def test_get_public_post(self):
-    #     self.c.login(username='will', password='testpass123')
-    #     self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-    #     response = self.c.get('/post/getpublic/')
-    #     posts = Post.objects.filter(privacy='PUBLIC')
-    #     serializer = UploadPostSerializer(posts, many=True)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(response.data['items'], serializer.data)
+    def test_get_public_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privcay, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.get('/post/getpublic/')
+        posts = Post.objects.filter(privacy='PUBLIC')
+        serializer = UploadPostSerializer(posts, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['items'], serializer.data)
 
     def test_get_private_post(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
@@ -558,6 +560,15 @@ class PostTest(TestCase):
         self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text2, 'image_url': self.image_url1, 'image': ''})
         self.c.login(username='Joe', password='testpass123')
         response = self.c.get('/post/getprivate/')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.c.credentials()
+
+    def test_get_unlisted_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'UNLISTED', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.get('/post/getunlisted/')
+        unlisted_posts = Post.objects.filter(privacy='UNLISTED', author=self.author)
+        serializer = GetPostSerializer(unlisted_posts, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['items'], serializer.data)

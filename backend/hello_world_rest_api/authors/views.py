@@ -291,6 +291,17 @@ def getPrivatePost(request):
             response[f"friend{num}"] = serializer.data
             num += 1
     return Response(response, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getUnlistedPost(request):
+    author = request.user
+    unlisted_posts = Post.objects.filter(privacy='UNLISTED', author=author)
+    serializer = GetPostSerializer(unlisted_posts, many=True)
+    response = {
+        "type": "posts",
+        "items": serializer.data
+    }
+    return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])

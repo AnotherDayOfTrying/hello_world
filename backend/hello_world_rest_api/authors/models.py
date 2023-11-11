@@ -53,10 +53,6 @@ class Author(AbstractBaseUser, PermissionsMixin):
         return self.host + "authors/" + str(self.id)
     objects = UserManager()
 
-class PostImage(models.Model):
-    post = models.ForeignKey('Post', related_name='post_images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='postimages/')
-
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
@@ -66,7 +62,8 @@ class Post(models.Model):
     content_choices = [('TEXT', 'Text'), ('IMAGE', 'Image')]
     content_type = models.CharField(max_length=10, choices=content_choices, default='TEXT')
     text = models.CharField(max_length=200, blank=True, null=True)
-    images = models.ManyToManyField(PostImage, related_name='posts_images')
+    image_url = models.URLField(max_length=200, blank=True, null=True)
+    image = models.ImageField(upload_to='postimages/', blank=True, null=True)
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

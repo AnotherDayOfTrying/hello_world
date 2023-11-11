@@ -493,6 +493,7 @@ class PostTest(TestCase):
         )
         self.title1='coding'
         self.title2='warriors'
+        self.wrong_title = 1
         self.content_type1='TEXT'
         self.content_type2='IMAGE'
         self.privcay = 'PUBLIC'
@@ -517,7 +518,8 @@ class PostTest(TestCase):
     def test_upload_post_fail(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         self.assertEqual(Post.objects.count(), 0)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.wrong_content_type, 'privacy': 'wrong privcay', 'image_url': self.image_url1, 'image': ''})
+        response = self.c.post(f'/post/upload/', {'title': self.author, 'content_type': self.content_type1, 'privacy': self.privcay})
+        print(response.data)
         self.assertEqual(Post.objects.count(), 0)
         self.assertEqual(response.status_code, 400)
         self.c.credentials()

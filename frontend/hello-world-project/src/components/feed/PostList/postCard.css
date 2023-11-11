@@ -32,6 +32,12 @@
     width: 3rem;
     height: 3rem
 }
+.postOptions{
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-left: auto;
+}
 
 .postUsername{
     display: flex;

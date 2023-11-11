@@ -5,6 +5,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MailIcon from '@mui/icons-material/Mail';
 import PeopleIcon from '@mui/icons-material/People';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { NavLink } from 'react-router-dom';
 
@@ -50,6 +51,12 @@ export default function LeftbarList() {
                 <NavLink to="/friends" className="leftbarLink" end>
                   <PeopleIcon className="leftbarIcon"/>
                   <span className="leftbarListItemText"> Friends </span>
+                </NavLink>
+              </li>
+              <li className="leftbarListItem">
+                <NavLink to="/myposts" className="leftbarLink" end>
+                  <EditNoteIcon className="leftbarIcon"/>
+                  <span className="leftbarListItemText"> My Posts </span>
                 </NavLink>
               </li>
           </ul>

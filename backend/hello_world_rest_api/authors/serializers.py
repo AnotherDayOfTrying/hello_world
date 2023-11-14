@@ -149,39 +149,40 @@ class FriendShipSerializer(serializers.ModelSerializer):
         model = Friendship
         fields = ('id','sender', 'reciever', 'status')
 
-class PostImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PostImage
-        fields = ('id', 'image')
-
 class UploadPostSerializer(serializers.ModelSerializer):
-    images = PostImageSerializer(many=True)  
-
+    image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'images')
-
+        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
+   
     def create(self, validated_data):
-        images_data = validated_data.pop('images')
-        post = Post.objects.create(**validated_data)
-        for image_data in images_data:
-            PostImage.objects.create(post=post, **image_data)
-        return post
+        uploadPost = Post.objects.create(
+            author = self.context['author'],
+            title = validated_data['title'],
+            content_type = validated_data['content_type'],
+            privacy = validated_data['privacy'],
+            text = validated_data['text'],
+            image_url = validated_data['image_url'],
+            image = validated_data['image'],
+        )
+        return uploadPost
 
 class GetPostSerializer(serializers.ModelSerializer):
-    images = PostImageSerializer(many=True)
-
+    image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
     class Meta:
         model = Post
-        fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'images')
-
+        fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
     def create(self, validated_data):
-        images_data = validated_data.pop('images')
-        author = self.context['author']
-        post = Post.objects.create(**validated_data)
-        for image_data in images_data:
-            PostImage.objects.create(post=post, **image_data)
-        return post
+        GetPost = Post.objects.create(
+            author = self.context['author'],
+            title = validated_data['title'],
+            content_type = validated_data['content_type'],
+            privacy = validated_data['privacy'],
+            text = validated_data['text'],
+            image_url = validated_data['image_url'],
+            image = validated_data['image'],
+        )
+        return GetPost
     
 class EditPostSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=50, required = False, allow_blank = True)

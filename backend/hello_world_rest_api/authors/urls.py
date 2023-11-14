@@ -22,6 +22,7 @@ urlpatterns = [
     path('post/getpublic/', views.GetPublicPost.as_view(), name = 'get-public-post'),
     path('post/getprivate/', views.getPrivatePost, name = 'get-private-post'),
     path('post/getunlisted/', views.getUnlistedPost, name = 'get-unlisted-post'),
+    path('post/getowned/', views.getOwnPost, name = 'get-own-post'),
     path('authors/<uuid:author_id>/posts/<int:post_id>/likes/', views.getlikesonpost, name = 'getlikesonpost'),
     path('authors/<uuid:author_id>/posts/<int:post_id>/comments/<int:comment_id>/likes/', views.getlikesoncomment, name = 'getlikesoncomment'),
     path('authors/<uuid:author_id>/likes/', views.getlikesfromauthor, name = 'getlikesfromauthor'),

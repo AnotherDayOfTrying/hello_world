@@ -302,6 +302,17 @@ def getUnlistedPost(request):
         "items": serializer.data
     }
     return Response(response, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getOwnPost(request):
+    author = request.user
+    posts = Post.objects.filter(author=author)
+    serializer = GetPostSerializer(posts, many=True)
+    response = {
+        "type": "posts",
+        "items": serializer.data
+    }
+    return Response(response, status=status.HTTP_200_OK)
     
 @api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])

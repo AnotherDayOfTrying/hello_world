@@ -20,19 +20,34 @@ export default function PostShare() {
     const { state } = useLocation();
     const data = state as any;
 
+    const location = useLocation();
+
+    useEffect(() => {
+      // Fetch or update data based on the route change
+      console.log(location.pathname);
+      if (location.pathname === '/post') {
+        setText('');
+        setImage(null);
+    } else{
+        setData();  
+    }}, [location.pathname]);
+
     useEffect(() => {
         setData();
-    }, []); 
+    }
+    , [data]);
 
     const setData = async () => {
         if (data) {
-            if (data.text !== '') {
+            if (data.data.text !== '') {
                 setText(data.data.text);
             }
-            if (data.image !== undefined) {
+            if (data.data.image !== null) {
+                console.log('image:', data.data.image);
                 setImage({
-                    image: data.data.image,
+                    image: `${APIURL}${data.data.image}`,
                 });
+                
             }
         }
     } 
@@ -40,6 +55,8 @@ export default function PostShare() {
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.files && event.target.files[0]) {
           let img: File = event.target.files[0];
+            console.log('img:', img);
+            console.log('imgFile:', URL.createObjectURL(img));
           setImage({
             image: URL.createObjectURL(img),
           });
@@ -55,14 +72,32 @@ export default function PostShare() {
         formData.append('title', 'Post Title');
         formData.append('content_type', 'TEXT');
         formData.append('text', text);
-        if (ImageRef.current && ImageRef.current.files) {
-            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+
+        if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
+            console.log("got in")
+            console.log(ImageRef.current.files);
             formData.append('image', ImageRef.current.files[0]);
+            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+        } else if (image && image.image) {
+            // If image is not provided through the file input but exists in the state
+            // Fetch the image from the URL and convert it to a file
+            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+            const response = await axios.get(`${image.image}`, {
+                responseType: 'blob'
+            });
+            const blob = await response.data;
+            const file = new File([blob], "image.jpg", {type: "image/jpeg"});
+            formData.append('image', file);
+            console.log('file:', file);
+        } else {
+            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+            formData.append('image', '');
         }
+
         if (privacy === 'Edit') {
             formData.append('privacy', data.data.privacy);
             try {
-                const response = await axios.post(`${APIURL}/post/edit/`, formData, {
+                const response = await axios.post(`${APIURL}/post/edit/${data.data.id}/`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                         Authorization: getAuthorizationHeader(),
@@ -137,11 +172,12 @@ export default function PostShare() {
                         )}
                         <div style={{display: "none"}}>
                             <input 
-                            type="file" 
-                            name="imagePost" 
-                            accept=".png,.jpeg,.jpg" 
-                            ref={ImageRef} 
-                            onChange={onImageChange} />
+                                type="file" 
+                                name="imagePost" 
+                                accept=".png,.jpeg,.jpg" 
+                                ref={ImageRef} 
+                                onChange={onImageChange} 
+                                />
                         </div>
                     </div>
                     {image && (

@@ -25,7 +25,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
       } else if (ismessages) {
         response = await axios.get(`${APIURL}/post/getmessages/`, {headers: {Authorization: getAuthorizationHeader()}});
       } else if (isMyPosts) {
-        response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});
+        response = await axios.get(`${APIURL}/post/getowned/`, {headers: {Authorization: getAuthorizationHeader()}});
       }
       else {
         response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});

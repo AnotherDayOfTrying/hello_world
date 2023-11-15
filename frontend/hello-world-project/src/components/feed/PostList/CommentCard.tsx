@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import './comment.css';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
@@ -8,14 +8,21 @@ import axios from "axios"
 
 
 type CommentCardProps = {
-    post: any; 
+    comment: any; 
+    isLiked: boolean;
+    likeid?: number;
 };
 
-const CommentCard: React.FC<CommentCardProps> = ({ post }) => {
-    const [isliked, setIsLiked] = React.useState(false);
-    const [likeId, setLikeId] = React.useState<number>(0);
-    console.log('post:', post);
-    const start = new Date(post.time);
+const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked, likeid }) => {
+    const [isliked, setIsLiked] = React.useState(isLiked);
+    const [likeId, setLikeId] = React.useState(likeid);
+
+    useEffect(() => {
+        setIsLiked(isLiked);
+      }, [isLiked]);
+
+    console.log('comment:', comment);
+    const start = new Date(comment.time);
     const end = new Date();
     let diff = (end.getTime() - start.getTime()) / 1000;
     let strDiff = '';
@@ -56,11 +63,11 @@ const CommentCard: React.FC<CommentCardProps> = ({ post }) => {
         } else {
             setIsLiked(!isliked);
             try {
-                console.log('post id:', post.id);
+                console.log('comment id:', comment.id);
             const response = await axios.post(`${APIURL}/likes/`,
             {
                 content_type: "comment",
-                content_id: post.id
+                content_id: comment.id
             },
             {
             headers: {
@@ -83,10 +90,10 @@ const CommentCard: React.FC<CommentCardProps> = ({ post }) => {
     return (
         <div className="comment">
             <div className="comment_user">
-                <img src={`${APIURL}${post.author.profilePicture}`} alt="" />
+                <img src={`${APIURL}${comment.author.profilePicture}`} alt="" />
                 <div className="comment_content">
-                    <h4>{post.author.displayName}</h4>
-                    <p>{post.comment}</p>
+                    <h4>{comment.author.displayName}</h4>
+                    <p>{comment.comment}</p>
                 </div>
                 <div className="time">
                     <p>{strDiff}</p>

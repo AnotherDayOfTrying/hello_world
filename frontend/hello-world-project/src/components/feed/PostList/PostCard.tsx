@@ -29,18 +29,25 @@ type Image = {
 
 type PostCardProps = {
     data: any;
+    isLiked: boolean;
+    likeid?: number;
     myposts?: boolean;
     Reload: () => void;
 };
 
 
-const PostCard = ({ data, myposts: isMyPosts, Reload  }: PostCardProps) => {
-    const [isliked, setIsLiked] = React.useState(false);
+const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCardProps) => {
+    const [isliked, setIsLiked] = React.useState(isLiked);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
-    const [likeId, setLikeId] = useState<number>(0);
+    const [likeId, setLikeId] = React.useState(likeid);
+    console.log('isLiked:', isLiked);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setIsLiked(isLiked);
+      }, [isLiked]);
 
     const handleShare = () => {
         // send api post req
@@ -98,7 +105,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload  }: PostCardProps) => {
     const fetchUserInfo = async () => {
         try {
             const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
-            console.log('Author Data:', authorResponse.data);
             setUserInfo(authorResponse.data); 
             return authorResponse.data;
         } catch (error) {
@@ -187,16 +193,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload  }: PostCardProps) => {
         
     };
 
-    const settings = {
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        swipeToSlide: true,
-        arrows: true,
-    };
-
     const handleDelete = async () => {
         try {
             const response = await axios.delete(`${APIURL}/post/delete/${data.id}/`,
@@ -220,7 +216,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload  }: PostCardProps) => {
     const handleEdit = () => {
         // navigate to /post page with data
         console.log("navigate: ")
-        navigate('/post', { state: { data: data } });
+        navigate('/post/edit', { state: { data: data } });
     }
     return (
         <div className="PostCard">
@@ -238,12 +234,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload  }: PostCardProps) => {
             </div>
             {/* check if there is description and if so render it as markdown */}
             {data.text && renderDescription(data.text)}
-            {console.log("data image: ",data.images)}
-            <Slider {...settings}>
-                {data.images && data.images.map((image: Image) => (
-                    <img className="postImage" key={image.id} src={`${APIURL}${image.image}`} alt="title" />
-                    ))}
-            </Slider>
+            {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
                 <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '40%', height: 'auto' }}>

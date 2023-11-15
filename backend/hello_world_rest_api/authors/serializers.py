@@ -108,7 +108,7 @@ class GetCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Comment
-        fields = ('comment', 'time', 'author')
+        fields = ('id','comment', 'time', 'author')
         
     def create(self, validated_data):
         comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
@@ -150,11 +150,10 @@ class FriendShipSerializer(serializers.ModelSerializer):
         fields = ('id','sender', 'reciever', 'status')
 
 class UploadPostSerializer(serializers.ModelSerializer):
-    image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
     class Meta:
         model = Post
         fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
-   
+
     def create(self, validated_data):
         uploadPost = Post.objects.create(
             author = self.context['author'],
@@ -184,18 +183,21 @@ class GetPostSerializer(serializers.ModelSerializer):
         )
         return GetPost
     
-class EditPostSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=50, required = False, allow_blank = True)
-    content_type = serializers.ChoiceField([('TEXT', 'Text'), ('IMAGE', 'Image')], required = False,)
-    text = serializers.CharField(max_length=200, required = False, allow_blank = True)
+class EditPostSerializer(serializers.ModelSerializer):
     image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
-
+    title = serializers.CharField(max_length=50, required = False, allow_blank = True)
+    content_type = serializers.CharField(max_length=10, required = False, allow_blank = True)
+    privacy = serializers.CharField(max_length=10, required = False, allow_blank = True)
+    class Meta:
+        model = Post
+        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
     def update(self, instance, validated_data):
-        instance.author = self.context['author'],
-        instance.title = validated_data['title'],
-        instance.content_type = validated_data['content_type'],
-        instance.text = validated_data['text']
-        instance.image_url = validated_data['image_url']
+        instance.title = validated_data.get('title', instance.title)
+        instance.content_type = validated_data.get('content_type', instance.content_type)
+        instance.privacy = validated_data.get('privacy', instance.privacy)
+        instance.text = validated_data.get('text', instance.text)
+        instance.image_url = validated_data.get('image_url', instance.image_url)
+        instance.image = validated_data.get('image', instance.image)
         instance.save()
         return instance
 

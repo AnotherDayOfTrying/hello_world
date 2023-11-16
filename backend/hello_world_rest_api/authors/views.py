@@ -10,7 +10,7 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
-
+from rest_framework.pagination import PageNumberPagination
 
 # Create your views here.
 class Signup(generics.CreateAPIView):
@@ -43,7 +43,7 @@ class Signin(generics.CreateAPIView):
             response = {
                 'message': 'User logged in successfully',
                 'token': token.key,
-                'data': serializer.data
+                'data': author.id
             }
             return Response(response, status=status.HTTP_200_OK)
         else:
@@ -122,16 +122,34 @@ class PostComment(generics.CreateAPIView):
             return Response({'message': 'Success'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-def getAllAuthors(request):
-    authors  = Author.objects.filter(is_approved=True,displayName__isnull=False)
-    serializer = AuthorSerializer(authors, many=True)
-    response = {
-        "type": "authors",
-        "items": serializer.data
-    }
-    return Response(response, status=status.HTTP_200_OK)
+class AllAuthorsView(generics.CreateAPIView):
+    pagination_class = PageNumberPagination
+    serializer_class = AuthorSerializer
+    def get(self, request):
+        page_number = request.query_params.get('page',1)
+        page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+        try:
+            page_number = int(page_number)
+            page_size = int(page_size)
+        except ValueError:
+            return Response({'error': 'Invalid page or page_size parameter'}, status=400)
+        
+        queryset = Author.objects.filter(is_approved=True, displayName__isnull=False).order_by('id')
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+        page = paginator.paginate_queryset(queryset,request)
+        serializer = AuthorSerializer(page, many=True)
+        response = {
+            "type": "authors",
+            "items": serializer.data,
+            'pagination': {
+                'next': paginator.get_next_link(),
+                'previous': paginator.get_previous_link(),
+                'page_number': page_number,
+                'page_size': page_size,
+            },
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET','POST'])
 # @permission_classes([permissions.IsAuthenticated])

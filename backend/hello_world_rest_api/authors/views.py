@@ -43,7 +43,7 @@ class Signin(generics.CreateAPIView):
             response = {
                 'message': 'User logged in successfully',
                 'token': token.key,
-                'data': serializer.data
+                'data': author.id
             }
             return Response(response, status=status.HTTP_200_OK)
         else:

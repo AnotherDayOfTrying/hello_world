@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import get_object_or_404
 from .serializers import *
 from rest_framework import generics, status, permissions
@@ -217,50 +218,37 @@ class Unliking(generics.CreateAPIView):
 
 
 class UploadPost(generics.CreateAPIView):
-
-    serializer_class = UploadPostSerializer
     # permission_classes = [permissions.IsAuthenticated]
 
+    serializer_class = UploadPostSerializer
+
     def post(self, request):
-        title = request.data.get('title')
-        content_type = request.data.get('content_type')
-        privacy = request.data.get('privacy')
-        text = request.data.get('text')
-        image_files = request.FILES.getlist('images')
-        post = Post.objects.create(
-            author=request.user,
-            title=title,
-            content_type=content_type,
-            privacy=privacy,
-            text=text,
-            
-        )
-        image_files = request.FILES.getlist('images')
-        for image_file in image_files:
-            post_image = PostImage.objects.create(post=post, image=image_file)
-            post.images.add(post_image)
-        serializer = self.serializer_class(post)
-        response_data = {
-            'message': 'Post created successfully',
-            'data': serializer.data
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=request.data, context={'author': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            response = {
+                'message': 'Post created successfully',
+                'id': serializer.data['id'],
+                'data': serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 class EditPost(generics.CreateAPIView):
 
     serializer_class = EditPostSerializer
     # permission_classes = [permissions.IsAuthenticated]
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data, context={'author': request.user})
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, id=post_id)
+        serializer = self.serializer_class(post, data=request.data, context={'author': request.user, 'request': request,})
         if serializer.is_valid():
-            #serializer.save()
+            serializer.save()
             response = {
                 'message': 'Post updated successfully',
                 'data': serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
     
@@ -271,6 +259,11 @@ class DeletePost(generics.CreateAPIView):
 
     def delete(self, request, post_id):
         post = get_object_or_404(Post, id=post_id)
+        # remove the associated image from media/postimages folder if it exists
+        if post.image:
+            if os.path.exists(post.image.path):
+                image = post.image.path
+                os.remove(image)
         post.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
     
@@ -348,8 +341,8 @@ def getlikesoncomment(request, author_id, post_id, comment_id):
 
 @api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])
-def getlikesfromauthor(request, author_id):
-    author = Author.objects.get(id=author_id)
+def getlikesfromauthor(request):
+    author = request.user
     likes = Like.objects.filter(liker=author)
     serializer = LikeSerializer(likes, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

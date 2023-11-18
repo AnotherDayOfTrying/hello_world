@@ -49,8 +49,14 @@ const App: React.FC = () => {
               <>
                 <div className="blur" style={{top: '-18%', right:'0'}}></div>
                 <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Post/>
+                <Post />
               </>} />
+            <Route path="/post/edit" element={
+            <>
+              <div className="blur" style={{top: '-18%', right:'0'}}></div>
+              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+              <Post />
+            </>} />
             <Route path="/messages" element={
               <>
                 <div className="blur" style={{top: '-18%', right:'0'}}></div>
@@ -69,6 +75,12 @@ const App: React.FC = () => {
                 <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
                 <Friends /> 
               </>} />
+            <Route path="/myposts" element={
+            <>
+              <div className="blur" style={{top: '-18%', right:'0'}}></div>
+              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+              <Home myposts /> 
+            </>} />
             </Route>
           </Route>
           <Route path="*" element={<RootError />}/>

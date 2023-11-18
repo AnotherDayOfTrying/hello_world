@@ -17,6 +17,10 @@ import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import Slider from "react-slick";
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useNavigate, Navigate } from 'react-router-dom';
+
 
 type Image = {
     id: number;
@@ -25,17 +29,25 @@ type Image = {
 
 type PostCardProps = {
     data: any;
+    isLiked: boolean;
+    likeid?: number;
+    myposts?: boolean;
+    Reload: () => void;
 };
 
 
-const PostCard = ({ data  }: PostCardProps) => {
-    const [likes, setLikes] = React.useState(120);
-    const [isliked, setIsLiked] = React.useState(false);
+const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCardProps) => {
+    const [isliked, setIsLiked] = React.useState(isLiked);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
-    const [likeId, setLikeId] = useState<number>(0);
-    
+    const [likeId, setLikeId] = React.useState(likeid);
+    console.log('isLiked:', isLiked);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        setIsLiked(isLiked);
+      }, [isLiked]);
 
     const handleShare = () => {
         // send api post req
@@ -45,7 +57,6 @@ const PostCard = ({ data  }: PostCardProps) => {
 
     const handleLike = async () => {
         if (isliked) {
-            setLikes(likes - 1);
             setIsLiked(!isliked);
             try {
             const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
@@ -65,7 +76,6 @@ const PostCard = ({ data  }: PostCardProps) => {
         };
             
         } else {
-            setLikes(likes + 1);
             setIsLiked(!isliked);
             try {
             const response = await axios.post(`${APIURL}/likes/`,
@@ -93,19 +103,17 @@ const PostCard = ({ data  }: PostCardProps) => {
 
 };
     const fetchUserInfo = async () => {
-        console.log('Fetching user information...', data.author);
         try {
             const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
-            console.log('Author Data:', authorResponse.data);
-        setUserInfo(authorResponse.data); 
+            setUserInfo(authorResponse.data); 
             return authorResponse.data;
         } catch (error) {
-        console.error('Error fetching user information: ', error);
+            console.error('Error fetching user information: ', error);
         }
     };
 
     useEffect(() => {
-        fetchUserInfo(); // Fetch user information when component mounts
+        fetchUserInfo(); 
     }, [data]);
 
     const renderDescription = (description: string) => {
@@ -185,16 +193,31 @@ const PostCard = ({ data  }: PostCardProps) => {
         
     };
 
-    const settings = {
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 1,
-        slidesToScroll: 1,
-        swipeToSlide: true,
-        arrows: true,
-    };
+    const handleDelete = async () => {
+        try {
+            const response = await axios.delete(`${APIURL}/post/delete/${data.id}/`,
+            {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: getAuthorizationHeader(),
+            }
+            });
+            const responseData: any = response.data;
+            console.log('delete response: ', responseData);
+            Reload();
+            return responseData;
+        } catch (error: any) {
+            console.log(error);
+            
+        };
+        
+    }
 
+    const handleEdit = () => {
+        // navigate to /post page with data
+        console.log("navigate: ")
+        navigate('/post/edit', { state: { data: data } });
+    }
     return (
         <div className="PostCard">
             <div className="postTop">
@@ -202,15 +225,16 @@ const PostCard = ({ data  }: PostCardProps) => {
                 <div className="postUsername">
                     <span >{userInfo.displayName}</span>
                 </div>
+                {isMyPosts && 
+                <div className="postOptions"> 
+                    <DeleteIcon style={{color: "#ff6b6b"}} onClick={handleDelete}/>
+                    <EditIcon style={{color: "#ff6b6b"}} onClick={handleEdit}>
+                    </EditIcon>
+                </div>}
             </div>
             {/* check if there is description and if so render it as markdown */}
             {data.text && renderDescription(data.text)}
-            {console.log("data image: ",data.images)}
-            <Slider {...settings}>
-                {data.images && data.images.map((image: Image) => (
-                    <img className="postImage" key={image.id} src={`${APIURL}${image.image}`} alt="title" />
-                    ))}
-            </Slider>
+            {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
                 <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '40%', height: 'auto' }}>
@@ -220,7 +244,6 @@ const PostCard = ({ data  }: PostCardProps) => {
                     { <PopupContent />}
                 </Popup>
             </div>
-            <span>{likes} likes</span>
         </div>
     );
 };

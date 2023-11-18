@@ -8,7 +8,7 @@
 
 .postImage{
     width: 100%;
-    max-height: 20rem;
+    max-height: 25rem;
     object-fit: fill;
     border-radius: 0.5rem;
 
@@ -31,6 +31,12 @@
     border-radius: 50%;
     width: 3rem;
     height: 3rem
+}
+.postOptions{
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-left: auto;
 }
 
 .postUsername{

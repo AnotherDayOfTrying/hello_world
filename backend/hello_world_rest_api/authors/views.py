@@ -152,6 +152,18 @@ class AllAuthorsView(generics.CreateAPIView):
         }
         return Response(response, status=status.HTTP_200_OK)
 
+class CallingAuthorView(generics.RetrieveAPIView):
+    serializer_class = AuthorSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        author = get_object_or_404(Author,id=request.user.id)
+        serializer = AuthorSerializer(author)
+        response = {
+            "type": "author",
+            "item": serializer.data,
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
 @api_view(['GET','POST'])
 # @permission_classes([permissions.IsAuthenticated])
 def getOneAuthor(request, author_id):

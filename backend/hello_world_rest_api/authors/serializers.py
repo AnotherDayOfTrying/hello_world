@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from .serializers import *
+from rest_framework.authtoken.models import Token
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 20)
@@ -14,15 +15,17 @@ class SignUpSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only = True, required = True)
     displayName = serializers.CharField(required = True, max_length = 50)
     github = serializers.URLField(required = False, allow_blank = True, max_length = 255)
+    
     class Meta:
         model = Author
-        fields = ('id', 'username', 'password','password2', 'displayName','github')
+        fields = ('id', 'username', 'password','password2', 'displayName', 'github', 'profilePicture')
     def create(self, validated_data):
         user = Author.objects.create_user(
             username = validated_data['username'],
             password = validated_data['password'],
             displayName = validated_data['displayName'],
-            github = validated_data['github']
+            github = validated_data['github'],
+            profilePicture = validated_data['profilePicture'],
         )
         return user
     def validate(self, attrs):
@@ -215,8 +218,6 @@ class LikeSerializer(serializers.ModelSerializer):
         if isinstance(object.content_object, Comment):
             return {'comment_id': object.content_object.id}
         return str(object.content_object)
-
-from rest_framework.authtoken.models import Token
 
 for user in Author.objects.all():
     Token.objects.get_or_create(user=user)

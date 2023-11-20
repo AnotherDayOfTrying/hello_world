@@ -20,8 +20,6 @@ export const AuthProvider = ({ children }: any) => {
   // call this function to sign up a user
   const signupUser = async(data: SignUpInterface) => {
     const response = await signup(data)
-    setUser(response.token)
-    localStorage.setItem('user_token', response.token || '')
     if (response.token) {
       navigate("/login")
     }

@@ -20,13 +20,15 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = Author
         fields = ('id', 'username', 'password','password2', 'displayName', 'github', 'profilePicture')
     def create(self, validated_data):
-        user = Author.objects.create_user(
-            username = validated_data['username'],
-            password = validated_data['password'],
-            displayName = validated_data['displayName'],
-            github = validated_data['github'],
-            profilePicture = validated_data['profilePicture'],
-        )
+        user_data = {
+            "username": validated_data['username'],
+            "password": validated_data['password'],
+            "displayName": validated_data['displayName'],
+            "github": validated_data['github'],
+        }
+        if validated_data.get('profilePicture') is not None:
+            user_data = {**user_data, "profilePicture": validated_data['profilePicture']}
+        user = Author.objects.create_user(**user_data)
         return user
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:

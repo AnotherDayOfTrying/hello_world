@@ -243,7 +243,7 @@ class UploadPost(generics.CreateAPIView):
                 'id': serializer.data['id'],
                 'data': serializer.data
             }
-            return Response(response, status=status.HTTP_200_OK)
+            return Response(response, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 

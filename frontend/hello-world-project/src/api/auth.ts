@@ -12,6 +12,7 @@ export interface SignUpInterface {
     password2: string,
     displayName: string,
     github: string,
+    profilePicture: Blob | string | undefined,
 }
 
 
@@ -34,10 +35,19 @@ const login = async (signinDetails: LoginInterface) => {
 }
 
 const signup = async (signupDetails: SignUpInterface) => {
+    const formData = new FormData()
+    formData.append('username', signupDetails.username)
+    formData.append('password', signupDetails.password)
+    formData.append('password2', signupDetails.password2)
+    formData.append('displayName', signupDetails.displayName)
+    formData.append('github', signupDetails.github)
+    if (signupDetails.profilePicture)
+        formData.append('profilePicture', signupDetails.profilePicture)
+
     try {
-        const response = await axios.post(`${APIURL}/signup/`, signupDetails, {
+        const response = await axios.post(`${APIURL}/signup/`, formData, {
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "multipart/form-data",
             },
         })
         return await response.data
@@ -57,7 +67,15 @@ const verifySession = async() => {
                 "Authorization": "Token " + localStorage.getItem('user_token'),
             }
         })
-        return response.status === 200;
+        if (response.status !== 200) 
+            return false
+
+        const author = await axios.get(`${APIURL}/author/`, {
+            headers: {
+                "Authorization": "Token " + localStorage.getItem('user_token'),
+            }
+        })
+        return author.data.item;
     } catch (err) {
         return false
     }

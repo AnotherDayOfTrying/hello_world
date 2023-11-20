@@ -42,7 +42,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
     const [likeId, setLikeId] = React.useState(likeid);
-    console.log('isLiked:', isLiked);
     const navigate = useNavigate();
 
     useEffect(() => {

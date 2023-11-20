@@ -1,0 +1,20 @@
+.EditProfileContainer{
+    position: relative;
+    display: grid;
+    grid-template-columns: 18rem auto 20rem;
+    gap: 1rem;
+    padding: 1rem 1rem;
+}
+.EditProfile{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.EditProfileButton{
+    padding: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 12px;
+    width: 5rem;
+    align-self: center;
+}

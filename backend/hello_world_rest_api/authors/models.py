@@ -43,7 +43,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
-    #is_a_node = models.BooleanField(default = False)
+    is_a_node = models.BooleanField(default = False)
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
     profilePicture = models.ImageField(upload_to='profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'

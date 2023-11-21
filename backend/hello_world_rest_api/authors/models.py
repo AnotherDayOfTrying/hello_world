@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.hashers import make_password,check_password
 import uuid
 from PIL import Image
 
@@ -24,6 +25,7 @@ class UserManager(BaseUserManager):
         other_fields.setdefault('is_superuser', True)
         other_fields.setdefault('is_active', True)
         other_fields.setdefault('is_approved', True)
+        #other_fields.setdefault('is_a_node', True)
         if other_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if other_fields.get('is_superuser') is not True:
@@ -41,6 +43,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
+    #is_a_node = models.BooleanField(default = False)
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
     profilePicture = models.ImageField(upload_to='profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'
@@ -83,3 +86,6 @@ class Like(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+
+
+    

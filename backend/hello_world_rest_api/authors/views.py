@@ -12,7 +12,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
-#from .nodeAuthentication import NodesAuthentication
+from .nodeAuthentication import NodesAuthentication
 from rest_framework.authentication import TokenAuthentication
 
 # Create your views here.
@@ -128,8 +128,8 @@ class PostComment(generics.CreateAPIView):
 class AllAuthorsView(generics.CreateAPIView):
     pagination_class = PageNumberPagination
     serializer_class = AuthorSerializer
-    #authentication_classes = [TokenAuthentication]
-    #permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         page_number = request.query_params.get('page',1)
         page_size = request.query_params.get('page_size', self.pagination_class.page_size)

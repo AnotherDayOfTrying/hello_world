@@ -128,7 +128,7 @@ class PostComment(generics.CreateAPIView):
 class AllAuthorsView(generics.CreateAPIView):
     pagination_class = PageNumberPagination
     serializer_class = AuthorSerializer
-    #authentication_classes = [TokenAuthentication, NodesAuthentication]
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         page_number = request.query_params.get('page',1)

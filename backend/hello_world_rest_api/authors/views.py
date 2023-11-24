@@ -62,7 +62,12 @@ class SendFriendRequest(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             response = serializer.save()
-            return Response({'message': 'Request sent', 'friendship_id': response.id}, status=status.HTTP_200_OK)
+            sender = request.user
+            reciever_id = serializer.validated_data['receiver_id']
+            reciver = get_object_or_404(Author, id=reciever_id)
+            sender_serializer = AuthorSerializer(sender)
+            reciever_serializer = AuthorSerializer(reciver)
+            return Response({'type':'Follow' ,'summary': f'{sender.displayName} wants to follow {reciver.displayName}', 'actor': sender_serializer.data, 'object': reciever_serializer.data, 'friendship_id': response.id}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FriendRequestResponse(generics.CreateAPIView):
@@ -209,8 +214,12 @@ class Liking(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={'author': author})
         if serializer.is_valid():
             like_instance = serializer.save()
+            author_serializer = AuthorSerializer(author)
             response = {
                 'message': 'success',
+                'summary': f'{author.displayName} Likes your post',
+                'type': 'Like',
+                'author': author_serializer.data,
                 'like_id': like_instance.id,
             }
             return Response(response, status=status.HTTP_200_OK)

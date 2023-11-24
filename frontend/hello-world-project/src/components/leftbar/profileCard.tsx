@@ -34,12 +34,12 @@ export default function ProfileCard() {
   return (
     <div className='profileCard'>
       <div className='profileImages'>
-        <img className='profile' src='/assets/person/5.jpg' alt='' />
+        <img className='profile' src={APIURL + author.profilePicture} alt='' />
         <img className='background' src='/assets/post/4.jpg' alt='' />
         <EditIcon className='editIcon' style={{alignSelf: 'flex-end', marginTop: '10px', marginRight: '10px'}} onClick={handleEdit} />
       </div>
       <div className='profileName'>
-        <span>Zendaya </span>
+        <span>{author?.displayName}</span>
         <span>{author?.github} </span>
       </div>
     </div>

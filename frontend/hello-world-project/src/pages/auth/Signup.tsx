@@ -1,8 +1,9 @@
-import { TextField } from "@mui/material"
+import { TextField, Typography } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useAuth } from "../../providers/AuthProvider"
 import { SignUpInterface } from "../../api/auth"
+import APIURL from "../../api/config"
 import gsap from "gsap"
 import "./auth.css"
 
@@ -17,6 +18,7 @@ const Signup = () => {
         password2: "",
         displayName: "",
         github: "",
+        profilePicture: undefined,
     });
 
     const [errorData, setErrorData] = useState<SignUpInterface>({
@@ -25,6 +27,7 @@ const Signup = () => {
         password2: "",
         displayName: "",
         github: "",
+        profilePicture: "",
     });
 
     useEffect(() => {
@@ -84,7 +87,20 @@ const Signup = () => {
                         onChange={(event) => {setSignupData({...signupData, github: event.target.value})}}
                         error={!!errorData.github}
                         helperText={errorData.github}/>
-
+                    <Typography style={{marginTop: "1em"}}>Profile Picture</Typography>
+                    <TextField
+                        id="profilePicture"
+                        onChange={(event) => {setSignupData({...signupData, profilePicture: (event.target as HTMLInputElement).files?.item(0) || undefined})}}
+                        type="file"
+                        inputProps={{ accept: 'image/*' }}
+                        error={!!errorData.profilePicture}
+                        helperText={errorData.profilePicture as string}/>
+                    <Typography>Profile Picture Preview</Typography>
+                    {
+                        signupData.profilePicture ?
+                        <img className="profilePicture" src={URL.createObjectURL(signupData.profilePicture as Blob)}/> :
+                        <img className="profilePicture" src={`${APIURL}/media/default-profile-picture.jpg`} />
+                    }
                     <div className="button-container">
                         <button
                             className="postButton"

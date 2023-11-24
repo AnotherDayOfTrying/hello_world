@@ -220,6 +220,3 @@ class LikeSerializer(serializers.ModelSerializer):
         if isinstance(object.content_object, Comment):
             return {'comment_id': object.content_object.id}
         return str(object.content_object)
-
-for user in Author.objects.all():
-    Token.objects.get_or_create(user=user)

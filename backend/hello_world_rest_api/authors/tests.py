@@ -1,8 +1,9 @@
 import io
 import os
 import shutil
-from django.test import TestCase,Client, override_settings
 
+from django.test import TestCase,Client, override_settings
+import base64
 from django.contrib.auth import get_user_model
 from .models import *
 from rest_framework import status
@@ -277,18 +278,28 @@ class CommentTest(TestCase):
 class GetAllAuthorsTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        
-        
-    
-    def test_valid_pagination_authors(self):
         for i in range(15):
-            Author.objects.create_user(
+            self.author = Author.objects.create_user(
                 username=f'will{i}',
                 password=f'testpass{i}',
                 displayName=f'will{i}',
                 github='',
                 is_approved=True,
             )
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
+        
+    
+    def test_valid_pagination_authors(self):
+    
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         response = self.client.get('/authors/',{'page': 2, 'page_size': 5})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -304,7 +315,9 @@ class GetAllAuthorsTest(TestCase):
         # Check if the response has the correct number of items based on the provided page_size
         self.assertEqual(len(response.data['items']), 5)
     def test_invalid_pagination(self):
-
+        
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         # Make a GET request with invalid pagination parameters
         response = self.client.get('/authors/', {'page': 'invalid', 'page_size': 'invalid'})
 
@@ -315,14 +328,8 @@ class GetAllAuthorsTest(TestCase):
         self.assertIn('error', response.data)
         self.assertEqual(response.data['error'], 'Invalid page or page_size parameter')
     def test_default_pagination(self):
-        for i in range(15):
-            Author.objects.create_user(
-                username=f'will{i}',
-                password=f'testpass{i}',
-                displayName=f'will{i}',
-                github='',
-                is_approved=True,
-            )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         response = self.client.get('/authors/')
         # Check if the response has the expected status code
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -338,6 +345,14 @@ class GetAllAuthorsTest(TestCase):
 
         # Check if the response has the default number of items based on the default page_size
         self.assertEqual(len(response.data['items']), 10)
+    def test_node_access(self):
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        
+        self.response = self.client.get('/authors/')
+        print(self.response.status_code)
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
 class GetOneAuthorTest(TestCase):
     def setUp(self):
         self.client = APIClient()

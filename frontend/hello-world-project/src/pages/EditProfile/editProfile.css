@@ -18,3 +18,12 @@
     width: 5rem;
     align-self: center;
 }
+.preview{
+    display: flex;
+    align-self: center;    
+}
+.previewContainer{
+    display: flex;
+    align-self: center;
+    
+}

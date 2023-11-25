@@ -5,10 +5,17 @@ import APIURL, { getAuthorizationHeader} from "../../api/config"
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 
+interface ProfileCardProps { 
+  Reload?: boolean;
+}
 
-export default function ProfileCard() {
+export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
   const [author, setAuthor] = useState<any>(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    getAuthor()
+  }, [isReload])
 
   const getAuthor = async () => {
     try {
@@ -34,7 +41,7 @@ export default function ProfileCard() {
   return (
     <div className='profileCard'>
       <div className='profileImages'>
-        <img className='profile' src={APIURL + author.profilePicture} alt='' />
+        <img className='profile' src={APIURL + author?.profilePicture} alt='' />
         <img className='background' src='/assets/post/4.jpg' alt='' />
         <EditIcon className='editIcon' style={{alignSelf: 'flex-end', marginTop: '10px', marginRight: '10px'}} onClick={handleEdit} />
       </div>

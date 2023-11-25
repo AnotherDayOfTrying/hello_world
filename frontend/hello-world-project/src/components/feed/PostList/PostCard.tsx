@@ -14,18 +14,10 @@ import Comment from './Comment';
 import Popup from 'reactjs-popup';
 import axios from "axios"
 import APIURL, { getAuthorizationHeader } from "../../../api/config"
-import Slider from "react-slick";
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 
-
-type Image = {
-    id: number;
-    image: string;
-  }
 
 type PostCardProps = {
     data: any;
@@ -42,7 +34,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
     const [likeId, setLikeId] = React.useState(likeid);
-    console.log('isLiked:', isLiked);
     const navigate = useNavigate();
 
     useEffect(() => {

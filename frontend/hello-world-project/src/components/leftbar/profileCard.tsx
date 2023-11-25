@@ -1,13 +1,23 @@
+import React, {useState, useEffect} from 'react'
 import './profileCard.css'
-import APIURL, { getAuthorizationHeader } from '../../api/config'
-import {useState, useEffect} from 'react'
-import axios from 'axios'
+import axios from "axios"
+import APIURL, { getAuthorizationHeader} from "../../api/config"
+import EditIcon from '@mui/icons-material/Edit';
+import { useNavigate } from 'react-router-dom';
 
-export default function ProfileCard() {
-  const [author, setAuthor] = useState<any>({})
-  
+interface ProfileCardProps { 
+  Reload?: boolean;
+}
 
-  const fetchData = async () => {
+export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
+  const [author, setAuthor] = useState<any>(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    getAuthor()
+  }, [isReload])
+
+  const getAuthor = async () => {
     try {
       const response = await axios.get(`${APIURL}/author/`, {
         headers: {
@@ -21,19 +31,23 @@ export default function ProfileCard() {
   }
 
   useEffect(() => {
-    fetchData()
+    getAuthor()
   }, [])
 
+  const handleEdit = () => {
+    navigate('/editprofile')
+  }
 
-  console.log(author)
   return (
     <div className='profileCard'>
       <div className='profileImages'>
-        <img className='profile' src={APIURL + author.profilePicture} alt='' />
+        <img className='profile' src={APIURL + author?.profilePicture} alt='' />
         <img className='background' src='/assets/post/4.jpg' alt='' />
+        <EditIcon className='editIcon' style={{alignSelf: 'flex-end', marginTop: '10px', marginRight: '10px'}} onClick={handleEdit} />
       </div>
       <div className='profileName'>
-        <span>{author.displayName}</span>
+        <span>{author?.displayName}</span>
+        <span>{author?.github} </span>
       </div>
     </div>
   )

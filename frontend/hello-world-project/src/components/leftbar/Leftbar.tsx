@@ -1,22 +1,31 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import ProfileCard from './profileCard';
 import LeftbarList from './LeftbarList';
 import './leftbar.css'
 import { NavLink } from 'react-router-dom';
 import { useAuth } from "../../providers/AuthProvider"
 
+interface LeftbarProps {
+  reload?: boolean;
+}
 
-export default function Leftbar() {
+export default function Leftbar({reload: isreload}: LeftbarProps) {
   const { logoutUser } = useAuth();
+  const [Reload, setReload] = React.useState<any>(false);
+
+  useEffect(() => {
+    console.log('isreload1:', isreload);
+    setReload(isreload);
+  }, [isreload])
+
 
   const handleLogOut = () => {
       logoutUser();
-  
   }
   return (
     <div className='leftbar'>
       
-      <ProfileCard />
+      <ProfileCard Reload={Reload}/>
       <LeftbarList />
       <div className="leftbarButtons">
         <button  onClick={handleLogOut} className='leftbarButton'>

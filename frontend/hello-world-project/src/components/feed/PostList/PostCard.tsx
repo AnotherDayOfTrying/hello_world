@@ -14,18 +14,10 @@ import Comment from './Comment';
 import Popup from 'reactjs-popup';
 import axios from "axios"
 import APIURL, { getAuthorizationHeader } from "../../../api/config"
-import Slider from "react-slick";
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 
-
-type Image = {
-    id: number;
-    image: string;
-  }
 
 type PostCardProps = {
     data: any;
@@ -42,7 +34,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
     const [likeId, setLikeId] = React.useState(likeid);
-    console.log('isLiked:', isLiked);
     const navigate = useNavigate();
     useEffect(() => {
         setIsLiked(isLiked);
@@ -217,7 +208,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     }
 
     const handleEdit = () => {
-        // navigate to /post page with data
         console.log("navigate: ")
         navigate('/post/edit', { state: { data: data } });
     }
@@ -235,7 +225,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                     </EditIcon>
                 </div>}
             </div>
-            {/* check if there is description and if so render it as markdown */}
             {data.text && renderDescription(data.text)}
             {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>}
             <div className="reactions">

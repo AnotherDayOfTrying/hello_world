@@ -12,6 +12,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
+from .nodeAuthentication import NodesAuthentication
+from rest_framework.authentication import TokenAuthentication
 
 # Create your views here.
 class Signup(generics.CreateAPIView):
@@ -60,7 +62,12 @@ class SendFriendRequest(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             response = serializer.save()
-            return Response({'message': 'Request sent', 'friendship_id': response.id}, status=status.HTTP_200_OK)
+            sender = request.user
+            reciever_id = serializer.validated_data['receiver_id']
+            reciver = get_object_or_404(Author, id=reciever_id)
+            sender_serializer = AuthorSerializer(sender)
+            reciever_serializer = AuthorSerializer(reciver)
+            return Response({'type':'Follow' ,'summary': f'{sender.displayName} wants to follow {reciver.displayName}', 'actor': sender_serializer.data, 'object': reciever_serializer.data, 'friendship_id': response.id}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FriendRequestResponse(generics.CreateAPIView):
@@ -126,6 +133,8 @@ class PostComment(generics.CreateAPIView):
 class AllAuthorsView(generics.CreateAPIView):
     pagination_class = PageNumberPagination
     serializer_class = AuthorSerializer
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         page_number = request.query_params.get('page',1)
         page_size = request.query_params.get('page_size', self.pagination_class.page_size)
@@ -205,8 +214,12 @@ class Liking(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={'author': author})
         if serializer.is_valid():
             like_instance = serializer.save()
+            author_serializer = AuthorSerializer(author)
             response = {
                 'message': 'success',
+                'summary': f'{author.displayName} Likes your post',
+                'type': 'Like',
+                'author': author_serializer.data,
                 'like_id': like_instance.id,
             }
             return Response(response, status=status.HTTP_200_OK)
@@ -304,15 +317,13 @@ def getPrivatePost(request):
         friends.append(friendship['sender'])
         friends.append(friendship['reciever'])
     friends = set(friends)
-    response = {"type": "posts",}
-    num = 1
+    response = {"type": "posts", "items": []}
     for friend in friends:
         author = Author.objects.filter(id=friend)
         posts = Post.objects.filter(author__in = author, privacy='PRIVATE')
         serializer = GetPostSerializer(posts, many = True)
         if serializer.data:
-            response[f"friend{num}"] = serializer.data
-            num += 1
+            response["items"].append(serializer.data)
     return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET'])

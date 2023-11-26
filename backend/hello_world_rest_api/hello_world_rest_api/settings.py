@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+HOST_URL = "https://cmput404-project-backend-a299a47993fd.herokuapp.com/"
 # Application definition
 
 INSTALLED_APPS = [

@@ -251,9 +251,19 @@ class UploadPost(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data, context={'author': request.user})
         if serializer.is_valid():
             serializer.save()
+            author_serializer = AuthorSerializer(request.user)
+            comments = Comment.objects.filter(author=request.user, post = serializer.data['id'])
             response = {
+                'type': 'post',
+                'title': serializer.data['title'], 
                 'message': 'Post created successfully',
                 'id': serializer.data['id'],
+                'description': "This post describes something",
+                'contentType': serializer.data['content_type'],
+                'content': 'Content displayed on post',
+                'author': author_serializer.data,
+                'commentsSrc': comments,
+                'visibility': serializer.data['privacy'],
                 'data': serializer.data
             }
             return Response(response, status=status.HTTP_201_CREATED)
@@ -302,7 +312,7 @@ class GetPublicPost(generics.CreateAPIView):
         public_posts = Post.objects.filter(privacy='PUBLIC')
         serializer = self.serializer_class(public_posts, many=True)
         response = {
-            "type": "posts",
+            "type": "post",
             "items": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)

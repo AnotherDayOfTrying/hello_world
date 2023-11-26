@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import {SnackbarProvider} from 'notistack'
 import Home from "./pages/home/Home";
 import ProtectedLayout from "./pages/auth/ProtectedLayout";
 import Login from "./pages/auth/Login";
@@ -17,88 +18,90 @@ import Github from './pages/Github/Github';
 const App: React.FC = () => {
   return (
     <div className="App">
-      <Router>
-        <Routes>
-          <Route element={<AuthLayout />}>
-          <Route path="/" element={<Root/>} />
-          <Route path="login" element={<Login />} />
-          <Route path="signup" element={<Signup />} />
-          <Route path="logout" element={<Logout />} />
-          <Route element={<ProtectedLayout/>}>
-            <Route path="home" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Home/>
-              </>
-            }/>
-            <Route path="/private" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Home private/>
-              </>
-              }/>
-            <Route path="/unlisted" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Home unlisted/>
-              </>
-            }/>
-            <Route path="/post" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Post />
-              </>} />
-            <Route path="/post/edit" element={
-            <>
-              <div className="blur" style={{top: '-18%', right:'0'}}></div>
-              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-              <Post />
-            </>} />
-            <Route path="/messages" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Home messages />
-              </>} />
-            <Route path="/notifications" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Notifications />
-              </>} />
-            <Route path="/friends" element={
-              <>
-                <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                <Friends /> 
-              </>} />
-            <Route path="/myposts" element={
-            <>
-              <div className="blur" style={{top: '-18%', right:'0'}}></div>
-              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-              <Home myposts /> 
-            </>} />
-            <Route path="/editprofile" element={
-            <>
-              <div className="blur" style={{top: '-18%', right:'0'}}></div>
-              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-              <EditProfile /> 
-            </>} />
-            <Route path="/githubActivity" element={
-            <>
-              <div className="blur" style={{top: '-18%', right:'0'}}></div>
-              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-              <Github /> 
-            </>} />
+      <SnackbarProvider>
+        <Router>
+          <Routes>
+            <Route element={<AuthLayout />}>
+              <Route path="/" element={<Root/>} />
+              <Route path="login" element={<Login />} />
+              <Route path="signup" element={<Signup />} />
+              <Route path="logout" element={<Logout />} />
+              <Route element={<ProtectedLayout/>}>
+                <Route path="home" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Home/>
+                  </>
+                }/>
+                <Route path="/private" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Home private/>
+                  </>
+                  }/>
+                <Route path="/unlisted" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Home unlisted/>
+                  </>
+                }/>
+                <Route path="/post" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Post />
+                  </>} />
+                <Route path="/post/edit" element={
+                <>
+                  <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                  <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                  <Post />
+                </>} />
+                <Route path="/messages" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Home messages />
+                  </>} />
+                <Route path="/notifications" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Notifications />
+                  </>} />
+                <Route path="/friends" element={
+                  <>
+                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                    <Friends /> 
+                  </>} />
+                <Route path="/myposts" element={
+                <>
+                  <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                  <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                  <Home myposts /> 
+                </>} />
+                <Route path="/editprofile" element={
+                <>
+                  <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                  <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                  <EditProfile /> 
+                </>} />
+                <Route path="/githubActivity" element={
+                <>
+                  <div className="blur" style={{top: '-18%', right:'0'}}></div>
+                  <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+                  <Github /> 
+                </>} />
+              </Route>
+              <Route path="*" element={<RootError />}/>
             </Route>
-          </Route>
-          <Route path="*" element={<RootError />}/>
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </SnackbarProvider>
     </div>
   );
 } 

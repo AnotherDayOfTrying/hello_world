@@ -3,6 +3,7 @@ import './posts.css'
 import PostCard from './PostCard'
 import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import axios, { AxiosError } from "axios"
+import EmptyPostCard from './EmptyPostCard'
 
 interface PostsProps {
   data: any;
@@ -30,9 +31,10 @@ const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
     fetchLikedPosts();
   }, [Reload]); 
 
+  const dataIsEmpty = data ? data.length === 0 : false;
   return (
     <div className="posts">
-      {data ? (
+      {data && !dataIsEmpty ? (
         isMyPosts ? (
           data.map((post: any, id: number) => {
             var isLiked = false;
@@ -55,7 +57,7 @@ const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
             });
             return <PostCard Reload={Reload} data={post} isLiked={isLiked} likeid={post.like_id}/>;
           })
-      )) : null}
+      )) : <EmptyPostCard />}
     </div>
   );
 };

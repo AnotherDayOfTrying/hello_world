@@ -86,7 +86,7 @@ const renderActivity = () => {
         .replace('{{{zipLink}}}', `<a href="${activity.payload.release?.zipball_url}" class="custom-link">Download</a>`)
         .replace('{{payload.review.body}}', activity.payload.review?.body);
     }
-    return 'blah blah blah';
+    return 'No template found for this event type';
 };
 
   return (

@@ -26,9 +26,10 @@ const UserActivity: React.FC<UserActivityProps> = ({ activity }) => {
 
   if (commits && commits.length > 0) {
     const displayedCommits = commits.slice(0, 3);
+    console.log('commit url:', displayedCommits[0].url);
     return displayedCommits.map((commit: any) => ({
         committerGravatar: `<img src="${activity.actor.avatar_url}" alt="User Avatar" class="gha-gravatar-image" />`,
-        shaLink: `<a href="${commit.url}" class="custom-link">${commit.sha.substring(0, 6)}</a>`,
+        shaLink: `<a href="https://github.com/${activity.repo?.name}/commit/${commit.sha}" class="custom-link">${commit.sha.substring(0, 6)}</a>`,
         message: commit.message,
       }));
     }
@@ -48,6 +49,7 @@ const getBranchLink = (ref: string, repoName: string) => {
     }
     return ''
     }
+    
 
 const renderActivity = () => {
     const template = templates[activity.type as keyof typeof templates];
@@ -71,7 +73,7 @@ const renderActivity = () => {
         .replace('{{#payload.commits}}', renderCommits().slice(0, 3).map((commit: any) => `<li><small>${commit.committerGravatar} ${commit.shaLink} ${commit.message}</small></li>`).join(''))
         .replace('{{/payload.commits}}', '')
         .replace('{{{commitsMessage}}}', activity.payload.commits && activity.payload.commits.length > 0 ? `with ${activity.payload.commits.length} commit(s)` : '')
-        .replace('{{{repoLink}}}', `<a href="${activity.repo?.url}" class="custom-link">${activity.repo?.name}</a>`)
+        .replace('{{{repoLink}}}', `<a href="https://github.com/${activity.repo.name}" class="custom-link">${activity.repo?.name}</a>`)
         .replace('{{{targetLink}}}', `<a href="${activity.payload.target?.url}" class="custom-link">${activity.payload.target?.login}</a>`)
         .replace('{{{forkLink}}}', `<a href="${activity.payload.forkee?.html_url}" class="custom-link">${activity.payload.forkee?.full_name}</a>`)
         .replace('{{actionType}}', activity.payload.action)

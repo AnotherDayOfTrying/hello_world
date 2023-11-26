@@ -31,7 +31,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
         response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});
       }
       console.log('Response:', response.data);
-      const responseData: any[] = response.data.items;
+      const responseData: any = response.data.items;
       setData(responseData);
       console.log('Fetched posts:', responseData[0]);
     } catch (err: any) {
@@ -55,6 +55,14 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
     return (
       <div className='feed'>
         <Posts Reload={Reload} myposts data={data}/>
+        </div>
+      
+    )
+  }
+  else if (isPrivate){
+    return (
+      <div className='feed'>
+        <Posts Reload={Reload}  data={data[0]}/>
         </div>
       
     )

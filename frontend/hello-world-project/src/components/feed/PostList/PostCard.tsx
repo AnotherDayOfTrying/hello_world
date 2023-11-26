@@ -205,7 +205,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     }
 
     const handleEdit = () => {
-        // navigate to /post page with data
         console.log("navigate: ")
         navigate('/post/edit', { state: { data: data } });
     }
@@ -223,7 +222,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                     </EditIcon>
                 </div>}
             </div>
-            {/* check if there is description and if so render it as markdown */}
             {data.text && renderDescription(data.text)}
             {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>}
             <div className="reactions">

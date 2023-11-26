@@ -8,6 +8,15 @@ import APIURL, { getAuthorizationHeader } from '../../api/config';
 const Github: React.FC = () => {
   const [data, setData] = React.useState<any[]>([]);
   const [username, setUsername] = useState<string>('');
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    getAuthor();
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [username]);
 
   const getAuthor = async () => {
     try {
@@ -21,6 +30,8 @@ const Github: React.FC = () => {
       const path = github.split('/');
       const username = path[path.length - 1]; 
       setUsername(username);
+      console.log('username: ', username);
+      fetchData();
     } catch (e) {
       console.error(e);
     }
@@ -30,29 +41,28 @@ const Github: React.FC = () => {
       try {
         console.log('username*: ', username);
         if (username !== '') {
-         
-        
-        const response = await axios.get(`https://api.github.com/users/${username}/events`);
+          const response = await axios.get(`https://api.github.com/users/${username}/events`);
           setData(response.data);
           console.log(response.data);
-      }} catch (error) {
+        }
+      } catch (error: any) {
+        if (error.response.status === 403) {
+          setError('Github API rate limit exceeded\nPlease try again later');
+        }
         console.error('Error fetching data:', error);
       }
     }
   
-    useEffect(() => {
-      getAuthor().then(() => {
-        fetchData();
-      });
-    }, []);
   
   return (
     <div className="container">
       <Leftbar  />
         <div className="activityList">
-          {data.map((activity) => (
-            <Activity key={activity.id} activity={activity} />
-          ))}
+        {error ? (
+          <h1 style={{whiteSpace: 'pre-line', alignSelf: 'center'}}>{error}</h1>
+        ) : (
+          data.map((activity) => <Activity key={activity.id} activity={activity} />)
+        )}
         </div>
     </div>
       

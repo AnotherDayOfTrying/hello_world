@@ -187,6 +187,7 @@ def getOneAuthor(request, author_id):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, NodesAuthentication])
 @permission_classes([permissions.IsAuthenticated])
@@ -207,11 +208,13 @@ def getFollowers(request, author_id):
 def checkFollowing(request,author_id,foreign_author_id):
     author = get_object_or_404(Author,id=author_id)
     foreign_author = get_object_or_404(Author,id=foreign_author_id)
-    friendship = Friendship.objects.filter(sender=foreign_author,reciever=author)
+    friendship = Friendship.objects.filter(sender=foreign_author,reciever=author,status__in = [2,3])
     if friendship:
         return Response({'is_follower': 1}, status=status.HTTP_200_OK)
     else:
-        return Response({'is_follower': 0}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'is_follower': 0}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])
 def getFriendRequests(request):

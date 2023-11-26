@@ -396,7 +396,48 @@ class GetAllAuthorsTest(TestCase):
         print(self.response.status_code)
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
 class CheckFollowingTest(TestCase):
-    pass
+    def setUp(self):
+        self.client = APIClient()
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
+        self.author1 = Author.objects.create_user(
+            username='will1',
+            password= 'testpass1234',
+            displayName='will1',
+            github='',
+            is_approved = True,
+        )
+        self.author2 = Author.objects.create_user(
+            username='will2',
+            password= 'testpass1234',
+            displayName='will2',
+            github='',
+            is_approved = True,
+        )
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author1,status = 2)
+        self.token1 = Token.objects.get_or_create(user=self.author1)
+    def test_check_following_local(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:checkfollowing', args=[self.author1.id,self.author2.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['is_follower'], True)
+        self.client.credentials()
+    def test_check_following_remote(self):
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        url = reverse('authors:checkfollowing', args=[self.author1.id,self.author2.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['is_follower'], True)
+        self.client.credentials()
 class GetOneAuthorTest(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -463,7 +504,7 @@ class GetFriendRequestsTest(TestCase):
         self.token1 = Token.objects.get_or_create(user=self.author)
         self.token2 = Token.objects.get_or_create(user=self.author2)
 
-        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author)
+    
         
     def test_get_friend_requests(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)

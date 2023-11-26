@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios"
+import { enqueueSnackbar } from 'notistack'
 import APIURL from "./config"
 
 export interface LoginInterface {
@@ -28,6 +29,7 @@ const login = async (signinDetails: LoginInterface) => {
         if (err instanceof AxiosError) {
             return err.response?.data
         } else {
+            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
             throw err;
         }
     }
@@ -55,6 +57,7 @@ const signup = async (signupDetails: SignUpInterface) => {
         if (err instanceof AxiosError) {
             return err.response?.data
         } else {
+            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
             throw err;
         }
     }
@@ -77,7 +80,11 @@ const verifySession = async() => {
         })
         return author.data.item;
     } catch (err) {
-        return false
+        if (err instanceof AxiosError) {
+            return false
+        } else {
+            enqueueSnackbar("Unable to verify session.", {variant: 'error'})
+        }
     }
 }
 
@@ -86,6 +93,7 @@ const logout = async() => {
         localStorage.removeItem('user_token')
         return true
     } catch (err) {
+        enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
         return false
     }
 }

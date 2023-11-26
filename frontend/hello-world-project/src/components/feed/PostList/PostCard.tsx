@@ -44,7 +44,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [likeId, setLikeId] = React.useState(likeid);
     console.log('isLiked:', isLiked);
     const navigate = useNavigate();
-
     useEffect(() => {
         setIsLiked(isLiked);
       }, [isLiked]);
@@ -114,6 +113,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
 
     useEffect(() => {
         fetchUserInfo(); 
+        getFriendList();
     }, [data]);
 
     const renderDescription = (description: string) => {
@@ -175,13 +175,16 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
           }
     }
 
+    useEffect(() => {
+        getFriendList()
+    }, [])
+
     const PopupContent: React.FC = () => {
         if (isAlertVisible) {
             return(
             <Alert severity="success">Your message was sent successfully!</Alert>)
         }
         else{
-            getFriendList()
             return(
                 <div className='popupContainer'>
                     {friendsList.map((friend: any, id: number) => (

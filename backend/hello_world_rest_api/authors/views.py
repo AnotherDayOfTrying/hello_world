@@ -342,15 +342,13 @@ def getPrivatePost(request):
         friends.append(friendship['sender'])
         friends.append(friendship['reciever'])
     friends = set(friends)
-    response = {"type": "posts",}
-    num = 1
+    response = {"type": "posts", "items": []}
     for friend in friends:
         author = Author.objects.filter(id=friend)
         posts = Post.objects.filter(author__in = author, privacy='PRIVATE')
         serializer = GetPostSerializer(posts, many = True)
         if serializer.data:
-            response[f"friend{num}"] = serializer.data
-            num += 1
+            response["items"].append(serializer.data)
     return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET'])

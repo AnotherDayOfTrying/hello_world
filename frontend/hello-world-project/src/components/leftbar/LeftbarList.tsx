@@ -59,6 +59,12 @@ export default function LeftbarList() {
                   <span className="leftbarListItemText"> My Posts </span>
                 </NavLink>
               </li>
+              <li className="leftbarListItem">
+                <NavLink to="/githubActivity" className="leftbarLink" end>
+                  <EditNoteIcon className="leftbarIcon"/>
+                  <span className="leftbarListItemText"> My GitHub Activity </span>
+                </NavLink>
+              </li>
           </ul>
           <hr className="leftbarHr"/>
           

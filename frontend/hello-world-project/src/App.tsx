@@ -12,8 +12,7 @@ import Friends from "./pages/Friends/Friends";
 import EditProfile from "./pages/EditProfile/EditProfile";
 import Post from "./pages/Post/Post";
 import './App.css'
-import { Edit } from 'react-admin';
-
+import Github from './pages/Github/Github';
 
 const App: React.FC = () => {
   return (
@@ -88,6 +87,12 @@ const App: React.FC = () => {
               <div className="blur" style={{top: '-18%', right:'0'}}></div>
               <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
               <EditProfile /> 
+            </>} />
+            <Route path="/githubActivity" element={
+            <>
+              <div className="blur" style={{top: '-18%', right:'0'}}></div>
+              <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
+              <Github /> 
             </>} />
             </Route>
           </Route>

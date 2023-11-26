@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './friendSearch.css'
 import SearchIcon from '@mui/icons-material/Search';
-import { get } from 'http';
 
 
 

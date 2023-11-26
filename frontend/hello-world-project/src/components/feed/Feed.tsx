@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import './feed.css'
-import Share from '../../pages/Post/Post'
 import Posts from './PostList/Posts'
 import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
@@ -30,10 +29,9 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
       else {
         response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});
       }
-      console.log('Response:', response.data);
       const responseData: any = response.data.items;
       setData(responseData);
-      console.log('Fetched posts:', responseData[0]);
+      console.log('Fetched posts:', responseData);
     } catch (err: any) {
       if (err instanceof AxiosError) {
         console.error('API Error:', err.response?.data);
@@ -60,10 +58,11 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
     )
   }
   else if (isPrivate){
+    let transformedData = data.flat()
     return (
       <div className='feed'>
-        <Posts Reload={Reload}  data={data[0]}/>
-        </div>
+        <Posts Reload={Reload}  data={transformedData}/>
+      </div>
       
     )
   }
@@ -71,7 +70,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
     return (
       <div className='feed'>
         <Posts Reload={Reload} data={data}/>
-        </div>
+      </div>
       
     )
   }

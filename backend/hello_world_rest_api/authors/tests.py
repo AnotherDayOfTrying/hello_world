@@ -275,6 +275,47 @@ class CommentTest(TestCase):
         self.assertEqual(Comment.objects.count(), 0)
         self.c.credentials()
 
+class GetFollowerTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
+        self.author1 = Author.objects.create_user(
+            username='will1',
+            password= 'testpass1234',
+            displayName='will1',
+            github='',
+            is_approved = True,
+        )
+        self.author2 = Author.objects.create_user(
+            username='will2',
+            password= 'testpass1234',
+            displayName='will2',
+            github='',
+            is_approved = True,
+        )
+    def test_get_no_followers_remote(self):
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        self.response = self.client.get(f'/authors/{self.author1.id}/followers')
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.response.data['items'], [])
+    def test_get_followers_remote(self):
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author1, status=2)
+        self.response = self.client.get(f'/authors/{self.author1.id}/followers')
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.response.data['items'][0]['id'], str(self.author2.id))
+
 class GetAllAuthorsTest(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -297,6 +338,7 @@ class GetAllAuthorsTest(TestCase):
         
     
     def test_valid_pagination_authors(self):
+        
     
         self.token1 = Token.objects.get_or_create(user=self.author)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
@@ -353,6 +395,49 @@ class GetAllAuthorsTest(TestCase):
         self.response = self.client.get('/authors/')
         print(self.response.status_code)
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+class CheckFollowingTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
+        self.author1 = Author.objects.create_user(
+            username='will1',
+            password= 'testpass1234',
+            displayName='will1',
+            github='',
+            is_approved = True,
+        )
+        self.author2 = Author.objects.create_user(
+            username='will2',
+            password= 'testpass1234',
+            displayName='will2',
+            github='',
+            is_approved = True,
+        )
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author1,status = 2)
+        self.token1 = Token.objects.get_or_create(user=self.author1)
+    def test_check_following_local(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:checkfollowing', args=[self.author1.id,self.author2.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['is_follower'], True)
+        self.client.credentials()
+    def test_check_following_remote(self):
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        url = reverse('authors:checkfollowing', args=[self.author1.id,self.author2.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['is_follower'], True)
+        self.client.credentials()
 class GetOneAuthorTest(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -363,8 +448,18 @@ class GetOneAuthorTest(TestCase):
             displayName='will',
             github='',
         )
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
         self.url = reverse('authors:getoneauthor', args=[self.author.id])
     def test_get_one_author(self):
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         response = self.client.get(self.url)
         author = Author.objects.get(id=self.author.id)
         serializer = AuthorSerializer(author)
@@ -374,10 +469,19 @@ class GetOneAuthorTest(TestCase):
         data = {
             'displayName': 'will2',
         }
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         author1 = Author.objects.get(id=self.author.id)
         self.assertEqual(author1.displayName, data['displayName'])
+    def test_get_author_remote(self):
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.response.data['id'], str(self.author.id))
           
 class GetFriendRequestsTest(TestCase):
     def setUp(self):
@@ -400,7 +504,7 @@ class GetFriendRequestsTest(TestCase):
         self.token1 = Token.objects.get_or_create(user=self.author)
         self.token2 = Token.objects.get_or_create(user=self.author2)
 
-        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author)
+    
         
     def test_get_friend_requests(self):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)

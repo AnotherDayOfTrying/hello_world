@@ -13,8 +13,7 @@ urlpatterns = [
     path('likes/', views.Liking.as_view(), name = 'liking'),
     path('unlike/<int:like_id>/', views.Unliking.as_view(), name = 'unliking'),
     path('author/', views.CallingAuthorView.as_view(), name = 'get-calling-author'),
-    path('authors/', views.AllAuthorsView.as_view(), name = 'get-all-authors'),
-    path('authors/<uuid:author_id>',views.getOneAuthor, name = 'getoneauthor'),
+    
     path('authors/requests/', views.getFriendRequests, name = 'getfriendrequests'),
     path('authors/friends/', views.getFriends, name = 'getfriends'),
     path('post/upload/', views.UploadPost.as_view(), name = 'upload-post'),
@@ -27,5 +26,9 @@ urlpatterns = [
     path('authors/<uuid:author_id>/posts/<int:post_id>/likes/', views.getlikesonpost, name = 'getlikesonpost'),
     path('authors/<uuid:author_id>/posts/<int:post_id>/comments/<int:comment_id>/likes/', views.getlikesoncomment, name = 'getlikesoncomment'),
     path('authors/likes/', views.getlikesfromauthor, name = 'getlikesfromauthor'),
-
+    ### Remote API
+    path('authors/<uuid:author_id>',views.getOneAuthor, name = 'getoneauthor'),
+    path('authors/', views.AllAuthorsView.as_view(), name = 'get-all-authors'),
+    path('authors/<uuid:author_id>/followers',views.getFollowers, name = 'getfollowers'),
+    path('authors/<uuid:author_id>/followers/<uuid:foreign_author_id>',views.checkFollowing, name = 'checkfollowing'),
 ]

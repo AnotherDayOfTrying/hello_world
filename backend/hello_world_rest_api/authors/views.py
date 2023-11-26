@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import login, logout
 from .models import *
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -174,7 +174,8 @@ class CallingAuthorView(generics.RetrieveAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 @api_view(['GET','POST'])
-# @permission_classes([permissions.IsAuthenticated])
+@authentication_classes([TokenAuthentication, NodesAuthentication])
+@permission_classes([permissions.IsAuthenticated])
 def getOneAuthor(request, author_id):
     author = get_object_or_404(Author,id=author_id)
     if request.method == 'GET':
@@ -186,7 +187,34 @@ def getOneAuthor(request, author_id):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication, NodesAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def getFollowers(request, author_id):
+    author = get_object_or_404(Author,id=author_id)
+    followers = Friendship.objects.filter(reciever=author,status__in = [2,3])
+    followers = followers.values_list('sender', flat=True)
+    followers = Author.objects.filter(id__in=followers)
+    serializer = AuthorSerializer(followers, many=True)
+    response = {
+        "type": "followers",
+        "items": serializer.data,
+    }
+    return Response(response, status=status.HTTP_200_OK)
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication, NodesAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def checkFollowing(request,author_id,foreign_author_id):
+    author = get_object_or_404(Author,id=author_id)
+    foreign_author = get_object_or_404(Author,id=foreign_author_id)
+    friendship = Friendship.objects.filter(sender=foreign_author,reciever=author,status__in = [2,3])
+    if friendship:
+        return Response({'is_follower': 1}, status=status.HTTP_200_OK)
+    else:
+        return Response({'is_follower': 0}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])
 def getFriendRequests(request):

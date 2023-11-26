@@ -128,7 +128,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     github = serializers.URLField(allow_blank = True, allow_null = True)
     class Meta:
         model = Author
-        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github')
+        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github','host')
 
 
 class LikeingSerializer(serializers.Serializer):

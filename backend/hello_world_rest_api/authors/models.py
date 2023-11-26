@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.hashers import make_password,check_password
 import uuid
+from django.conf import settings
 from PIL import Image
 
 
@@ -38,8 +39,8 @@ class Author(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     displayName = models.CharField(max_length = 50, null = True,blank = True)
     github = models.URLField(max_length=255, null = True, blank = True)
-    host = models.CharField(max_length=255, blank = True)
-    url = models.URLField(max_length=255, blank = True)
+    host = models.CharField(max_length=255, default = settings.HOST_URL)
+    url = models.URLField(default = settings.HOST_URL + "authors/" + str(id))
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)

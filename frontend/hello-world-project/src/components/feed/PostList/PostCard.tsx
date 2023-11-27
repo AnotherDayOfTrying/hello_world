@@ -17,7 +17,7 @@ import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Popover, Popper } from '@mui/material';
+import { Popover } from '@mui/material';
 
 
 type PostCardProps = {

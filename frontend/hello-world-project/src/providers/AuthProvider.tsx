@@ -24,6 +24,7 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const response = await signup(data)
       if (response.token) {
+        enqueueSnackbar("Signed up!", {variant: 'success'})
         navigate("/login")
       }
       return response
@@ -39,7 +40,8 @@ export const AuthProvider = ({ children }: any) => {
       setUser(response.token)
       localStorage.setItem('user_token', response.token || '')
       if (await verifySession()) {
-        navigate("/home")
+        enqueueSnackbar("Logged in!", {variant: 'success'})
+        navigate("/home") 
       }
   
       return response
@@ -52,6 +54,7 @@ export const AuthProvider = ({ children }: any) => {
   // call this function to sign out logged in user
   const logoutUser = async () => {
     await logout()
+    enqueueSnackbar("Logged out!", {variant: 'success'})
     setUser('')
     navigate("/login", { replace: true })
   };

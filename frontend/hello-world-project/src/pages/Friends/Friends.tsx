@@ -51,6 +51,7 @@ export default function Friends() {
         getFriends();
       }, [getFriends]);
     
+    const isDataEmpty = data ? data.length === 0 : true
     return (
         <>
             <div className='FriendsContainer'>
@@ -58,7 +59,7 @@ export default function Friends() {
                 <div className="friendsList">
                 <FriendSearch onSearch={handleSearch} getFriends={getFriends} data={data}/>
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
-                    {data ? 
+                    {data && !isDataEmpty ?
                     (data.map((data: any, id: number) => {  
                         return <FriendsCard data={data}  getFriends={getFriends} key={id}/>})
                     ): 

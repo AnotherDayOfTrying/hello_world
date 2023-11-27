@@ -97,9 +97,18 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
         
 
 };
+
+    console.log("AUTHOR")
+    console.log(data)
     const fetchUserInfo = async () => {
         try {
-            const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
+            let authorResponse = undefined
+            if (!data.author.id) {
+                authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
+            } else {
+                authorResponse = {}
+            }
+            console.log(authorResponse)
             setUserInfo(authorResponse.data); 
             return authorResponse.data;
         } catch (error) {
@@ -219,9 +228,9 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${APIURL}${userInfo.profilePicture}`} alt="" className="postProfileImg" />
+                <img src={data.author.id ? data.author.profileImage : `${APIURL}${userInfo.profilePicture}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
-                    <span >{userInfo.displayName}</span>
+                    <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 

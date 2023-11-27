@@ -2,6 +2,7 @@ import React from 'react'
 import './notificationCard.css'
 import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
+import { useSnackbar } from 'notistack';
 
   
   type NotificationCardProps = {
@@ -11,6 +12,7 @@ import axios, { AxiosError } from "axios"
 
 function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
   const profilePicture = data.sender.profile_picture 
+  const {enqueueSnackbar} = useSnackbar();
   const handleAccept  = async (Id: number): Promise<any[] | undefined> => {
     try {
       const response = await axios.post(`${APIURL}/frequests/respond/${Id}/`,
@@ -28,6 +30,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
       getFriendRequests();
       return responseData;
     } catch (error) {
+      enqueueSnackbar('Unable to accept friend request. Try again later.', {variant: 'error'})
       console.log(error);
     }
     
@@ -50,6 +53,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
       getFriendRequests();
       return responseData;
     } catch (error) {
+      enqueueSnackbar('Unable to decline friend request. Try again later.', {variant: 'error'})
       console.log(error);
     }
     

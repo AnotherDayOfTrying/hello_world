@@ -6,18 +6,17 @@ import Leftbar from '../../components/leftbar/Leftbar';
 import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
 import { useLocation } from 'react-router-dom';
-import Popup from 'reactjs-popup';
-import { Alert } from '@mui/material';
+import { useSnackbar } from 'notistack';
 
 
 
 export default function PostShare() {
     const [image, setImage] = useState<any | null>(null);
     const ImageRef = React.createRef<HTMLInputElement>()
-    const [open, setOpen] = useState<boolean>(false);
     const [text, setText] = useState<string>('');
-    const [message, setMessage] = useState<string>('Post Uploaded Successfully');
+    const [author, setAuthor] = useState<any>();
     const { state } = useLocation();
+    const {enqueueSnackbar} = useSnackbar()
     const data = state as any;
 
     const location = useLocation();
@@ -47,10 +46,21 @@ export default function PostShare() {
                 setImage({
                     image: `${APIURL}${data.data.image}`,
                 });
-                
             }
         }
+
+        try {
+            const response = await axios.get(`${APIURL}/author/`, {
+              headers: {
+                Authorization: getAuthorizationHeader(),
+              },
+            });
+            setAuthor(response.data.item)
+        } catch {
+            enqueueSnackbar("Could not find current author", {variant: 'error'})
+        }
     } 
+
 
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.files && event.target.files[0]) {
@@ -105,8 +115,7 @@ export default function PostShare() {
                 });
                 const responseData: any = response.data;
                 console.log('post Edit response:', responseData);
-                setMessage('Post Edited Successfully');
-                showPopUp();
+                enqueueSnackbar('Post Edited Successfully', {variant: 'success'});
                 return responseData;
             } catch (error: any) {
                 console.log(error);
@@ -123,8 +132,8 @@ export default function PostShare() {
                 });
                 const responseData: any = response.data;
                 console.log('post upload response:', responseData);
-                setMessage('Post Uploaded Successfully');
-                showPopUp();
+                enqueueSnackbar('Post Uploaded Successfully', {variant: 'success'});
+                
                 return responseData;
             } catch (error: any) {
                 console.log(error);
@@ -132,23 +141,13 @@ export default function PostShare() {
     
         }
     };
-    const showPopUp = () => {
-        setImage(null);
-        setText('');
-        setOpen(true);
-        console.log('Open:', open);
-        // Close the popup after 3 seconds (3000 milliseconds)
-        setTimeout(() => {
-        setOpen(false);
-      }, 3000);
-      }
 
   return (
     <>
     <div className="shareContainer">
         <Leftbar/>
             <div className="postShare">
-                <img src='/assets/person/5.jpg' alt='' />
+                <img src={`${APIURL}/${author?.profilePicture || ''}`} alt='' />
                 <div>
                     <textarea  placeholder="What's on your mind?" value={text} onChange={handleTextChange}/>
                     <div className="postOptions">
@@ -186,9 +185,6 @@ export default function PostShare() {
                             <img src={image.image} alt="" />
                         </div>
                     )}
-                    <Popup  open={open} contentStyle={{width: "50%"}}  >
-                        <Alert severity={"success"}>{message}</Alert>
-                    </Popup>
                 </div>
             
             </div>

@@ -3,27 +3,30 @@ import SearchIcon from '@mui/icons-material/Search';
 import './authorSearch.css'
 import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
-import Popup from 'reactjs-popup';
-import { Alert } from '@mui/material';
+import { useSnackbar } from 'notistack';
 
 
 function AuthorSearch() {
   const [displayName, setDisplayName] = useState<string>('');
   const [filteredAuthor, setFilteredAuthor] = useState<any[]>([]);
-  const [message, setMessage] = useState<string>('');
-  const [open, setOpen] = useState<boolean>(false);
-  const [severity, setSeverity] = useState<any>('');
+  const {enqueueSnackbar} = useSnackbar();
 
   const handleSearch = async (): Promise<any[] | undefined> => {
   
     try {
-      const response = await axios.get(`${APIURL}/authors/`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: getAuthorizationHeader(),
-        },
-      });
-      const responseData: any[]  = response.data.items;
+      let requestURL = `${APIURL}/authors/`
+      let responseData = []
+      while (requestURL) {
+        const response = await axios.get(requestURL, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: getAuthorizationHeader(),
+          },
+        });
+
+        responseData.push(...response.data.items)
+        requestURL = response.data.pagination.next
+      }
       if (responseData) {
         console.log('Fetched authors:', responseData);
         const filteredAuthor = responseData.filter((author) =>
@@ -33,6 +36,8 @@ function AuthorSearch() {
         console.log(filteredAuthor);
         if (filteredAuthor.length > 0) {
           sendFriendRequest(filteredAuthor[0].id);
+        } else {
+          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning'})
         }
       }
       return responseData;
@@ -45,17 +50,6 @@ function AuthorSearch() {
     }
 
   };
-
-  const showPopUp = (message: string, severity: string) => {
-    setMessage(message);
-    setOpen(true);
-    setSeverity(severity);
-    console.log('Open:', open);
-    // Close the popup after 3 seconds (3000 milliseconds)
-    setTimeout(() => {
-    setOpen(false);
-  }, 3000);
-  }
   
   const sendFriendRequest = async (authorId: string): Promise<any[] | undefined> => {
           console.log('Author ID:', authorId);
@@ -73,14 +67,14 @@ function AuthorSearch() {
             const status = response.status;
             console.log('Status:', status);
             if (status === 200) {
-              showPopUp("Friend request sent successfully!", "success")
+              enqueueSnackbar("Friend request sent successfully!", {variant: 'success'})
             }
             const responseData: any = response.data;
             return responseData;
           } catch (error: any) {
             console.log(error);
             if (error.response.status === 400) {
-              showPopUp("You are already friends with this user, or you already sent them a request!", "info")
+              enqueueSnackbar("You are already friends with this user, or you already sent them a request!", {variant: 'info'})
             }
           };
         }
@@ -94,13 +88,7 @@ function AuthorSearch() {
         <div className="searchIcon">
             <SearchIcon onClick={handleSearch}/>
         </div>
-        <Popup  open={open} contentStyle={{width: "50%"}}  >
-        <Alert severity={severity}>{message}</Alert>
-        </Popup>
-        
-    
     </div>
-    
   )
 
 }

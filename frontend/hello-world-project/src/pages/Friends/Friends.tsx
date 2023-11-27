@@ -5,17 +5,19 @@ import './friends.css'
 import FriendSearch from './FriendSearch';
 import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
+import { useSnackbar } from 'notistack';
 
 
 
 export default function Friends() {
     const [data, setData] = useState<any>(null);
+    const {enqueueSnackbar} = useSnackbar();
 
     const handleSearch = (filteredFriend: any) => {
         setData(filteredFriend); 
     };
 
-    const getFriends =  useCallback(async () => { 
+    const getFriends = useCallback(async () => { 
         try {
         const response = await axios.get(`${APIURL}/authors/friends/`, {
             headers: {
@@ -40,6 +42,7 @@ export default function Friends() {
         setData(FriendInfo);
 
       } catch (error) {
+        enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error'})
         console.log(error);
       }
     }, []);

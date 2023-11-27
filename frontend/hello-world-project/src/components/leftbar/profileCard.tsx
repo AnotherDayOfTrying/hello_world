@@ -4,6 +4,7 @@ import axios from "axios"
 import APIURL, { getAuthorizationHeader} from "../../api/config"
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from 'notistack';
 
 interface ProfileCardProps { 
   Reload?: boolean;
@@ -11,6 +12,7 @@ interface ProfileCardProps {
 
 export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
   const [author, setAuthor] = useState<any>(null)
+  const {enqueueSnackbar} = useSnackbar()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
       })
       setAuthor(response.data.item)
     } catch (e) {
+      enqueueSnackbar('Unable to your details', {variant: "error"})
       console.error(e)
     }
   }
@@ -43,7 +46,7 @@ export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
       <div className='profileImages'>
         <img className='profile' src={APIURL + author?.profilePicture} alt='' />
         <img className='background' src='/assets/post/4.jpg' alt='' />
-        <EditIcon className='editIcon' style={{alignSelf: 'flex-end', marginTop: '10px', marginRight: '10px'}} onClick={handleEdit} />
+        <EditIcon className='editIcon' style={{alignSelf: 'flex-end', marginTop: '10px', marginRight: '10px', cursor: 'pointer'}} onClick={handleEdit} />
       </div>
       <div className='profileName'>
         <span>{author?.displayName}</span>

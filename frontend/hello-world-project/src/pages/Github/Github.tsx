@@ -4,11 +4,14 @@ import Activity from './Activity';
 import './github.css';
 import axios from 'axios';
 import APIURL, { getAuthorizationHeader } from '../../api/config';
+import { useSnackbar } from 'notistack';
+import { useNavigate } from 'react-router';
 
 const Github: React.FC = () => {
   const [data, setData] = React.useState<any[]>([]);
   const [username, setUsername] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const {enqueueSnackbar} = useSnackbar();
+  const navigate = useNavigate()
 
   useEffect(() => {
     getAuthor();
@@ -33,6 +36,7 @@ const Github: React.FC = () => {
       console.log('username: ', username);
       fetchData();
     } catch (e) {
+
       console.error(e);
     }
   };
@@ -47,21 +51,24 @@ const Github: React.FC = () => {
         }
       } catch (error: any) {
         if (error.response.status === 403) {
-          setError('Github API rate limit exceeded\nPlease try again later');
+          enqueueSnackbar('Github API rate limit exceeded\nPlease try again later', {variant: 'warning'})
         }
         console.error('Error fetching data:', error);
       }
     }
   
-  
+
   return (
     <div className="container">
       <Leftbar  />
         <div className="activityList">
-        {error ? (
-          <h1 style={{whiteSpace: 'pre-line', alignSelf: 'center'}}>{error}</h1>
-        ) : (
+        {data.length > 0 ? (
           data.map((activity) => <Activity key={activity.id} activity={activity} />)
+        ) : (
+          <div className='editProfile'>
+            <p>Seems like your profile does not have a valid GitHub URL</p>
+            <button className='button' onClick={() => navigate('/editProfile')}> Edit Profile</button>
+          </div>
         )}
         </div>
     </div>

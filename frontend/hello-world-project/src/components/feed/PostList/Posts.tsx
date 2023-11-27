@@ -4,6 +4,7 @@ import PostCard from './PostCard'
 import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import axios, { AxiosError } from "axios"
 import EmptyPostCard from './EmptyPostCard'
+import { useSnackbar } from 'notistack'
 
 interface PostsProps {
   data: any;
@@ -13,6 +14,7 @@ interface PostsProps {
 
 const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
   const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
+  const {enqueueSnackbar} = useSnackbar()
 
   useEffect(() => {
     const fetchLikedPosts = async () => {
@@ -24,6 +26,7 @@ const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
         }));
         setLikedPosts(new Set(likedPostIds));
       } catch (error) {
+        enqueueSnackbar('Unable to fetch liked posts', {variant: 'error'})
         console.error('Error fetching liked posts:', error);
       }
     };

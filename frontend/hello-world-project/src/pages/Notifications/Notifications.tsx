@@ -6,9 +6,11 @@ import './notifications.css';
 import { PostData } from '../../components/feed/PostList/data/postsData';
 import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
+import { useSnackbar } from 'notistack';
 
 export default function Notifications() {
   const [data, setData] = useState<any>(null);
+  const {enqueueSnackbar} = useSnackbar();
 
     const getFriendRequests = useCallback(async () => {
       try {
@@ -35,6 +37,7 @@ export default function Notifications() {
         setData(requestsWithAuthors);
 
       } catch (error) {
+        enqueueSnackbar('Unable to fetch notifications.', {variant: 'error'})
         console.log(error);
       }
     }, []);

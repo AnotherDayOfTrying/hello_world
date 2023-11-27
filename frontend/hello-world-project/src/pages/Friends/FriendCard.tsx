@@ -3,6 +3,7 @@ import './friendCard.css'
 import { NavLink } from 'react-router-dom';
 import APIURL, { getAuthorizationHeader } from "../../api/config"
 import axios, { AxiosError } from "axios"
+import { useSnackbar } from 'notistack';
 
 
 type FriendsCardProps = {
@@ -15,7 +16,8 @@ type FriendsCardProps = {
 
 function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
   const profilePicture = data.sender.profile_picture ? data.sender.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
-  
+  const {enqueueSnackbar} = useSnackbar();
+
   const handleMessage = async () => {
     // try {
     //   const response = await axios.post(`${APIURL}/friend/message/${data.id}`, {
@@ -44,6 +46,7 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
         getFriends();
       }
     } catch (err) {
+      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error'})
       console.log(err);
     }
   };

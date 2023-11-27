@@ -6,8 +6,9 @@ import axios from 'axios';
 import APIURL, { getAuthorizationHeader } from '../../api/config';
 import gsap from 'gsap';
 import ClearIcon from '@mui/icons-material/Clear';
-import Popup from 'reactjs-popup';
 import { Alert } from '@mui/material';
+import { useSnackbar } from 'notistack';
+
 
 
 const EditProfile: React.FC = () => {
@@ -18,8 +19,8 @@ const EditProfile: React.FC = () => {
     const [id, setID] = useState<string>('');
     const [author, setAuthor] = useState<any>(null);
     const ImageRef = React.createRef<HTMLInputElement>()
-    const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [reload, setReload] = useState(false);
+    const {enqueueSnackbar} = useSnackbar();
 
   const getAuthor = async () => {
     try {
@@ -89,7 +90,7 @@ const EditProfile: React.FC = () => {
             Authorization: getAuthorizationHeader(),
           },
         });
-        setIsAlertVisible(true);
+        enqueueSnackbar('Your profile was updated successfully!', {variant: 'success'})
         setDisplayName(response.data.displayName);
         setGitHub(response.data.github);
         setProfilePicture(response.data.profilePicture);
@@ -108,19 +109,6 @@ const EditProfile: React.FC = () => {
   }
 
   };
-  useEffect(() => {
-    if (isAlertVisible) {
-        const timer = setTimeout(() => {
-            setIsAlertVisible(false);
-        }, 1000);
-
-        return () => {
-            
-            clearTimeout(timer);
-            };
-    }
-}, [isAlertVisible]);
-
 
   return (
     <>
@@ -133,7 +121,7 @@ const EditProfile: React.FC = () => {
             label="Display Name"
             variant="standard"
             value={displayName}
-            onChange={(event) => {
+            onChange={(event: any) => {
               setDisplayName(event.target.value);
             }}
           />
@@ -142,7 +130,7 @@ const EditProfile: React.FC = () => {
             label="GitHub Link"
             variant="standard"
             value={github}
-            onChange={(event) => {
+            onChange={(event: any) => {
               setGitHub(event.target.value);
             }}
           />
@@ -174,10 +162,6 @@ const EditProfile: React.FC = () => {
                 onClick={handleSubmit}>
                 Submit
             </button>
-            <Popup open={isAlertVisible} 
-                position= "right center">
-                <Alert severity="success">Your profile was updated successfully!</Alert>
-            </Popup>
         </div>
       </div>
     </>

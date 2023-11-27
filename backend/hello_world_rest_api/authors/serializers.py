@@ -155,9 +155,13 @@ class FriendShipSerializer(serializers.ModelSerializer):
         fields = ('id','sender', 'reciever', 'status')
 
 class UploadPostSerializer(serializers.ModelSerializer):
+    post_prime_key = serializers.ReadOnlyField()
+    post_source = serializers.ReadOnlyField()
+    post_origin = serializers.ReadOnlyField()
+    
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
+        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
 
     def create(self, validated_data):
         uploadPost = Post.objects.create(
@@ -173,9 +177,13 @@ class UploadPostSerializer(serializers.ModelSerializer):
 
 class GetPostSerializer(serializers.ModelSerializer):
     image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
+    post_prime_key = serializers.ReadOnlyField()
+    post_source = serializers.ReadOnlyField()
+    post_origin = serializers.ReadOnlyField()
+    
     class Meta:
         model = Post
-        fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
+        fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
     def create(self, validated_data):
         GetPost = Post.objects.create(
             author = self.context['author'],
@@ -193,9 +201,13 @@ class EditPostSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=50, required = False, allow_blank = True)
     content_type = serializers.CharField(max_length=10, required = False, allow_blank = True)
     privacy = serializers.CharField(max_length=10, required = False, allow_blank = True)
+    post_prime_key = serializers.ReadOnlyField()
+    post_source = serializers.ReadOnlyField()
+    post_origin = serializers.ReadOnlyField()
+    
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image')
+        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.content_type = validated_data.get('content_type', instance.content_type)

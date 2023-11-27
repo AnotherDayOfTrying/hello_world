@@ -280,19 +280,29 @@ class UploadPost(generics.CreateAPIView):
         if serializer.is_valid():
             serializer.save()
             author_serializer = AuthorSerializer(request.user)
-            comments = Comment.objects.filter(author=request.user, post = serializer.data['id'])
+            comments = Comment.objects.filter(post = serializer.data['id'])
+            if serializer.data['privacy'] == 'Unlisted':
+                unlisted = True
+            else:
+                unlisted = False
             response = {
                 'type': 'post',
                 'title': serializer.data['title'], 
                 'message': 'Post created successfully',
-                'id': serializer.data['id'],
+                'id': serializer.data['post_prime_key'],
+                'origin': serializer.data['post_origin'],
+                'source': serializer.data['post_source'],
                 'description': "This post describes something",
                 'contentType': serializer.data['content_type'],
                 'content': 'Content displayed on post',
                 'author': author_serializer.data,
-                'commentsSrc': comments,
+                'count': len(comments),
+                'comments': comments,
                 'visibility': serializer.data['privacy'],
-                'data': serializer.data
+                'published': serializer.data['published'],
+                'unlisted': unlisted,
+                'data': serializer.data,
+                'id2': serializer.data['id']
             }
             return Response(response, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

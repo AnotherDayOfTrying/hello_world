@@ -28,7 +28,7 @@ export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
       })
       setAuthor(response.data.item)
     } catch (e) {
-      enqueueSnackbar('Unable to your details', {variant: "error"})
+      enqueueSnackbar('Unable to fetch your details', {variant: "error"})
       console.error(e)
     }
   }

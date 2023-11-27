@@ -60,6 +60,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]
     privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
     # For now content is text, but set up options for content 
@@ -68,6 +69,19 @@ class Post(models.Model):
     text = models.CharField(max_length=200, blank=True, null=True)
     image_url = models.URLField(max_length=200, blank=True, null=True)
     image = models.ImageField(upload_to='postimages/', blank=True, null=True)
+    published = models.DateTimeField(auto_now_add=True)
+    
+    @property
+    def post_prime_key(self):
+        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
+    
+    @property
+    def post_source(self):
+        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
+    
+    @property
+    def post_origin(self):
+        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

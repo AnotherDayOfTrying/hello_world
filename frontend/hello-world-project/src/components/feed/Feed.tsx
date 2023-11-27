@@ -57,8 +57,8 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
       
     )
   }
-  else if (isPrivate){
-    let transformedData = data.flat()
+  else if (isPrivate){ 
+    let transformedData = data ? data.flat() : []
     return (
       <div className='feed'>
         <Posts Reload={Reload}  data={transformedData}/>

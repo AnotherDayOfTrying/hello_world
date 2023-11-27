@@ -8,6 +8,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import EditNoteIcon from '@mui/icons-material/EditNote';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { NavLink } from 'react-router-dom';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 
 
@@ -61,7 +62,7 @@ export default function LeftbarList() {
               </li>
               <li className="leftbarListItem">
                 <NavLink to="/githubActivity" className="leftbarLink" end>
-                  <EditNoteIcon className="leftbarIcon"/>
+                  <GitHubIcon className="leftbarIcon"/>
                   <span className="leftbarListItemText"> My GitHub Activity </span>
                 </NavLink>
               </li>

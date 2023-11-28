@@ -36,11 +36,10 @@ class UserManager(BaseUserManager):
 
 class Author(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length = 20, unique = True)
-    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    uid = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     displayName = models.CharField(max_length = 50, null = True,blank = True)
     github = models.URLField(max_length=255, null = True, blank = True)
     host = models.CharField(max_length=255, default = settings.HOST_URL)
-    url = models.URLField(default = settings.HOST_URL + "authors/" + str(id))
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
@@ -53,8 +52,12 @@ class Author(AbstractBaseUser, PermissionsMixin):
     @property
     def type(self):
         return "author"
+    @property
     def url(self):
-        return self.host + "authors/" + str(self.id)
+        return self.host + "authors/" + str(self.uid)
+    @property
+    def id(self):
+        return self.host + "authors/" + str(self.uid)
     objects = UserManager()
 
 class Post(models.Model):

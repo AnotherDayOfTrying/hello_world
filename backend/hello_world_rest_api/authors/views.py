@@ -46,7 +46,7 @@ class Signin(generics.CreateAPIView):
             response = {
                 'message': 'User logged in successfully',
                 'token': token.key,
-                'data': author.id
+                'data': author.uid
             }
             return Response(response, status=status.HTTP_200_OK)
         else:
@@ -144,7 +144,7 @@ class AllAuthorsView(generics.CreateAPIView):
         except ValueError:
             return Response({'error': 'Invalid page or page_size parameter'}, status=400)
         
-        queryset = Author.objects.filter(is_approved=True, displayName__isnull=False).order_by('id')
+        queryset = Author.objects.filter(is_approved=True, displayName__isnull=False).order_by('uid')
         paginator = PageNumberPagination()
         paginator.page_size = page_size
         page = paginator.paginate_queryset(queryset,request)
@@ -165,7 +165,7 @@ class CallingAuthorView(generics.RetrieveAPIView):
     serializer_class = AuthorSerializer
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
-        author = get_object_or_404(Author,id=request.user.id)
+        author = get_object_or_404(Author,uid=request.user.uid)
         serializer = AuthorSerializer(author)
         response = {
             "type": "author",
@@ -177,7 +177,7 @@ class CallingAuthorView(generics.RetrieveAPIView):
 @authentication_classes([TokenAuthentication, NodesAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def getOneAuthor(request, author_id):
-    author = get_object_or_404(Author,id=author_id)
+    author = get_object_or_404(Author,uid=author_id)
     if request.method == 'GET':
         serializer = AuthorSerializer(author)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -192,10 +192,10 @@ def getOneAuthor(request, author_id):
 @authentication_classes([TokenAuthentication, NodesAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def getFollowers(request, author_id):
-    author = get_object_or_404(Author,id=author_id)
+    author = get_object_or_404(Author,uid=author_id)
     followers = Friendship.objects.filter(reciever=author,status__in = [2,3])
     followers = followers.values_list('sender', flat=True)
-    followers = Author.objects.filter(id__in=followers)
+    followers = Author.objects.filter(uid__in=followers)
     serializer = AuthorSerializer(followers, many=True)
     response = {
         "type": "followers",
@@ -206,8 +206,8 @@ def getFollowers(request, author_id):
 @authentication_classes([TokenAuthentication, NodesAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def checkFollowing(request,author_id,foreign_author_id):
-    author = get_object_or_404(Author,id=author_id)
-    foreign_author = get_object_or_404(Author,id=foreign_author_id)
+    author = get_object_or_404(Author,uid=author_id)
+    foreign_author = get_object_or_404(Author,uid=foreign_author_id)
     friendship = Friendship.objects.filter(sender=foreign_author,reciever=author,status__in = [2,3])
     if friendship:
         return Response({'is_follower': 1}, status=status.HTTP_200_OK)

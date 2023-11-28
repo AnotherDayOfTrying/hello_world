@@ -184,17 +184,6 @@ class GetPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
-    def create(self, validated_data):
-        GetPost = Post.objects.create(
-            author = self.context['author'],
-            title = validated_data['title'],
-            content_type = validated_data['content_type'],
-            privacy = validated_data['privacy'],
-            text = validated_data['text'],
-            image_url = validated_data['image_url'],
-            image = validated_data['image'],
-        )
-        return GetPost
     
 class EditPostSerializer(serializers.ModelSerializer):
     image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)

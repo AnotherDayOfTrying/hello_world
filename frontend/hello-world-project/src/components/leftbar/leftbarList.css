@@ -2,7 +2,6 @@
     padding: 0;
     margin: 0;
     list-style: none;
-
 }
 
 .leftbarListItem{
@@ -25,6 +24,12 @@ a {
   
 a:hover {
     color: #007bff; 
+}
+
+.leftbarLink {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .leftbarLink.active {

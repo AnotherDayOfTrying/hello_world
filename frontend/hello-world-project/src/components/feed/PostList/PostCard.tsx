@@ -151,12 +151,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
 
     const getFriendList = async () => {
         try {
-            const response = await axios.get(`${APIURL}/authors/friends/`, {
-                headers: {
-                "Content-Type": "application/json",
-                Authorization: getAuthorizationHeader(),
-                },
-            });
+            let response = {data: []}
+            if (!data.author.id) {
+                response = await axios.get(`${APIURL}/authors/friends/`, {
+                    headers: {
+                    "Content-Type": "application/json",
+                    Authorization: getAuthorizationHeader(),
+                    },
+                });
+            }
             const friends: any[] = response.data;
             const authorFriends: any[] = []
             await Promise.all(

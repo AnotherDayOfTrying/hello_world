@@ -17,21 +17,15 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
   const fetchData = async () => {
     try {
       let response;
-      const test = await axios.get('https://chimp-chat-1e0cca1cc8ce.herokuapp.com/posts/public/', {headers: {Authorization: 'Basic bm9kZS00MDQtdGVhbS1ub3QtZm91bmQ6Y2hpbXBjaGF0YXBp'}});
-      // console.log("DATA")
-      // console.log(test.data.items)
+      // const test = await axios.get('https://chimp-chat-1e0cca1cc8ce.herokuapp.com/posts/public/', {headers: {Authorization: 'Basic bm9kZS00MDQtdGVhbS1ub3QtZm91bmQ6Y2hpbXBjaGF0YXBp'}});
 
-
-      test.data.items = test.data.items.map((post: any) => {
-        return {
-          text: post.content,
-          privacy: post.visibility,
-          author: post.author,
-        }
-      })
-
-      // console.log(test.data.items)
-
+      // test.data.items = test.data.items.map((post: any) => {
+      //   return {
+      //     text: post.content,
+      //     privacy: post.visibility,
+      //     author: post.author,
+      //   }
+      // })
 
       if (isPrivate) {
         response = await axios.get(`${APIURL}/post/getprivate/`, {headers: {Authorization: getAuthorizationHeader()}});
@@ -48,7 +42,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
 
       console.log("DATA")
       const responseData: any = response.data.items;
-      responseData.push(...test.data.items)
+      // responseData.push(...test.data.items)
       setData(responseData);
       console.log('Fetched posts:', responseData);
     } catch (err: any) {

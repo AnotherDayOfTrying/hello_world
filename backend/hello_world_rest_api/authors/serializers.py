@@ -128,7 +128,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     github = serializers.URLField(allow_blank = True, allow_null = True)
     class Meta:
         model = Author
-        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github','host')
+        fields = ('type', 'uid', 'url', 'displayName', 'profilePicture', 'github','host')
 
 
 class LikeingSerializer(serializers.Serializer):
@@ -232,3 +232,19 @@ class LikeSerializer(serializers.ModelSerializer):
         if isinstance(object.content_object, Comment):
             return {'comment_id': object.content_object.id}
         return str(object.content_object)
+class RemotePostSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=['post'])
+    title = serializers.CharField()
+    id = serializers.URLField()
+    source = serializers.URLField()
+    origin = serializers.URLField()
+    description = serializers.CharField()
+    contentType = serializers.ChoiceField(choices=['text/plain', 'image/png', 'image/jpeg','application/base64','text/markdown'])
+    content = serializers.CharField()
+    author = AuthorSerializer()
+    categories = serializers.ListField()
+    published = serializers.DateTimeField()
+    visibility = serializers.ChoiceField(choices=['PUBLIC', 'FRIENDS'])
+    unlisted = serializers.BooleanField()
+    count = serializers.IntegerField()
+    comments = serializers.URLField()

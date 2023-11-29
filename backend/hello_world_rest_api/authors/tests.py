@@ -656,14 +656,14 @@ class LikingTests(TestCase):
 class PostTest(TestCase):
     def setUp(self):
         self.author = Author.objects.create_superuser(
-            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
             username='will',
             password='testpass123',
             displayName='will',
             github='',
         )
         self.author2 = Author.objects.create_superuser(
-            id = 'adbfc58a-7d07-11ee-b962-0242ac120002',
+            uid = 'adbfc58a-7d07-11ee-b962-0242ac120002',
             username='Joe',
             password='testpass123',
             displayName='joe',
@@ -756,3 +756,29 @@ class PostTest(TestCase):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
         response = self.c.get('/post/getowned/')
         self.assertEqual(response.data['items'], [])
+class RemotePostTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.title1='coding'
+        self.content_type1='TEXT'
+        self.privacy = 'PUBLIC'
+        self.text1='Hello World'
+        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+    def test_remote_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['data']['title'], self.title1)
+        url2 = reverse('authors:getallposts', args=[self.author.uid])
+        response = self.c.get(url2)
+        print(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['items'][0]['title'], self.title1)

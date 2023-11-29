@@ -422,3 +422,68 @@ def getlikesfromauthor(request):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+class AllPostView(generics.CreateAPIView):
+    pagination_class = PageNumberPagination
+    serializer_class = GetPostSerializer
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request,author_id):
+        author = get_object_or_404(Author,uid=author_id)
+        page_number = request.query_params.get('page',1)
+        page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+        try:
+            page_number = int(page_number)
+            page_size = int(page_size)
+        except ValueError:
+            return Response({'error': 'Invalid page or page_size parameter'}, status=400)
+        
+        queryset = Post.objects.filter(author=author).order_by('-published')
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+        page = paginator.paginate_queryset(queryset,request)
+        translated_post = []
+        for i in page:
+            if i.content_type == 'IMAGE':
+                contentType = 'image/png'
+            elif i.content_type == 'TEXT':
+                contentType = 'text/plain'
+            if i.privacy == 'PUBLIC':
+                visibility = 'PUBLIC'
+                unlisted = False
+            elif i.privacy == 'PRIVATE':
+                visibility = 'FRIENDS'
+                unlisted = False
+            elif i.privacy == 'UNLISTED':
+                visibility = 'PUBLIC'
+                unlisted = True
+            translated = {
+                'type': 'post',
+                'title': i.title,
+                'id': i.post_prime_key,
+                'origin': i.post_origin,
+                'source': i.post_source,
+                'description': "This post describes something",
+                'contentType': contentType,
+                'content': i.text,
+                'author': AuthorSerializer(i.author).data,
+                'count': len(Comment.objects.filter(post=i.id)),
+                'comments': i.post_prime_key + '/comments/',
+                'visibility': visibility,
+                'published': i.published,
+                'unlisted': unlisted,
+                'categories': [],
+            }
+            translated_post.append(translated)
+        serializer = RemotePostSerializer(translated_post, many=True)
+        response = {
+            "type": "posts",
+            "items": serializer.data,
+            'pagination': {
+                'next': paginator.get_next_link(),
+                'previous': paginator.get_previous_link(),
+                'page_number': page_number,
+                'page_size': page_size,
+            },
+        }
+        return Response(response, status=status.HTTP_200_OK)

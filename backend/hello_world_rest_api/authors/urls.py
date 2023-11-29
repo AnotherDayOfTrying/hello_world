@@ -31,4 +31,5 @@ urlpatterns = [
     path('authors/', views.AllAuthorsView.as_view(), name = 'get-all-authors'),
     path('authors/<uuid:author_id>/followers',views.getFollowers, name = 'getfollowers'),
     path('authors/<uuid:author_id>/followers/<uuid:foreign_author_id>',views.checkFollowing, name = 'checkfollowing'),
+    path('authors/<uuid:author_id>/posts/', views.AllPostView.as_view(), name = 'getallposts'),
 ]

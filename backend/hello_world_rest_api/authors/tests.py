@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from django.test import TestCase,Client, override_settings
 import base64
@@ -782,3 +783,35 @@ class RemotePostTest(TestCase):
         print(response.data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['items'][0]['title'], self.title1)
+
+class RemotePostImageTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.title1='coding'
+        self.content_type1='TEXT'
+        self.privacy = 'PUBLIC'
+        self.text1='Hello World'
+        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.image = Image.open('./media/postimages/postpicture1.jpg')
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+    
+    def test_remote_image(self):
+        img = Image.open('./media/postimages/postpicture1.jpg')
+        output = io.BytesIO()
+        img.save(output, format='JPEG',quality = 60)
+        file = InMemoryUploadedFile(output, 'ImageField', "postpicture1.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
+        post_object = Post.objects.create(uid = 'adbfc58a-7d07-11ee-b962-0242ac120002', author=self.author, title=self.title1, text=self.text1, privacy=self.privacy, content_type=self.content_type1, image_url=self.image_url1,image = file)
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, post_object.uid])
+        response = self.c.get(url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('image/jpeg;base64',  response.data['data'])
+        

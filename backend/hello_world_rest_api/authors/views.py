@@ -14,6 +14,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.pagination import PageNumberPagination
 from .nodeAuthentication import NodesAuthentication
 from rest_framework.authentication import TokenAuthentication
+from PIL import Image
+from io import BytesIO
+import base64
+
 
 # Create your views here.
 class Signup(generics.CreateAPIView):
@@ -425,7 +429,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class AllPostView(generics.CreateAPIView):
     pagination_class = PageNumberPagination
-    serializer_class = GetPostSerializer
+    serializer_class = RemotePostSerializer
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request,author_id):
@@ -487,3 +491,22 @@ class AllPostView(generics.CreateAPIView):
             },
         }
         return Response(response, status=status.HTTP_200_OK)
+
+class PostImageView(generics.CreateAPIView):
+    serializer_class = RemotePostImageSerializer
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        if post.image == None or '':
+            return Response({'error': 'no image'}, status=404)
+        image_path = post.image.path
+        with open(image_path, "rb") as image_file:
+            image_data = image_file.read()
+
+            img_str = base64.b64encode(image_data)
+            response_str = {'data':"image/jpeg;base64," + img_str.decode('utf-8')}
+        serializer = RemotePostImageSerializer(response_str)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)

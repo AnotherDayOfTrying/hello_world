@@ -32,4 +32,5 @@ urlpatterns = [
     path('authors/<uuid:author_id>/followers',views.getFollowers, name = 'getfollowers'),
     path('authors/<uuid:author_id>/followers/<uuid:foreign_author_id>',views.checkFollowing, name = 'checkfollowing'),
     path('authors/<uuid:author_id>/posts/', views.AllPostView.as_view(), name = 'getallposts'),
+    path('authors/<uuid:author_id>/posts/<uuid:post_id>/image', views.PostImageView.as_view(), name = 'getpostimage'),
 ]

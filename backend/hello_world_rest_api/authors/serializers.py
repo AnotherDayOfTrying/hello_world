@@ -248,3 +248,6 @@ class RemotePostSerializer(serializers.Serializer):
     unlisted = serializers.BooleanField()
     count = serializers.IntegerField()
     comments = serializers.URLField()
+
+class RemotePostImageSerializer(serializers.Serializer):
+    data = serializers.CharField()

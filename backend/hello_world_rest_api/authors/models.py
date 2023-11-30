@@ -61,7 +61,6 @@ class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    message = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     content = models.TextField()
     Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]

@@ -257,7 +257,7 @@ class CommentTest(TestCase):
     def test_post_comment(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
         self.assertEqual(Comment.objects.count(), 0)
-        response= self.c.post(f'/comments/{self.post.id}/', {'comment': 'Test comment'})
+        response= self.c.post(f'/comments/{self.post.id}/', {'comment': 'Test comment', 'contentType': 'this is content type'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Comment.objects.count(), 1)
         self.assertEqual(Comment.objects.get().comment, 'Test comment')
@@ -393,7 +393,6 @@ class GetAllAuthorsTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
         
         self.response = self.client.get('/authors/')
-        print(self.response.status_code)
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
 class CheckFollowingTest(TestCase):
     def setUp(self):
@@ -688,15 +687,15 @@ class PostTest(TestCase):
         
     def test_upload_post_success(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': '', 'content': 'this is content', 'description': 'this is description'})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['data']['title'], self.title1)
         self.c.credentials()
 
     def test_update_post_success(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response_post = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        response = self.c.post(f'/post/edit/{response_post.data["id2"]}/', {'title': self.title2, 'content_type': self.content_type2, 'text': self.text2})
+        response_post = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': '', 'content': 'this is content', 'description': 'this is description'})
+        response = self.c.post(f'/post/edit/{response_post.data["id2"]}/', {'title': self.title2, 'content_type': self.content_type2, 'text': self.text2, 'content': 'this is content', 'description': 'this is description'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['data']['title'], self.title2)
         self.assertEqual(response.data['data']['content_type'], self.content_type2)
@@ -709,7 +708,7 @@ class PostTest(TestCase):
     def test_delete_post_success(self):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         self.assertEqual(Post.objects.count(), 0)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': '', 'content': 'this is content', 'description': 'this is description'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Post.objects.count(), 1)
         response=self.c.delete(f'/post/delete/{Post.objects.get().id}/')
@@ -732,7 +731,6 @@ class PostTest(TestCase):
         self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text2, 'image_url': self.image_url1, 'image': ''})
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
         response = self.c.get('/post/getprivate/')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.c.credentials()
 

@@ -113,6 +113,13 @@ class Like(models.Model):
     @property
     def post_prime_key(self):
         return f'{settings.HOST_URL}/authors/{self.liker.id}/posts/{self.content_object.uid}'
+    
+class Inbox_Item(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    item_object = GenericForeignKey('content_type', 'object_id')
+    
 
 
     

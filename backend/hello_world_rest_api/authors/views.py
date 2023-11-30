@@ -362,7 +362,7 @@ class GetPublicPost(generics.CreateAPIView):
 @api_view(['GET'])
 def getPrivatePost(request):
     author = request.user
-    friends = Friendship.objects.filter(reciever=author,status__in=[2,3])
+    friends = Friendship.objects.filter(reciever=author,status__in=[2,3]) | Friendship.objects.filter(sender=author,status__in=[2,3])
     serializer = FriendShipSerializer(friends, many=True)
     friends = []
     for friendship in serializer.data:
@@ -372,7 +372,7 @@ def getPrivatePost(request):
     response = {"type": "posts", "items": []}
     for friend in friends:
         author = Author.objects.filter(id=friend)
-        posts = Post.objects.filter(author__in = author, privacy='PRIVATE')
+        posts = Post.objects.filter(author__in = author, privacy='PRIVATE')#.exclude(author=request.user)
         serializer = GetPostSerializer(posts, many = True)
         if serializer.data:
             response["items"].append(serializer.data)

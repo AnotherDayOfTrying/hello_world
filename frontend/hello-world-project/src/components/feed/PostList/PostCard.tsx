@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import './postCard.css';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -17,6 +17,7 @@ import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
+import { Popover } from '@mui/material';
 
 
 type PostCardProps = {
@@ -34,6 +35,10 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
     const [likeId, setLikeId] = React.useState(likeid);
+    const [openComments, setOpenComments] = useState<boolean>(false);
+    const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
+    const commentButton = useRef<any>(null);
+    const sendButton = useRef<any>(null);
     const navigate = useNavigate();
     useEffect(() => {
         setIsLiked(isLiked);
@@ -92,9 +97,18 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
         
 
 };
+
+    console.log("AUTHOR")
+    console.log(data)
     const fetchUserInfo = async () => {
         try {
-            const authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
+            let authorResponse = undefined
+            if (!data.author.id) {
+                authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
+            } else {
+                authorResponse = {}
+            }
+            console.log(authorResponse)
             setUserInfo(authorResponse.data); 
             return authorResponse.data;
         } catch (error) {
@@ -137,12 +151,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
 
     const getFriendList = async () => {
         try {
-            const response = await axios.get(`${APIURL}/authors/friends/`, {
-                headers: {
-                "Content-Type": "application/json",
-                Authorization: getAuthorizationHeader(),
-                },
-            });
+            let response = {data: []}
+            if (!data.author.id) {
+                response = await axios.get(`${APIURL}/authors/friends/`, {
+                    headers: {
+                    "Content-Type": "application/json",
+                    Authorization: getAuthorizationHeader(),
+                    },
+                });
+            }
             const friends: any[] = response.data;
             const authorFriends: any[] = []
             await Promise.all(
@@ -214,9 +231,9 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${APIURL}${userInfo.profilePicture}`} alt="" className="postProfileImg" />
+                <img src={data.author.id ? data.author.profileImage : `${APIURL}${userInfo.profilePicture}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
-                    <span >{userInfo.displayName}</span>
+                    <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 
@@ -228,13 +245,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
             {data.text && renderDescription(data.text)}
             {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>}
             <div className="reactions">
-                {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}   
-                <Popup trigger={<CommentIcon/>} position="right center" contentStyle={{ width: '40%', height: 'auto' }}>
-                    { <Comment postID = {data.id} />}
-                </Popup>
-                <Popup trigger={<SendIcon />} position="right center" >
-                    { <PopupContent />}
-                </Popup>
+                {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}  
+                <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
+                <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
+                <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
+                    <Comment postID = {data.id} />
+                </Popover> 
+                <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
+                    <PopupContent />
+                </Popover>
             </div>
         </div>
     );

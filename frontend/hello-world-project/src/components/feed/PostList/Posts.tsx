@@ -18,9 +18,10 @@ const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
 
   useEffect(() => {
     const fetchLikedPosts = async () => {
+      let likedPostIds = []
       try {
         const response = await axios.get(`${APIURL}/authors/likes/`, {headers: {Authorization: getAuthorizationHeader(),}});
-        const likedPostIds = response.data.map((likedPost: any) => ({
+        likedPostIds = response.data.map((likedPost: any) => ({
           post_id: likedPost.content_object.post_id,
           like_id: likedPost.id,
         }));

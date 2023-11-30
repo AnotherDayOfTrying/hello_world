@@ -731,8 +731,9 @@ class PostTest(TestCase):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PRIVATE', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
         self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text2, 'image_url': self.image_url1, 'image': ''})
-        self.c.login(username='Joe', password='testpass123')
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
         response = self.c.get('/post/getprivate/')
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.c.credentials()
 

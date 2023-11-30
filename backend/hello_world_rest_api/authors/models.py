@@ -61,6 +61,9 @@ class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    message = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    content = models.TextField()
     Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]
     privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
     # For now content is text, but set up options for content 
@@ -84,10 +87,16 @@ class Post(models.Model):
         return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
     
 class Comment(models.Model):
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.TextField()
-    time = models.DateTimeField(auto_now_add=True)
+    contentType = models.TextField()
+    published = models.DateTimeField(auto_now_add=True)
+    
+    @property
+    def post_prime_key(self):
+        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.post.uid}/comments/{self.uid}'
     
 class Friendship(models.Model):
     sender = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='sender')
@@ -101,6 +110,10 @@ class Like(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+    
+    @property
+    def post_prime_key(self):
+        return f'{settings.HOST_URL}/authors/{self.liker.id}/posts/{self.content_object.uid}'
 
 
     

@@ -19,6 +19,6 @@ admin.site.register(Post)
 admin.site.register(Comment)
 admin.site.register(Like)
 admin.site.register(Friendship)
-admin.site.register(Inbox)
+admin.site.register(Inbox_Item)
 
 TokenAdmin.raw_id_fields = ['user']

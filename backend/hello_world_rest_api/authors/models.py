@@ -112,7 +112,7 @@ class Post(models.Model):
                 img.save(self.image.path)
     
     
-    
+#Not Changed    
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
@@ -129,7 +129,7 @@ class Friendship(models.Model):
     @property
     def type(self):
         return 'Follow'
-    
+#Not changed     
 class Like(models.Model):
     liker = models.ForeignKey(Author, on_delete=models.CASCADE)
     # Use generic content type since one can like post or comment

@@ -123,160 +123,9 @@ class SigninTests(TestCase):
         response = self.c.post('/signin/', {'username': 'will', 'password':'testpass123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
-class PostCommentTests(TestCase):
-    
-    # Create an author with posts and comments on said post
-    def setUp(self):
-        self.author = Author.objects.create_user(
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
+ual(friendship.status, 2)
         
-        self.post = Post.objects.create(
-            author=self.author,
-            text='text',
-            privacy='PUBLIC'
-        )
-        
-        self.comment = Comment.objects.create(
-            post=self.post,
-            author=self.author,
-            comment='Test Comment'
-        )
-        
-    # Test deleting posts deletes related comments
-    def test_del_post_comments(self):
-        # 1 Comment prior to deletion of post and 0 after
-        self.assertEqual(Comment.objects.count(), 1)
-        self.post.delete()
-        self.assertEqual(Comment.objects.count(), 0)
-        
-    # Test deleting authors deletes all posts related to author
-    def test_del_author_posts(self):
-        # 1 Post prior to deletion of author and 0 after
-        self.assertEqual(Post.objects.count(), 1)
-        self.author.delete()
-        self.assertEqual(Post.objects.count(), 0)
-        
-class FriendrequestTests(TestCase):
-    
-    def setUp(self):
-        self.author = Author.objects.create_superuser(
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.author2 = Author.objects.create_superuser(
-            username='Joe',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.token2 = Token.objects.get_or_create(user=self.author2)
-        self.c = APIClient()
-        
-        
-    def test_send_friend_request(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.assertEqual(Friendship.objects.count(), 0)
-        response = self.c.post(f'/frequests/send/', {'receiver_id': self.author2.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Friendship.objects.count(), 1)
-        response = self.c.post(f'/frequests/send/', {'receiver_id': self.author2.id})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.c.credentials()
-        
-    def test_send_to_no_user(self):
-        self.c.login(username='will', password='testpass123')
-        self.assertEqual(Friendship.objects.count(), 0)
-        response = self.c.post(f'/frequests/send/', {'receiver_id': 12121122})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(Friendship.objects.count(), 0)
-        
-    def test_respond_accept(self):
-        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
-        self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'accept'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        friendship.refresh_from_db()
-        self.assertEqual(friendship.status, 2)
-        
-    def test_respond_decline(self):
-        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
-        self.c.login(username='Joe', password='testpass123')
-        self.assertEqual(Friendship.objects.count(), 1)
-        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'decline'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Friendship.objects.count(), 0)
-        
-    def test_respond_friends(self):
-        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 2)
-        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2)
 
-        self.c.login(username='Joe', password='testpass123')
-        response = self.c.post(f'/frequests/respond/{friendship2.id}/', {'action': 'accept'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        friendship.refresh_from_db()
-        self.assertEqual(friendship.status, 3)
-        
-    def test_delete_friend(self):
-        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 3)
-        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2, status = 3)
-        self.c.login(username='Joe', password='testpass123')
-        response = self.c.delete(f'/frequests/delete/{friendship2.id}/')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Friendship.objects.count(), 1)
-        friendship.refresh_from_db()
-        self.assertEqual(friendship.status, 2)
-        
-class CommentTest(TestCase):
-    
-    def setUp(self):
-        self.author = Author.objects.create_superuser(
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.author2 = Author.objects.create_superuser(
-            username='Joe',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.post = Post.objects.create(
-            author=self.author,
-            text='text',
-            privacy='PUBLIC'
-        )
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.token2 = Token.objects.get_or_create(user=self.author2)
-        self.c = APIClient()
-        
-    def test_post_comment(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        self.assertEqual(Comment.objects.count(), 0)
-        response= self.c.post(f'/comments/{self.post.id}/', {'comment': 'Test comment'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Comment.objects.count(), 1)
-        self.assertEqual(Comment.objects.get().comment, 'Test comment')
-        self.assertEqual(Comment.objects.get().author, self.author2)
-        self.assertEqual(Comment.objects.get().post.author, self.author)
-        self.c.credentials()
-        
-        
-        
-    def test_post_comment_post_dne(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        self.assertEqual(Comment.objects.count(), 0)
-        response= self.c.post(f'/comments/{500}/', {'comment': 'Test comment'})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(Comment.objects.count(), 0)
-        self.c.credentials()
 
 class GetFollowerTest(TestCase):
     def setUp(self):
@@ -456,339 +305,7 @@ class GetOneAuthorTest(TestCase):
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.response.data['id'], str(self.author.id))
-'''          
-class GetFriendRequestsTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.author = Author.objects.create_user(
-            id = '631f3ebe-d976-4248-a808-db2442a22168',
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-            is_approved = True,
-        )
-        self.author2 = Author.objects.create_user(
-            username='Joe',
-            password='testpass123',
-            displayName='joe',
-            github='',
-            is_approved = True,
-        )
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.token2 = Token.objects.get_or_create(user=self.author2)
 
-    
-        
-    def test_get_friend_requests(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        url = reverse('authors:getfriendrequests')
-        response = self.client.get(url)
-        friendships = Friendship.objects.filter(reciever=self.author, status=1)
-        serializer = FriendShipSerializer(friendships, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
-        self.client.credentials()
-        
-class GetFriendsTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.author = Author.objects.create_user(
-            id = '631f3ebe-d976-4248-a808-db2442a22168',
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.author2 = Author.objects.create_user(
-            username='Joe',
-            password='testpass123',
-            displayName='joe',
-            github='',
-        )
-        self.author3 = Author.objects.create_user(
-            username='Joe2',
-            password='testpass123',
-            displayName='joe2',
-            github='',
-        )
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.token2 = Token.objects.get_or_create(user=self.author2)
-        self.token3 = Token.objects.get_or_create(user=self.author3)
-        self.friendship2 = Friendship.objects.create(sender=self.author3, reciever=self.author, status=3)
-        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status=2)
-        
-    def test_get_friends(self):
-        # get API response
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.client.get(reverse('authors:getfriends'))
-        # get data from db
-        friends = Friendship.objects.filter(reciever=self.author, status__in=[2,3])
-        serializer = FriendShipSerializer(friends, many=True)
-        self.assertEqual(response.data, serializer.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.client.credentials()
-        
-class LikingTests(TestCase):
-    
-    def setUp(self):
-        self.author = Author.objects.create_superuser(
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.author2 = Author.objects.create_superuser(
-            username='Joe',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.post = Post.objects.create(
-            author=self.author,
-            text='text',
-            privacy='PUBLIC'
-        )
-        self.comment = Comment.objects.create(
-            post=self.post,
-            author=self.author2,
-            comment='Test Comment'
-        )
-        
-        self.c = APIClient()
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.token2 = Token.objects.get_or_create(user=self.author2)
-        
-    def test_like_post(self):
-        
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        self.assertEqual(Like.objects.count(), 0)
-        response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Like.objects.count(), 1)
-        self.assertEqual(Like.objects.get().liker, self.author2)
-        self.assertEqual(Like.objects.get().content_object, self.post)
-        self.c.credentials()
-        
-    def test_like_comment(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.assertEqual(Like.objects.count(), 0)
-        response= self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Like.objects.count(), 1)
-        self.assertEqual(Like.objects.get().liker, self.author)
-        self.assertEqual(Like.objects.get().content_object, self.comment)
-        self.c.credentials()
-        
-    def test_unliking(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        self.assertEqual(Like.objects.count(), 0)
-        response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Like.objects.count(), 1)
-        response=self.c.delete(f'/unlike/{Like.objects.get().id}/')
-        self.assertEqual(Like.objects.count(), 0)
-        self.c.credentials()
-        
-    def test_get_likes_on_post(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        self.assertEqual(Like.objects.count(), 0)
-        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
-        url = reverse('authors:getlikesonpost', args=[self.author.id, self.post.id])
-        response = self.c.get(url)
-        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=self.post.id)
-        serializer = LikeSerializer(likes, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
-        self.c.credentials()
-        
-    def test_get_likes_on_comment(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.assertEqual(Like.objects.count(), 0)
-        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
-        url = reverse('authors:getlikesoncomment', args=[self.author2.id, self.post.id, self.comment.id])
-        response = self.c.get(url)
-        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=self.comment.id)
-        serializer = LikeSerializer(likes, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
-        self.c.credentials()
-        
-    def test_get_likes_from_author(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.assertEqual(Like.objects.count(), 0)
-        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
-        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
-        url = reverse('authors:getlikesfromauthor')
-        response = self.c.get(url)
-        likes = Like.objects.filter(liker=self.author)
-        serializer = LikeSerializer(likes, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, serializer.data)
-        self.c.credentials()
-
-class PostTest(TestCase):
-    def setUp(self):
-        self.author = Author.objects.create_superuser(
-            uid = '631f3ebe-d976-4248-a808-db2442a22168',
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.author2 = Author.objects.create_superuser(
-            uid = 'adbfc58a-7d07-11ee-b962-0242ac120002',
-            username='Joe',
-            password='testpass123',
-            displayName='joe',
-            github='',
-        )
-        self.title1='coding'
-        self.title2='warriors'
-        self.wrong_title = 1
-        self.content_type1='TEXT'
-        self.content_type2='IMAGE'
-        self.privacy = 'PUBLIC'
-        self.wrong_content_type = 'RANDOM'
-        self.text1='Hello World'
-        self.text2='Goodbye World'
-        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-        self.image_url2 = 'https://images.pexels.com/photos/757889/pexels-photo-757889.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-        self.image = Image.open('./media/postimages/postpicture1.jpg')
-        self.c = APIClient()
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.token2 = Token.objects.get_or_create(user=self.author2)
-        self.friendship = Friendship.objects.create(sender=self.author, reciever=self.author2, status=3)
-        
-    def test_upload_post_success(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['data']['title'], self.title1)
-        self.c.credentials()
-
-    def test_update_post_success(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response_post = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        response = self.c.post(f'/post/edit/{response_post.data["id2"]}/', {'title': self.title2, 'content_type': self.content_type2, 'text': self.text2})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['data']['title'], self.title2)
-        self.assertEqual(response.data['data']['content_type'], self.content_type2)
-        self.assertEqual(response.data['data']['text'], self.text2)
-        response = self.c.post(f'/post/edit/{response_post.data["id2"]}/', {'image_url': self.image_url2})
-        self.assertEqual(response.data['data']['image_url'], self.image_url2)
-        self.assertEqual(response.status_code, 200)
-        self.c.credentials()
-
-    def test_delete_post_success(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.assertEqual(Post.objects.count(), 0)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Post.objects.count(), 1)
-        response=self.c.delete(f'/post/delete/{Post.objects.get().id}/')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Post.objects.count(), 0)
-        self.c.credentials()
-
-    def test_get_public_post(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        response = self.c.get('/post/getpublic/')
-        posts = Post.objects.filter(privacy='PUBLIC')
-        serializer = GetPostSerializer(posts, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['items'], serializer.data)
-
-    def test_get_private_post(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PRIVATE', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text2, 'image_url': self.image_url1, 'image': ''})
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        response = self.c.get('/post/getprivate/')
-        print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.c.credentials()
-
-    def test_get_unlisted_post(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'UNLISTED', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        response = self.c.get('/post/getunlisted/')
-        unlisted_posts = Post.objects.filter(privacy='UNLISTED', author=self.author)
-        serializer = GetPostSerializer(unlisted_posts, many=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['items'], serializer.data)
-
-    def test_get_own_post(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        response = self.c.get('/post/getowned/')
-        posts = Post.objects.filter(author=self.author)
-        serializer = GetPostSerializer(posts, many=True)
-        self.assertEqual(response.data['items'], serializer.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
-        response = self.c.get('/post/getowned/')
-        self.assertEqual(response.data['items'], [])
-'''
-class RemotePostTest(TestCase):
-    def setUp(self):
-        self.author = Author.objects.create_superuser(
-            uid = '631f3ebe-d976-4248-a808-db2442a22168',
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.title1='coding'
-        self.content_type1='TEXT'
-        self.privacy = 'PUBLIC'
-        self.text1='Hello World'
-        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-        self.c = APIClient()
-        self.token1 = Token.objects.get_or_create(user=self.author)
-    def test_remote_post(self):
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['data']['title'], self.title1)
-        url2 = reverse('authors:getallposts', args=[self.author.uid])
-        response = self.c.get(url2)
-        
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['items'][0]['title'], self.title1)
-
-class RemotePostImageTest(TestCase):
-    def setUp(self):
-        self.author = Author.objects.create_superuser(
-            uid = '631f3ebe-d976-4248-a808-db2442a22168',
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.title1='coding'
-        self.content_type1='TEXT'
-        self.privacy = 'PUBLIC'
-        self.text1='Hello World'
-        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-        self.image = Image.open('./media/postimages/postpicture1.jpg')
-        self.c = APIClient()
-        self.token1 = Token.objects.get_or_create(user=self.author)
-    
-    def test_remote_image(self):
-        img = Image.open('./media/postimages/postpicture1.jpg')
-        output = io.BytesIO()
-        img.save(output, format='JPEG',quality = 60)
-        file = InMemoryUploadedFile(output, 'ImageField', "postpicture1.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
-        post_object = Post.objects.create(uid = 'adbfc58a-7d07-11ee-b962-0242ac120002', author=self.author, title=self.title1, text=self.text1, privacy=self.privacy, content_type=self.content_type1, image_url=self.image_url1,image = file)
-        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        url = reverse('authors:getpostimage', args=[self.author.uid, post_object.uid])
-        response = self.c.get(url)
-        
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('image/jpeg;base64',  response.data['data'])
 class FriendshipTest(TestCase):
     def setUp(self):
         self.author = Author.objects.create_user(
@@ -1354,3 +871,491 @@ class AllPostTest(TestCase):
         
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Post.objects.count(), 2)
+'''
+class PostCommentTests(TestCase):
+    
+    # Create an author with posts and comments on said post
+    def setUp(self):
+        self.author = Author.objects.create_user(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        
+        self.post = Post.objects.create(
+            author=self.author,
+            text='text',
+            privacy='PUBLIC'
+        )
+        
+        self.comment = Comment.objects.create(
+            post=self.post,
+            author=self.author,
+            comment='Test Comment'
+        )
+        
+    # Test deleting posts deletes related comments
+    def test_del_post_comments(self):
+        # 1 Comment prior to deletion of post and 0 after
+        self.assertEqual(Comment.objects.count(), 1)
+        self.post.delete()
+        self.assertEqual(Comment.objects.count(), 0)
+        
+    # Test deleting authors deletes all posts related to author
+    def test_del_author_posts(self):
+        # 1 Post prior to deletion of author and 0 after
+        self.assertEqual(Post.objects.count(), 1)
+        self.author.delete()
+        self.assertEqual(Post.objects.count(), 0)
+        
+class FriendrequestTests(TestCase):
+    
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.token2 = Token.objects.get_or_create(user=self.author2)
+        self.c = APIClient()
+        
+        
+    def test_send_friend_request(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.assertEqual(Friendship.objects.count(), 0)
+        response = self.c.post(f'/frequests/send/', {'receiver_id': self.author2.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Friendship.objects.count(), 1)
+        response = self.c.post(f'/frequests/send/', {'receiver_id': self.author2.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.c.credentials()
+        
+    def test_send_to_no_user(self):
+        self.c.login(username='will', password='testpass123')
+        self.assertEqual(Friendship.objects.count(), 0)
+        response = self.c.post(f'/frequests/send/', {'receiver_id': 12121122})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Friendship.objects.count(), 0)
+        
+    def test_respond_accept(self):
+        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'accept'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        friendship.refresh_from_db()
+        self.assertEqual(friendship.status, 2)
+        
+    def test_respond_decline(self):
+        friendship = Friendship.objects.create(sender=self.author, reciever=self.author2)
+        self.c.login(username='Joe', password='testpass123')
+        self.assertEqual(Friendship.objects.count(), 1)
+        response = self.c.post(f'/frequests/respond/{friendship.id}/', {'action': 'decline'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Friendship.objects.count(), 0)
+        
+    def test_respond_friends(self):
+        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 2)
+        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2)
+
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.post(f'/frequests/respond/{friendship2.id}/', {'action': 'accept'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        friendship.refresh_from_db()
+        self.assertEqual(friendship.status, 3)
+        
+    def test_delete_friend(self):
+        friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status = 3)
+        friendship2 = Friendship.objects.create(sender=self.author, reciever=self.author2, status = 3)
+        self.c.login(username='Joe', password='testpass123')
+        response = self.c.delete(f'/frequests/delete/{friendship2.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Friendship.objects.count(), 1)
+        friendship.refresh_from_db()
+        self.assertEq
+
+class CommentTest(TestCase):
+    
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.post = Post.objects.create(
+            author=self.author,
+            text='text',
+            privacy='PUBLIC'
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.token2 = Token.objects.get_or_create(user=self.author2)
+        self.c = APIClient()
+        
+    def test_post_comment(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        self.assertEqual(Comment.objects.count(), 0)
+        response= self.c.post(f'/comments/{self.post.id}/', {'comment': 'Test comment'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(Comment.objects.get().comment, 'Test comment')
+        self.assertEqual(Comment.objects.get().author, self.author2)
+        self.assertEqual(Comment.objects.get().post.author, self.author)
+        self.c.credentials()
+        
+        
+        
+    def test_post_comment_post_dne(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        self.assertEqual(Comment.objects.count(), 0)
+        response= self.c.post(f'/comments/{500}/', {'comment': 'Test comment'})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(Comment.objects.count(), 0)
+        self.c.credentials()          
+class GetFriendRequestsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+            is_approved = True,
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+            is_approved = True,
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.token2 = Token.objects.get_or_create(user=self.author2)
+
+    
+        
+    def test_get_friend_requests(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getfriendrequests')
+        response = self.client.get(url)
+        friendships = Friendship.objects.filter(reciever=self.author, status=1)
+        serializer = FriendShipSerializer(friendships, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.client.credentials()
+        
+class GetFriendsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+            id = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.author3 = Author.objects.create_user(
+            username='Joe2',
+            password='testpass123',
+            displayName='joe2',
+            github='',
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.token2 = Token.objects.get_or_create(user=self.author2)
+        self.token3 = Token.objects.get_or_create(user=self.author3)
+        self.friendship2 = Friendship.objects.create(sender=self.author3, reciever=self.author, status=3)
+        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author, status=2)
+        
+    def test_get_friends(self):
+        # get API response
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        response = self.client.get(reverse('authors:getfriends'))
+        # get data from db
+        friends = Friendship.objects.filter(reciever=self.author, status__in=[2,3])
+        serializer = FriendShipSerializer(friends, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.credentials()
+        
+class LikingTests(TestCase):
+    
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            username='Joe',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.post = Post.objects.create(
+            author=self.author,
+            text='text',
+            privacy='PUBLIC'
+        )
+        self.comment = Comment.objects.create(
+            post=self.post,
+            author=self.author2,
+            comment='Test Comment'
+        )
+        
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.token2 = Token.objects.get_or_create(user=self.author2)
+        
+    def test_like_post(self):
+        
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        self.assertEqual(Like.objects.get().liker, self.author2)
+        self.assertEqual(Like.objects.get().content_object, self.post)
+        self.c.credentials()
+        
+    def test_like_comment(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        self.assertEqual(Like.objects.get().liker, self.author)
+        self.assertEqual(Like.objects.get().content_object, self.comment)
+        self.c.credentials()
+        
+    def test_unliking(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        self.assertEqual(Like.objects.count(), 0)
+        response= self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Like.objects.count(), 1)
+        response=self.c.delete(f'/unlike/{Like.objects.get().id}/')
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.credentials()
+        
+    def test_get_likes_on_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        url = reverse('authors:getlikesonpost', args=[self.author.id, self.post.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=self.post.id)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.c.credentials()
+        
+    def test_get_likes_on_comment(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        url = reverse('authors:getlikesoncomment', args=[self.author2.id, self.post.id, self.comment.id])
+        response = self.c.get(url)
+        likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=self.comment.id)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.c.credentials()
+        
+    def test_get_likes_from_author(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.assertEqual(Like.objects.count(), 0)
+        self.c.post(f'/likes/', {'content_type': 'post', 'content_id': self.post.id})
+        self.c.post(f'/likes/', {'content_type': 'comment', 'content_id': self.comment.id})
+        url = reverse('authors:getlikesfromauthor')
+        response = self.c.get(url)
+        likes = Like.objects.filter(liker=self.author)
+        serializer = LikeSerializer(likes, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.c.credentials()
+
+class PostTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_superuser(
+            uid = 'adbfc58a-7d07-11ee-b962-0242ac120002',
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.title1='coding'
+        self.title2='warriors'
+        self.wrong_title = 1
+        self.content_type1='TEXT'
+        self.content_type2='IMAGE'
+        self.privacy = 'PUBLIC'
+        self.wrong_content_type = 'RANDOM'
+        self.text1='Hello World'
+        self.text2='Goodbye World'
+        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.image_url2 = 'https://images.pexels.com/photos/757889/pexels-photo-757889.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.image = Image.open('./media/postimages/postpicture1.jpg')
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.token2 = Token.objects.get_or_create(user=self.author2)
+        self.friendship = Friendship.objects.create(sender=self.author, reciever=self.author2, status=3)
+        
+    def test_upload_post_success(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['data']['title'], self.title1)
+        self.c.credentials()
+
+    def test_update_post_success(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        response_post = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.post(f'/post/edit/{response_post.data["id2"]}/', {'title': self.title2, 'content_type': self.content_type2, 'text': self.text2})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['data']['title'], self.title2)
+        self.assertEqual(response.data['data']['content_type'], self.content_type2)
+        self.assertEqual(response.data['data']['text'], self.text2)
+        response = self.c.post(f'/post/edit/{response_post.data["id2"]}/', {'image_url': self.image_url2})
+        self.assertEqual(response.data['data']['image_url'], self.image_url2)
+        self.assertEqual(response.status_code, 200)
+        self.c.credentials()
+
+    def test_delete_post_success(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.assertEqual(Post.objects.count(), 0)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Post.objects.count(), 1)
+        response=self.c.delete(f'/post/delete/{Post.objects.get().id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Post.objects.count(), 0)
+        self.c.credentials()
+
+    def test_get_public_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.get('/post/getpublic/')
+        posts = Post.objects.filter(privacy='PUBLIC')
+        serializer = GetPostSerializer(posts, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['items'], serializer.data)
+
+    def test_get_private_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PRIVATE', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text2, 'image_url': self.image_url1, 'image': ''})
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        response = self.c.get('/post/getprivate/')
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.c.credentials()
+
+    def test_get_unlisted_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'UNLISTED', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.get('/post/getunlisted/')
+        unlisted_posts = Post.objects.filter(privacy='UNLISTED', author=self.author)
+        serializer = GetPostSerializer(unlisted_posts, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['items'], serializer.data)
+
+    def test_get_own_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': 'PUBLIC', 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        response = self.c.get('/post/getowned/')
+        posts = Post.objects.filter(author=self.author)
+        serializer = GetPostSerializer(posts, many=True)
+        self.assertEqual(response.data['items'], serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
+        response = self.c.get('/post/getowned/')
+        self.assertEqual(response.data['items'], [])
+
+class RemotePostTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.title1='coding'
+        self.content_type1='TEXT'
+        self.privacy = 'PUBLIC'
+        self.text1='Hello World'
+        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+    def test_remote_post(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        response = self.c.post(f'/post/upload/', {'title': self.title1, 'content_type': self.content_type1, 'privacy': self.privacy, 'text': self.text1, 'image_url': self.image_url1, 'image': ''})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['data']['title'], self.title1)
+        url2 = reverse('authors:getallposts', args=[self.author.uid])
+        response = self.c.get(url2)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['items'][0]['title'], self.title1)
+
+class RemotePostImageTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.title1='coding'
+        self.content_type1='TEXT'
+        self.privacy = 'PUBLIC'
+        self.text1='Hello World'
+        self.image_url1 = 'https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        self.image = Image.open('./media/postimages/postpicture1.jpg')
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+    
+    def test_remote_image(self):
+        img = Image.open('./media/postimages/postpicture1.jpg')
+        output = io.BytesIO()
+        img.save(output, format='JPEG',quality = 60)
+        file = InMemoryUploadedFile(output, 'ImageField', "postpicture1.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
+        post_object = Post.objects.create(uid = 'adbfc58a-7d07-11ee-b962-0242ac120002', author=self.author, title=self.title1, text=self.text1, privacy=self.privacy, content_type=self.content_type1, image_url=self.image_url1,image = file)
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, post_object.uid])
+        response = self.c.get(url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('image/jpeg;base64',  response.data['data'])
+'''

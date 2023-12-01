@@ -148,7 +148,7 @@ class InboxSerializer(serializers.ModelSerializer):
 
     contentObject = serializers.SerializerMethodField()
     class Meta:
-        model = Inbox
+        model = Inbox_Item
         fields = '__all__'
     def get_contentObject(self, object):
         model = object.content_type.model_class()

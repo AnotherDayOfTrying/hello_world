@@ -202,6 +202,28 @@ class PostView(generics.CreateAPIView):
 class InboxView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, NodesAuthentication]
+    
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, id=author_id)
+        inbox_items = Inbox_Item.objects.filter(author=author)
+        items = []
+        for item in inbox_items:
+            if isinstance(item.item_object, Post):
+                serializer = PostSerializer(item.item_object)
+            elif isinstance(item.item_object, Comment):
+                '''serializer = CommentSerializer(item.item_object)'''
+            elif isinstance(item.item_object, Like):
+                '''serializer = LikeSerializer(item.item_object)'''
+            elif isinstance(item.item_object, Friendship):
+                serializer = FriendShipSerializer(item.item_object)
+            items.append(serializer.data)
+        response = {
+            'type': 'inbox',
+            'author': author.url,
+            'items':items       
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
     def post(self,request,author_id):
         author = get_object_or_404(Author,uid=author_id)
         if request.data.get('type') == 'Follow':
@@ -220,11 +242,12 @@ class InboxView(generics.CreateAPIView):
             
             instance = serializer.save()
             
-            inbox_item = Inbox.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
+            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
             inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
             return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class AllPostView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, NodesAuthentication]
@@ -646,35 +669,7 @@ class PostImageView(generics.CreateAPIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 '''
-=======
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-        
-class InboxView(generics.CreateAPIView):
-    
-    def get(self, request, author_id):
-        author = get_object_or_404(Author, id=author_id)
-        inbox_items = Inbox_Item.objects.filter(author=author)
-        items = []
-        for item in inbox_items:
-            if isinstance(item.item_object, Post):
-                serializer = GetPostSerializer(item.item_object)
-            elif isinstance(item.item_object, Comment):
-                serializer = GetCommentSerializer(item.item_object)
-            elif isinstance(item.item_object, Like):
-                serializer = LikeSerializer(item.item_object)
-            elif isinstance(item.item_object, Friendship):
-                serializer = FriendShipSerializer(item.item_object)
-            items.append(serializer.data)
-        response = {
-            'type': 'inbox',
-            'author': author.url,
-            'items':items       
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def post(self, request, author_id):
-        author = get_object_or_404(Author, id=author_id)
->>>>>>> dcc75c537b71a9fad1a1af0718ae943aae659102

@@ -530,7 +530,7 @@ class InboxTest(TestCase):
         self.assertEqual(Friendship.objects.get().status, 1)
         self.assertEqual(Friendship.objects.get().actor.id, self.author.id)
         self.assertEqual(Friendship.objects.get().object.id, self.author2.id)
-        self.assertEqual(Inbox.objects.count(), 1)
+        self.assertEqual(Inbox_Item.objects.count(), 1)
         self.client.credentials()
     def test_create_friendrequest_2(self):
         '''
@@ -556,7 +556,7 @@ class InboxTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Friendship.objects.count(), 2)
         self.assertEqual(Friendship.objects.get(actor = self.author, object = self.author2).status, 1)
-        self.assertEqual(Inbox.objects.count(), 1)
+        self.assertEqual(Inbox_Item.objects.count(), 1)
         self.assertEqual(Friendship.objects.get(actor = self.author2, object = self.author).status,2)
         self.client.credentials()
     def test_create_friendrequest_3(self):
@@ -576,8 +576,8 @@ class InboxTest(TestCase):
         url = reverse('authors:inbox', args=[self.author2.uid])
         response = self.client.post(url,json.dumps(response.data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(Inbox.objects.count(), 1)
-        self.assertEqual(Inbox.objects.get().content_type, ContentType.objects.get_for_model(Post))
+        self.assertEqual(Inbox_Item.objects.count(), 1)
+        self.assertEqual(Inbox_Item.objects.get().content_type, ContentType.objects.get_for_model(Post))
         self.assertEqual(Post.objects.count(), 2)
 
 

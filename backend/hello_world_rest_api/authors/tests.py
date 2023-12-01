@@ -12,6 +12,7 @@ from rest_framework.test import APIClient
 from .serializers import *
 from PIL import Image
 from rest_framework.authtoken.models import Token
+import json
 # Create your tests here.
 
 TEST_DIR = 'test_data'
@@ -312,7 +313,20 @@ class GetFollowerTest(TestCase):
         userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
         userpass = base64.b64encode(userpass).decode("utf-8")
         self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
-        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author1, status=2)
+        self.friendship = Friendship.objects.create(actor=self.author2, object=self.author1, status=2)
+        self.response = self.client.get(f'/authors/{self.author1.uid}/followers')
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.response.data['items'][0]['id'], str(self.author2.id))
+    def test_get_no_followers_local(self):
+        self.token1 = Token.objects.get_or_create(user=self.author1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.response = self.client.get(f'/authors/{self.author1.uid}/followers')
+        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.response.data['items'], [])
+    def test_get_followers_local(self):
+        self.token1 = Token.objects.get_or_create(user=self.author1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.friendship = Friendship.objects.create(actor=self.author2, object=self.author1, status=2)
         self.response = self.client.get(f'/authors/{self.author1.uid}/followers')
         self.assertEqual(self.response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.response.data['items'][0]['id'], str(self.author2.id))
@@ -653,7 +667,7 @@ class LikingTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
         self.c.credentials()
-
+'''
 class PostTest(TestCase):
     def setUp(self):
         self.author = Author.objects.create_superuser(
@@ -758,6 +772,7 @@ class PostTest(TestCase):
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token2[0].key)
         response = self.c.get('/post/getowned/')
         self.assertEqual(response.data['items'], [])
+'''
 class RemotePostTest(TestCase):
     def setUp(self):
         self.author = Author.objects.create_superuser(
@@ -781,7 +796,7 @@ class RemotePostTest(TestCase):
         self.assertEqual(response.data['data']['title'], self.title1)
         url2 = reverse('authors:getallposts', args=[self.author.uid])
         response = self.c.get(url2)
-        print(response.data)
+        
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['items'][0]['title'], self.title1)
 
@@ -832,7 +847,14 @@ class FriendshipTest(TestCase):
             github='',
         )
         self.token1 = Token.objects.get_or_create(user=self.author)
-        
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
         self.client = APIClient()
     def test_delete_friendrequest_1(self):
         '''
@@ -899,6 +921,34 @@ class FriendshipTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['is_follower'], False)
+    
+    def test_check_following_remote_1(self):
+        '''
+        Test for checking if an author is following another author through a node
+        '''
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=3)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['is_follower'], True)
+        self.client.credentials()
+    
+    def test_check_following_remote_2(self):
+        '''
+        Test for checking if an author is following another author through a node
+        '''
+        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
+        userpass = base64.b64encode(userpass).decode("utf-8")
+        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['is_follower'], False)
+        self.client.credentials()
+
     def test_adding_a_friend_1(self):
         '''
         Test for adding a friend when the other author is not following the sender
@@ -944,3 +994,180 @@ class FriendshipTest(TestCase):
         url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
         response = self.client.put(url)
         self.assertEqual(response.status_code, 404)
+class InboxTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_user(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            uid = 'adbfc58a-7d07-11ee-b962-0242ac120002',
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
+        self.client = APIClient()
+        self.title1='coding'
+    def test_create_friendrequest_1(self):
+        '''
+        Test to send a friend request to an author that exists and is not a friend
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url1 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url2 = reverse('authors:getoneauthor', args=[self.author2.uid])
+        response1 = self.client.get(url1)
+        response2 = self.client.get(url2)
+        url = reverse('authors:inbox', args=[self.author2.uid])
+        payload = {
+        'type': 'Follow',
+        'summary': f'{self.author.displayName} wants to follow you',
+        'actor': response1.data,
+        'object': response2.data,
+        }
+        response = self.client.post(url, json.dumps(payload),content_type='application/json')
+        
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Friendship.objects.count(), 1)
+        self.assertEqual(Friendship.objects.get().status, 1)
+        self.assertEqual(Friendship.objects.get().actor.id, self.author.id)
+        self.assertEqual(Friendship.objects.get().object.id, self.author2.id)
+        self.assertEqual(Inbox.objects.count(), 1)
+        self.client.credentials()
+    def test_create_friendrequest_2(self):
+        '''
+        Test to send a friend request to an author that exists and is a friend
+        '''
+        self.friends = Friendship.objects.create(actor=self.author2, object=self.author, status=2)
+
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url1 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url2 = reverse('authors:getoneauthor', args=[self.author2.uid])
+
+        response1 = self.client.get(url1)
+        response2 = self.client.get(url2)
+        url = reverse('authors:inbox', args=[self.author2.uid])
+        payload = {
+        'type': 'Follow',
+        'summary': f'{self.author.displayName} wants to follow you',
+        'actor': response1.data,
+        'object': response2.data,
+        }
+        response = self.client.post(url, json.dumps(payload),content_type='application/json')
+        
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Friendship.objects.count(), 2)
+        self.assertEqual(Friendship.objects.get(actor = self.author, object = self.author2).status, 1)
+        self.assertEqual(Inbox.objects.count(), 1)
+        self.assertEqual(Friendship.objects.get(actor = self.author2, object = self.author).status,2)
+        self.client.credentials()
+    def test_create_friendrequest_3(self):
+        '''
+        Test to send a request of some sort to an invalid author
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url1 = reverse('authors:inbox', args=['adbfc58a-7d07-11ee-b962-0242ac120003'])
+        response = self.client.post(url1)
+        self.assertEqual(response.status_code, 404)
+class PostTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_user(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            uid = 'adbfc58a-7d07-11ee-b962-0242ac120002',
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        self.node = Author.objects.create_user(
+            username = 'node',
+            password = 'testpass123',
+            displayName = 'node',
+            github = '',
+            is_approved = False,
+            is_a_node = True,
+        )
+
+        self.post = Post.objects.create(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            author = self.author,
+            title = 'testing',
+            description = 'testing',
+            contentType = 'text/plain',
+            content = 'testing',
+            categories = '[]',
+            visibility = 'PUBLIC',
+            unlisted = False,
+        )
+        self.client = APIClient()
+    def test_delete_post_1(self):
+        '''
+        Test for deleting a post that exists
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,self.post.uid])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 0)
+        self.client.credentials()
+    def test_delete_post_2(self):
+        '''
+        Test for deleting a post that does not exist
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,'631f3ebe-d976-4248-a808-db2442a22169'])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 404)
+        self.client.credentials()
+    def test_get_post_1(self):
+        '''
+        Test for getting a post that exists
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,self.post.uid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['id'], str(self.post.id))
+        self.client.credentials()
+    def test_get_post_2(self):
+        '''
+        Test for getting a post that does not exist
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,'631f3ebe-d976-4248-a808-db2442a22169'])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+        self.client.credentials()
+    def test_get_post_3(self):
+        '''
+        Test for getting a post that exists but is not public
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.post.visibility = 'PRIVATE'
+        self.post.save()
+        url = reverse('authors:getsinglepost', args=[self.author.uid,self.post.uid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+        self.client.credentials()
+    
+
+    

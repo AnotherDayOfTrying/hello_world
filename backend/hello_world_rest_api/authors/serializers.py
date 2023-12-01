@@ -96,7 +96,7 @@ class RespondFriendRequestSerializer(serializers.Serializer):
             reverse.save()
         friendship.delete()
         return friendship """
-    
+'''    
 class PostCommentSerializer(serializers.ModelSerializer):
     comment = serializers.CharField()
     
@@ -120,21 +120,29 @@ class GetCommentSerializer(serializers.ModelSerializer):
         comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
         comment.save()
         return comment
-
+'''
 class AuthorSerializer(serializers.ModelSerializer):
     
     displayName = serializers.CharField(allow_null=True)
     github = serializers.URLField(allow_blank = True, allow_null = True)
+    profilePicture = serializers.SerializerMethodField()
     class Meta:
         model = Author
         fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github','host')
-        read_only_fields = ('id', 'url', 'host','type')
+        
     def update(self, instance, validated_data):
         instance.displayName = validated_data.get('displayName', instance.displayName)
         instance.github = validated_data.get('github', instance.github)
         instance.profilePicture = validated_data.get('profilePicture', instance.profilePicture)
         instance.save()
         return instance
+    def get_profilePicture(self, obj):
+        request = self.context.get('request')
+        
+        
+        profilePicture_url = obj.profilePicture.url
+        return request.build_absolute_uri(profilePicture_url)
+'''
 class LikeingSerializer(serializers.Serializer):
     content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
     content_id = serializers.IntegerField()
@@ -147,17 +155,29 @@ class LikeingSerializer(serializers.Serializer):
         elif validated_data['content_type'] == 'comment':
             content = get_object_or_404(Comment, id=validated_data['content_id'])
         return Like.objects.create(liker=author, content_type=content_type, content_object=content)
-    
+'''    
 # class UnlikingSerializer(serializers.Serializer):
     
 #     def update(self, like, validated_data):
 #         like.delete()
 #         return like
 class FriendShipSerializer(serializers.ModelSerializer):
+    actor = AuthorSerializer()
+    object = AuthorSerializer()
     class Meta:
         model = Friendship
         fields = ('type','summary','actor', 'object')
-
+    def create(self, validated_data):
+        
+        actor_data = validated_data.pop('actor')
+        object_data = validated_data.pop('object')
+        actor = Author.objects.get(uid=actor_data['id'].split("/")[-1])
+        object = Author.objects.get(uid=object_data['id'].split("/")[-1])
+        friendship = Friendship.objects.create(summary = validated_data['summary'],actor=actor, object=object, status=1)
+        return friendship
+    
+        
+'''
 class UploadPostSerializer(serializers.ModelSerializer):
     post_prime_key = serializers.ReadOnlyField()
     post_source = serializers.ReadOnlyField()
@@ -210,7 +230,8 @@ class EditPostSerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.save()
         return instance
-
+'''
+'''
 class LikeSerializer(serializers.ModelSerializer):
     
     content_object = serializers.SerializerMethodField()
@@ -225,6 +246,8 @@ class LikeSerializer(serializers.ModelSerializer):
         if isinstance(object.content_object, Comment):
             return {'comment_id': object.content_object.id}
         return str(object.content_object)
+'''
+'''
 class RemotePostSerializer(serializers.Serializer):
     type = serializers.ChoiceField(choices=['post'])
     title = serializers.CharField()
@@ -241,6 +264,86 @@ class RemotePostSerializer(serializers.Serializer):
     unlisted = serializers.BooleanField()
     count = serializers.IntegerField()
     comments = serializers.URLField()
-
+'''
 class RemotePostImageSerializer(serializers.Serializer):
     data = serializers.CharField()
+
+class PostSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
+    class Meta:
+        model = Post
+        fields = ('type','title','id','source','origin','description','contentType','content','author','categories','count','comments','published','visibility','unlisted','author')
+        
+    def create(self, validated_data):
+        if validated_data.get('image') is None:
+            post = Post.objects.create(
+                author = validated_data['author'],
+                title = validated_data['title'],
+                id = validated_data['id'],
+                description = validated_data['description'],
+                contentType = validated_data['contentType'],
+                content = validated_data['content'],
+                categories = validated_data['categories'],
+                visibility = validated_data['visibility'],
+                unlisted = validated_data['unlisted'],
+                source = validated_data['source'],
+                origin = validated_data['origin'],
+                published = validated_data['published'],
+                
+            )
+        else:
+            post = Post.objects.create(
+                author = validated_data['author'],
+                title = validated_data['title'],
+                id = validated_data['id'],
+                description = validated_data['description'],
+                contentType = validated_data['contentType'],
+                content = validated_data['content'],
+                categories = validated_data['categories'],
+                visibility = validated_data['visibility'],
+                unlisted = validated_data['unlisted'],
+                source = validated_data['source'],
+                origin = validated_data['origin'],
+                published = validated_data['published'],
+                image = validated_data['image'],
+                
+            )
+        return post
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        instance.contentType = validated_data.get('contentType', instance.contentType)
+        instance.content = validated_data.get('content', instance.content)
+        instance.categories = validated_data.get('categories', instance.categories)
+        instance.visibility = validated_data.get('visibility', instance.visibility)
+        instance.unlisted = validated_data.get('unlisted', instance.unlisted)
+        instance.image = validated_data.get('image', instance.image)
+        instance.source = validated_data.get('source', instance.source)
+        instance.save()
+        return instance
+
+
+class InboxSerializer(serializers.ModelSerializer):
+
+    contentObject = serializers.SerializerMethodField()
+    class Meta:
+        model = Inbox
+        fields = '__all__'
+    def get_contentObject(self, object):
+        model = object.content_type.model_class()
+        
+        # Get the related object
+        related_obj = model.objects.get(uid=object.object_id)
+        
+        # Use the appropriate serializer based on the model class
+        if isinstance(related_obj, Friendship):
+            request = self.context.get('request')
+            
+            return FriendShipSerializer(related_obj, context={'request': request}).data
+        elif isinstance(related_obj, Post):
+            return PostSerializer(related_obj).data
+        else:
+            raise Exception('Unexpected model class')
+    
+    
+

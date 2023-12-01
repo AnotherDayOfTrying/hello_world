@@ -585,19 +585,22 @@ class PostView(generics.CreateAPIView):
         post = Post.objects.filter(author=author,uid=post_id).first()
         if post:
             return Response({'message': 'There is already a post with that id'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = PostSerializer(instance=post, data=request.data)
+        serializer = PostSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def post(self,request,author_id,post_id):
         if (request.user.uid != author_id):
-            return Response({'message': 'You are not the author of this post'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'You are not the author of this post'}, status=status.HTTP_403_FORBIDDEN)
         author = get_object_or_404(Author,uid=author_id)
         post = get_object_or_404(Post,uid=post_id)
         serializer = PostSerializer(instance=post, data=request.data, partial=True)
+        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class InboxView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]

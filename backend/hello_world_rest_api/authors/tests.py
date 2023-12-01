@@ -2,7 +2,7 @@ import io
 import os
 import shutil
 from django.core.files.uploadedfile import InMemoryUploadedFile
-
+from rest_framework.request import Request
 from django.test import TestCase,Client, override_settings
 import base64
 from django.contrib.auth import get_user_model
@@ -1118,6 +1118,7 @@ class PostTest(TestCase):
             visibility = 'PUBLIC',
             unlisted = False,
         )
+        
         self.client = APIClient()
     def test_delete_post_1(self):
         '''
@@ -1168,6 +1169,144 @@ class PostTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
         self.client.credentials()
+    def test_delete_post_1(self):
+        '''
+        Test for deleting a post that exists
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,self.post.uid])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Post.objects.count(), 0)
+    def test_delete_post_2(self):
+        '''
+        Test for deleting a post that does not exist
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,'631f3ebe-d976-4248-a808-db2442a22169'])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 404)
     
+    def test_put_post_1(self):
+        '''
+        Test for creating a post that already exist
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,self.post.uid])
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 400)
+    def test_put_post_2(self):
+        '''
+        Test for creating a post that does not yet exist
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        
+        
+        url2 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url = reverse('authors:getsinglepost', args=[self.author.uid,'631f3ebe-d976-4248-a808-db2442a22169'])
+        response = self.client.get(url2)
+        payload = {
+        'title': 'testing',
+        'description': 'testing',
+        'contentType': 'text/plain',
+        'content': 'testing',
+        'categories': '[]',
+        'visibility': 'PUBLIC',
+        'unlisted': False,
+        'author': response.data,
+        }
+        response = self.client.put(url, json.dumps(payload),content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Post.objects.count(), 2)
+        self.client.credentials()
+    def test_put_post_3(self):
+        '''
+        Test for creating a post but it has one or more fields missing
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        
+        
+        url2 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url = reverse('authors:getsinglepost', args=[self.author.uid,'631f3ebe-d976-4248-a808-db2442a22169'])
+        response = self.client.get(url2)
+        payload = {
+        'title': 'testing',
+        'description': 'testing',
+        'contentType': 'text/plain',
+        'content': 'testing',
+        'categories': '[]',
+        
+        'unlisted': False,
+        
+        }
+        response = self.client.put(url, json.dumps(payload),content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Post.objects.count(), 1)
+        self.client.credentials()        
 
-    
+    def test_put_post_4(self):
+        '''
+        Test for creating a post but content type is not valid
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url2 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url = reverse('authors:getsinglepost', args=[self.author.uid,'631f3ebe-d976-4248-a808-db2442a22169'])
+        response = self.client.get(url2)
+        payload = {
+        'title': 'testing',
+        'description': 'testing',
+        'contentType': 'asd',
+        'content': 'testing',
+        'categories': '[]',
+        'visibility': 'PUBLIC',
+        'unlisted': False,
+        'author': response.data,
+        }
+        response = self.client.put(url, json.dumps(payload),content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Post.objects.count(), 1)
+        self.client.credentials()
+    def test_post_post_1(self):
+        '''
+        Test for editing a post that is not yours
+        '''
+        self.post = Post.objects.create(
+            uid = '631f3ebe-d976-4248-a808-db2442a22178',
+            author = self.author2,
+            title = 'testing',
+            description = 'testing',
+            contentType = 'text/plain',
+            content = 'testing',
+            categories = '[]',
+            visibility = 'PUBLIC',
+            unlisted = False,
+        )
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author2.uid,self.post.uid])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 403)
+        self.client.credentials()
+    def test_post_post_2(self):
+        '''
+        Test for editing a post that is yours
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getsinglepost', args=[self.author.uid,self.post.uid])
+        response = self.client.get(url2)
+        payload = {
+        'title': 'testing2',
+        'description': 'testing',
+        'contentType': 'text/plain',
+        'content': 'testing',
+        'categories': '[]',
+        'visibility': 'PUBLIC',
+        'unlisted': False,
+        
+        }
+        response = self.client.post(url, json.dumps(payload),content_type='application/json')
+        print(response.data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Post.objects.count(), 1)
+        self.assertEqual(Post.objects.get().title, 'testing2')
+        self.client.credentials()
+

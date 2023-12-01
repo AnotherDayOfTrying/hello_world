@@ -275,9 +275,23 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ('type','title','id','source','origin','description','contentType','content','author','categories','count','comments','published','visibility','unlisted','author')
         
     def create(self, validated_data):
-        if validated_data.get('image') is None:
+        actor_data = validated_data.pop('author')
+        if validated_data.get('source') is None or validated_data.get('origin') is None or validated_data.get('id') is None:
             post = Post.objects.create(
-                author = validated_data['author'],
+                author = Author.objects.get(uid=actor_data['id'].split("/")[-1]),
+                title = validated_data['title'],
+                description = validated_data['description'],
+                contentType = validated_data['contentType'],
+                content = validated_data['content'],
+                categories = validated_data['categories'],
+                visibility = validated_data['visibility'],
+                unlisted = validated_data['unlisted'],
+                
+            )
+
+        else:  
+            post = Post.objects.create(
+                author = Author.objects.get(uid=actor_data['id'].split("/")[-1]),
                 title = validated_data['title'],
                 id = validated_data['id'],
                 description = validated_data['description'],
@@ -291,34 +305,25 @@ class PostSerializer(serializers.ModelSerializer):
                 published = validated_data['published'],
                 
             )
-        else:
-            post = Post.objects.create(
-                author = validated_data['author'],
-                title = validated_data['title'],
-                id = validated_data['id'],
-                description = validated_data['description'],
-                contentType = validated_data['contentType'],
-                content = validated_data['content'],
-                categories = validated_data['categories'],
-                visibility = validated_data['visibility'],
-                unlisted = validated_data['unlisted'],
-                source = validated_data['source'],
-                origin = validated_data['origin'],
-                published = validated_data['published'],
-                image = validated_data['image'],
-                
-            )
+            
         return post
     def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.description = validated_data.get('description', instance.description)
-        instance.contentType = validated_data.get('contentType', instance.contentType)
-        instance.content = validated_data.get('content', instance.content)
-        instance.categories = validated_data.get('categories', instance.categories)
-        instance.visibility = validated_data.get('visibility', instance.visibility)
-        instance.unlisted = validated_data.get('unlisted', instance.unlisted)
-        instance.image = validated_data.get('image', instance.image)
-        instance.source = validated_data.get('source', instance.source)
+        if validated_data.get('title') is not None:
+            instance.title = validated_data.get('title', instance.title)
+        if validated_data.get('description') is not None:
+            instance.description = validated_data.get('description', instance.description)
+        if validated_data.get('contentType') is not None:
+            instance.contentType = validated_data.get('contentType', instance.contentType)
+        if validated_data.get('content') is not None:
+            instance.content = validated_data.get('content', instance.content)
+        if validated_data.get('categories') is not None:
+            instance.categories = validated_data.get('categories', instance.categories)
+        if validated_data.get('visibility') is not None:
+            instance.visibility = validated_data.get('visibility', instance.visibility)
+        if validated_data.get('unlisted') is not None:
+            instance.unlisted = validated_data.get('unlisted', instance.unlisted)
+        if validated_data.get('source') is not None:
+            instance.source = validated_data.get('source', instance.source)
         instance.save()
         return instance
 

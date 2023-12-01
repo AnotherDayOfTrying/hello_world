@@ -66,7 +66,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()   
 
 class Post(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author')
     title = models.CharField(max_length=50)
     uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)
     id = models.URLField(max_length=255, null = True, blank = True)

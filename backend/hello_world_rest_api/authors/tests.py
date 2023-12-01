@@ -871,6 +871,55 @@ class AllPostTest(TestCase):
         
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Post.objects.count(), 2)
+
+class CommentTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_user(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+
+        self.token1 = Token.objects.get_or_create(user=self.author)
+
+        self.client = APIClient()
+        self.post = Post.objects.create(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            author = self.author,
+            title = 'testing',
+            description = 'testing',
+            contentType = 'text/plain',
+            content = 'testing',
+            categories = '[]',
+            visibility = 'PUBLIC',
+            unlisted = False,
+        )
+
+
+    def test_post_comment(self):
+        '''
+        Test for posting a comment on a post
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+
+
+        url2 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url = reverse('authors:getcomment', args=[self.author.uid, self.post.uid])
+        response = self.client.get(url)
+        payload = {
+        'comment' : 'testing comment',
+        'contentType' : 'text/markdown',
+        }
+        response = self.client.post(url, json.dumps(payload),content_type='application/json')
+        print(response.data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Comment.objects.count(), 1)
+        self.client.credentials()
+
+
+
 '''
 class PostCommentTests(TestCase):
     

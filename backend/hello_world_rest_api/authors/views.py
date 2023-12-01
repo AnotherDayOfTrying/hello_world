@@ -269,6 +269,29 @@ class AllPostView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+class CommentView(generics.CreateAPIView):
+    serializer_class = CommentSerializer
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, author_id, post_id):
+        post = get_object_or_404(Post, uid=post_id)
+        comments = Comment.objects.filter(post=post)
+        serializer = CommentSerializer(comments, many=True, context={'request': request})
+        response = {
+            "type": "posts",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
+    def post(self, request, author_id, post_id):
+        post = get_object_or_404(Post, uid=post_id)
+        author = request.user
+        serializer = CommentSerializer(data=request.data, context={'post': post, 'author': author})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 '''
 class SendFriendRequest(generics.CreateAPIView):
     

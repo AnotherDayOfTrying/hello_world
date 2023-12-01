@@ -6,8 +6,7 @@ from django.contrib.auth.hashers import make_password,check_password
 import uuid
 from django.conf import settings
 from PIL import Image
-
-
+import json
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -36,11 +35,12 @@ class UserManager(BaseUserManager):
 
 class Author(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length = 20, unique = True)
-    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    uid = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     displayName = models.CharField(max_length = 50, null = True,blank = True)
     github = models.URLField(max_length=255, null = True, blank = True)
-    host = models.CharField(max_length=255, default = settings.HOST_URL)
-    url = models.URLField(default = settings.HOST_URL + "authors/" + str(id))
+    host = models.CharField(max_length=255, null = True,blank = True)
+    id = models.URLField(max_length=255, null = True, blank = True)
+    url = models.URLField(max_length=255, null = True, blank = True)
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
@@ -48,59 +48,123 @@ class Author(AbstractBaseUser, PermissionsMixin):
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
     profilePicture = models.ImageField(upload_to='profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'
-    def __str__(self):
-        return self.username
     @property
     def type(self):
-        return "author"
-    def url(self):
-        return self.host + "authors/" + str(self.id)
-    objects = UserManager()
+        return 'author'
+    def save(self,*args,**kwargs):
+        if self.host is None:
+            self.host = settings.HOST_URL
+        if self.id is None:
+            self.id = f'{self.host}author/{self.uid}'
+            self.url = self.id
+        super(Author,self).save(*args,**kwargs)
+        img = Image.open(self.profilePicture.path)
+        if img.height > 300 or img.width > 300:
+            output_size = (300,300)
+            img.thumbnail(output_size)
+            img.save(self.profilePicture.path)
+    objects = UserManager()   
 
 class Post(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author')
     title = models.CharField(max_length=50)
+<<<<<<< HEAD
+    uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)
+    id = models.URLField(max_length=255, null = True, blank = True)
+    source = models.URLField(max_length=255, null = True, blank = True)
+    origin = models.URLField(max_length=255, null = True, blank = True)
+    description = models.CharField(max_length=200, blank=True, null=True)
+    Priv_Choices = [('PUBLIC', 'PUBLIC'), ('FRIENDS', 'FRIENDS')]
+    visibility = models.CharField(max_length=20, choices=Priv_Choices, default='PUBLIC')
+=======
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    description = models.CharField(max_length=255)
+    content = models.TextField()
     Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]
     privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
+>>>>>>> dcc75c537b71a9fad1a1af0718ae943aae659102
     # For now content is text, but set up options for content 
-    content_choices = [('TEXT', 'Text'), ('IMAGE', 'Image')]
-    content_type = models.CharField(max_length=10, choices=content_choices, default='TEXT')
-    text = models.CharField(max_length=200, blank=True, null=True)
-    image_url = models.URLField(max_length=200, blank=True, null=True)
+    content_choices = [('text/plain', 'text/plain'), ('text/markdown', 'text/markdown'), ('application/base64','application/base64'),('image/png','image/png'),('image/jpeg','image/jpeg')]
+    contentType = models.CharField(max_length=20, choices=content_choices, default='text/plain')
+    content = models.CharField(max_length=200, blank=True, null=True)
+    #categories = models.CharField(max_length=200, blank=True, null=True)
     image = models.ImageField(upload_to='postimages/', blank=True, null=True)
+    published = models.DateTimeField(auto_now_add=True)
+    comments = models.URLField(max_length=255, null = True, blank = True)
+    unlisted = models.BooleanField(default=False)
+    count = models.IntegerField(default=0)
+    categories = models.TextField(blank=True, null=True,default ='[]')
+
+    def set_array(self,value):
+        self.categories = json.dumps(value)
+    def get_array(self):
+        return json.loads(self.categories)
+    @property
+    def type(self):
+        return 'post'
+    def save(self,*args,**kwargs):
+        if self.id is None:
+            self.id = f'{self.author.id}/posts/{self.uid}'
+        if self.source is None:
+            self.source = self.id
+        if self.origin is None:
+            self.origin = self.id
+        if self.comments is None:
+            self.comments = f'{self.id}/comments'
+        super(Post,self).save(*args,**kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+            if img.height > 1000 or img.width > 1000:
+                output_size = (1000,1000)
+                img.thumbnail(output_size)
+                img.save(self.image.path)
+    
+    
+#Not Changed    
+class Comment(models.Model):
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    comment = models.TextField()
+    contentType = models.TextField()
     published = models.DateTimeField(auto_now_add=True)
     
     @property
     def post_prime_key(self):
-        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
-    
-    @property
-    def post_source(self):
-        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
-    
-    @property
-    def post_origin(self):
-        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.uid}'
-    
-class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    comment = models.TextField()
-    time = models.DateTimeField(auto_now_add=True)
+        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.post.uid}/comments/{self.uid}'
     
 class Friendship(models.Model):
-    sender = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='sender')
-    reciever = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='reciever')
+    uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
     friend_status = [(1, 'Pending'), (2, 'Following'), (3, 'Friends')]
     status = models.SmallIntegerField(choices=friend_status, default=1)
-    
+    summary = models.CharField(max_length=200, blank=True, null=True)
+    @property
+    def type(self):
+        return 'Follow'
+#Not changed     
 class Like(models.Model):
     liker = models.ForeignKey(Author, on_delete=models.CASCADE)
     # Use generic content type since one can like post or comment
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+    
+    @property
+    def post_prime_key(self):
+        return f'{settings.HOST_URL}/authors/{self.liker.id}/posts/{self.content_object.uid}'
+    
+class Inbox_Item(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    item_object = GenericForeignKey('content_type', 'object_id')
+    
 
-
+class Inbox(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    contentObject = GenericForeignKey('content_type', 'object_id')
     

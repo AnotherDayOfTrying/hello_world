@@ -53,7 +53,7 @@ class SignInSerializer(serializers.Serializer):
             raise serializers.ValidationError('Author is not approved')
         data['author'] = author
         return data
-
+'''
 class SendFriendRequestSerializer(serializers.Serializer):
     receiver_id = serializers.UUIDField(write_only=True)
         
@@ -86,7 +86,7 @@ class RespondFriendRequestSerializer(serializers.Serializer):
         if action == 'decline':
             friendship.delete()
         return friendship
-    
+  '''  
 """ class DeleteFriendSerializer(serializers.Serializer):
     
     def update(self, friendship, validated_data):
@@ -156,7 +156,7 @@ class LikeingSerializer(serializers.Serializer):
 class FriendShipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship
-        fields = ('id','sender', 'reciever', 'status')
+        fields = ('type','summary','actor', 'object')
 
 class UploadPostSerializer(serializers.ModelSerializer):
     post_prime_key = serializers.ReadOnlyField()

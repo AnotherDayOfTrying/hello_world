@@ -56,7 +56,7 @@ class Signin(generics.CreateAPIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-
+'''
 class SendFriendRequest(generics.CreateAPIView):
     
     serializer_class = SendFriendRequestSerializer
@@ -105,7 +105,7 @@ class DeleteFriend(generics.CreateAPIView):
             reverse.save()
         friendship.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
-
+'''
 class GetComment(generics.ListAPIView):
     
     serializer_class = GetCommentSerializer
@@ -198,7 +198,7 @@ class FriendshipView(generics.CreateAPIView):
     def get(self, request,author_id,foreign_author_id):
         author = get_object_or_404(Author,uid=author_id)
         foreign_author = get_object_or_404(Author,uid=foreign_author_id)
-        friendship = Friendship.objects.filter(sender=foreign_author,reciever=author,status__in = [2,3])
+        friendship = Friendship.objects.filter(actor=foreign_author,object=author,status__in = [2,3])
         if friendship:
             return Response({'is_follower': True}, status=status.HTTP_200_OK)
         else:
@@ -206,15 +206,33 @@ class FriendshipView(generics.CreateAPIView):
     def delete(self, request,author_id,foreign_author_id):
         author = get_object_or_404(Author,uid=author_id)
         foreign_author = get_object_or_404(Author,uid=foreign_author_id)
-        friendship = Friendship.objects.filter(actor=foreign_author,object=author,status__in = [2,3])
-        reverse = Friendship.objects.filter(actor=author,object=foreign_author,status__in = [2,3])
+        friendship = get_object_or_404(Friendship,actor=foreign_author,object=author)
+        reverse = Friendship.objects.filter(actor=author,object=foreign_author,status__in = [2,3]).first()
         if reverse and reverse.status == 3:
             reverse.status = 2
             reverse.save()
         friendship.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
+    def put(self,request,author_id,foreign_author_id):
+        author = get_object_or_404(Author,uid=author_id)
+        foreign_author = get_object_or_404(Author,uid=foreign_author_id)
+        friendship = Friendship.objects.filter(actor=foreign_author,object=author).first()
+        reverse = Friendship.objects.filter(actor=author,object=foreign_author,status__in = [2,3]).first()
+        if friendship and friendship.status == 1:
+            friendship.status = 2
+            friendship.save()
+            if reverse and reverse.status == 2:
+                friendship.status = 3
+                friendship.save()
+                reverse.status = 3
+                reverse.save()
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+        elif friendship and (friendship.status == 2 or friendship.status == 3):
+            return Response({'message': 'Already Friends'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'message': 'No friend request has been sent'}, status=status.HTTP_404_NOT_FOUND)
+
         
-'''
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, NodesAuthentication])
 @permission_classes([permissions.IsAuthenticated])
@@ -229,6 +247,7 @@ def getFollowers(request, author_id):
         "items": serializer.data,
     }
     return Response(response, status=status.HTTP_200_OK)
+
 '''
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, NodesAuthentication])
@@ -241,7 +260,7 @@ def checkFollowing(request,author_id,foreign_author_id):
         return Response({'is_follower': 1}, status=status.HTTP_200_OK)
     else:
         return Response({'is_follower': 0}, status=status.HTTP_200_OK)
-
+'''
 
 @api_view(['GET'])
 # @permission_classes([permissions.IsAuthenticated])

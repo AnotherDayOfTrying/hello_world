@@ -815,4 +815,132 @@ class RemotePostImageTest(TestCase):
         
         self.assertEqual(response.status_code, 200)
         self.assertIn('image/jpeg;base64',  response.data['data'])
+class FriendshipTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_user(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.author2 = Author.objects.create_user(
+            uid = 'adbfc58a-7d07-11ee-b962-0242ac120002',
+            username='Joe',
+            password='testpass123',
+            displayName='joe',
+            github='',
+        )
+        self.token1 = Token.objects.get_or_create(user=self.author)
         
+        self.client = APIClient()
+    def test_delete_friendrequest_1(self):
+        '''
+        Test for deleting a friend request that exists and the other author is not following the sender
+        '''
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Friendship.objects.count(), 0)
+        self.client.credentials()
+    def test_delete_friendrequest_2(self):
+        '''
+        Test for deleting a friend request that exists and the other author is following the sender
+        '''
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.friend2 = Friendship.objects.create(actor=self.author, object=self.author2, status=2)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Friendship.objects.count(), 1)
+        self.client.credentials()
+    def test_delete_friendrequest_3(self):
+        '''
+        Test for deleting a friend when both are following each other
+        '''
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=3)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.friend2 = Friendship.objects.create(actor=self.author, object=self.author2, status=3)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.delete(url)
+        self.friend2 = Friendship.objects.get(actor=self.author, object=self.author2)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Friendship.objects.count(), 1)
+        self.assertEqual(self.friend2.status, 2)
+        self.client.credentials()
+    def test_delete_friendrequest_4(self):
+        '''
+        Test for deleting a non existent friend request
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 404)
+    def test_check_following_1(self):
+        '''
+        Test for checking if an author is following another author
+        '''
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=3)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['is_follower'], True)
+        self.client.credentials()
+    def test_check_following_2(self):
+        '''
+        Test for checking if an author is not following another author
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['is_follower'], False)
+    def test_adding_a_friend_1(self):
+        '''
+        Test for adding a friend when the other author is not following the sender
+        '''
+
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Friendship.objects.get(actor=self.author2, object=self.author).status, 2)
+        self.client.credentials()
+    def test_adding_a_friend_2(self):
+        '''
+        Test for adding a friend when the other author is following the sender
+        '''
+
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        self.friend2 = Friendship.objects.create(actor=self.author, object=self.author2, status=2)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Friendship.objects.get(actor=self.author2, object=self.author).status, 3)
+        self.assertEqual(Friendship.objects.get(actor=self.author, object=self.author2).status, 3)
+        self.client.credentials()
+    def test_adding_a_friend_3(self):
+        '''
+        Test for adding a friend when the oher author is already a friend
+        '''
+        self.friend1 = Friendship.objects.create(actor=self.author2, object=self.author, status=2)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 400)
+    def test_adding_a_friend_4(self):
+        '''
+        Test for adding a friend when there is no friend request
+        '''
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:singlefriendship', args=[self.author.uid,self.author2.uid])
+        response = self.client.put(url)
+        self.assertEqual(response.status_code, 404)

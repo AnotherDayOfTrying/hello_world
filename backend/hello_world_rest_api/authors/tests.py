@@ -123,7 +123,7 @@ class SigninTests(TestCase):
         response = self.c.post('/signin/', {'username': 'will', 'password':'testpass123'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
-ual(friendship.status, 2)
+
         
 
 

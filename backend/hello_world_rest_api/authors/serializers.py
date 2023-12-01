@@ -216,10 +216,10 @@ class PostCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Comment
-        fields = ('comment', 'time')
+        fields = ('id', 'comment', 'published', 'contentType')
         
     def create(self, validated_data):
-        comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
+        comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'], contentType= validated_data['contentType'])
         comment.save()
         return comment
 
@@ -228,10 +228,10 @@ class GetCommentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Comment
-        fields = ('id','comment', 'time', 'author')
+        fields = ('id','comment', 'published', 'author', 'contentType')
         
     def create(self, validated_data):
-        comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'])
+        comment = Comment.objects.create(post=self.context['post'],author=self.context['author'], comment=validated_data['comment'], contentType=validated_data['content'])
         comment.save()
         return comment
 '''
@@ -240,6 +240,8 @@ class GetCommentSerializer(serializers.ModelSerializer):
 class LikeingSerializer(serializers.Serializer):
     content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
     content_id = serializers.IntegerField()
+    content_object = serializers.ReadOnlyField()
+    post_prime_key = serializers.ReadOnlyField()
     
     def create(self, validated_data):
         author = self.context['author']
@@ -266,12 +268,14 @@ class UploadPostSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
+        fields = ('id', 'title', 'content', 'description', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
 
     def create(self, validated_data):
         uploadPost = Post.objects.create(
             author = self.context['author'],
             title = validated_data['title'],
+            content = validated_data['content'],
+            description = validated_data['description'],
             content_type = validated_data['content_type'],
             privacy = validated_data['privacy'],
             text = validated_data['text'],
@@ -288,11 +292,13 @@ class GetPostSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Post
-        fields = ('id', 'author', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
+        fields = ('id', 'author', 'title', 'content', 'description', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
     
 class EditPostSerializer(serializers.ModelSerializer):
     image_url = serializers.URLField(max_length=200, required = False, allow_blank = True)
     title = serializers.CharField(max_length=50, required = False, allow_blank = True)
+    content = serializers.CharField(max_length=255, required = False, allow_blank = True)
+    description = serializers.CharField(max_length=255, required = False, allow_blank = True)
     content_type = serializers.CharField(max_length=10, required = False, allow_blank = True)
     privacy = serializers.CharField(max_length=10, required = False, allow_blank = True)
     post_prime_key = serializers.ReadOnlyField()
@@ -301,9 +307,11 @@ class EditPostSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
+        fields = ('id', 'title', 'content', 'description', 'content_type', 'privacy', 'text', 'image_url', 'image', 'published', 'post_prime_key', 'post_source', 'post_origin')
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+        instance.description = validated_data.get('description', instance.description)
         instance.content_type = validated_data.get('content_type', instance.content_type)
         instance.privacy = validated_data.get('privacy', instance.privacy)
         instance.text = validated_data.get('text', instance.text)
@@ -314,12 +322,12 @@ class EditPostSerializer(serializers.ModelSerializer):
 
 
 class LikeSerializer(serializers.ModelSerializer):
-    
+    post_prime_key = serializers.ReadOnlyField()
     content_object = serializers.SerializerMethodField()
     
     class Meta:
         model = Like
-        fields = ('id', 'liker', 'content_type', 'object_id', 'content_object')
+        fields = ('id', 'liker', 'content_type', 'object_id', 'content_object', 'post_prime_key')
         
     def get_content_object(self, object):
         if isinstance(object.content_object, Post):

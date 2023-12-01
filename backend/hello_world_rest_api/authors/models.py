@@ -68,6 +68,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author')
     title = models.CharField(max_length=50)
+<<<<<<< HEAD
     uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)
     id = models.URLField(max_length=255, null = True, blank = True)
     source = models.URLField(max_length=255, null = True, blank = True)
@@ -75,6 +76,13 @@ class Post(models.Model):
     description = models.CharField(max_length=200, blank=True, null=True)
     Priv_Choices = [('PUBLIC', 'PUBLIC'), ('FRIENDS', 'FRIENDS')]
     visibility = models.CharField(max_length=20, choices=Priv_Choices, default='PUBLIC')
+=======
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    description = models.CharField(max_length=255)
+    content = models.TextField()
+    Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]
+    privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
+>>>>>>> dcc75c537b71a9fad1a1af0718ae943aae659102
     # For now content is text, but set up options for content 
     content_choices = [('text/plain', 'text/plain'), ('text/markdown', 'text/markdown'), ('application/base64','application/base64'),('image/png','image/png'),('image/jpeg','image/jpeg')]
     contentType = models.CharField(max_length=20, choices=content_choices, default='text/plain')
@@ -114,10 +122,16 @@ class Post(models.Model):
     
 #Not Changed    
 class Comment(models.Model):
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.TextField()
-    time = models.DateTimeField(auto_now_add=True)
+    contentType = models.TextField()
+    published = models.DateTimeField(auto_now_add=True)
+    
+    @property
+    def post_prime_key(self):
+        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.post.uid}/comments/{self.uid}'
     
 class Friendship(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)
@@ -136,6 +150,17 @@ class Like(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+    
+    @property
+    def post_prime_key(self):
+        return f'{settings.HOST_URL}/authors/{self.liker.id}/posts/{self.content_object.uid}'
+    
+class Inbox_Item(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    item_object = GenericForeignKey('content_type', 'object_id')
+    
 
 class Inbox(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')

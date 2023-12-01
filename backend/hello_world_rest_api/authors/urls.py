@@ -27,6 +27,7 @@ urlpatterns = [
     #path('authors/<uuid:author_id>/posts/<int:post_id>/comments/<int:comment_id>/likes/', views.getlikesoncomment, name = 'getlikesoncomment'),
     #path('authors/likes/', views.getlikesfromauthor, name = 'getlikesfromauthor'),
     ### Remote API
+    path('authors/<uuid:author_id>', views.InboxView.as_view(), name='inbox'),
     path('authors/<uuid:author_id>',views.getOneAuthor, name = 'getoneauthor'),
     path('authors/', views.AllAuthorsView.as_view(), name = 'get-all-authors'),
     path('authors/<uuid:author_id>/followers',views.getFollowers, name = 'getfollowers'),

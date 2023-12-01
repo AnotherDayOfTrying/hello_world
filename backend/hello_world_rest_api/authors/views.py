@@ -434,7 +434,7 @@ def getFollowers(request, author_id):
     followers = Friendship.objects.filter(object=author,status__in = [2,3])
     followers = followers.values_list('actor', flat=True)
     followers = Author.objects.filter(uid__in=followers)
-    serializer = AuthorSerializer(followers, many=True)
+    serializer = AuthorSerializer(followers, many=True, context={'request': request})
     response = {
         "type": "followers",
         "items": serializer.data,
@@ -446,12 +446,10 @@ def getFollowers(request, author_id):
 def getOneAuthor(request, author_id):
     author = get_object_or_404(Author,pk=author_id)
     if request.method == 'GET':
-        
-        serializer = AuthorSerializer(author, context={'request': request})
-       #print(serializer.data)
+        serializer = AuthorSerializer(author, context={'request': request})       
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        serializer = AuthorSerializer(instance=author, data=request.data,partial=True)
+        serializer = AuthorSerializer(instance=author, data=request.data,partial=True,context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -516,7 +514,7 @@ class AllAuthorsView(generics.CreateAPIView):
         paginator = PageNumberPagination()
         paginator.page_size = page_size
         page = paginator.paginate_queryset(queryset,request)
-        serializer = AuthorSerializer(page, many=True)
+        serializer = AuthorSerializer(page, many=True,context={'request': request})
         response = {
             "type": "authors",
             "items": serializer.data,
@@ -595,7 +593,7 @@ class PostView(generics.CreateAPIView):
             return Response({'message': 'You are not the author of this post'}, status=status.HTTP_403_FORBIDDEN)
         author = get_object_or_404(Author,uid=author_id)
         post = get_object_or_404(Post,uid=post_id)
-        serializer = PostSerializer(instance=post, data=request.data, partial=True)
+        serializer = PostSerializer(instance=post, data=request.data, partial=True, context={'request': request})
         
         if serializer.is_valid():
             serializer.save()
@@ -611,8 +609,12 @@ class InboxView(generics.CreateAPIView):
             serializer = FriendShipSerializer(data=request.data, context={'request': request})
             model = Friendship
         elif request.data.get('type') == 'post':
-            serializer = PostSerializer(data=request.data)
+            serializer = PostSerializer(data=request.data, context={'request': request})
             model = Post
+        elif request.data.get('type') == 'comment':
+            pass
+        elif request.data.get('type') == 'like':
+            pass
         else:
             return Response({'message': 'Invalid type'}, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
@@ -623,4 +625,24 @@ class InboxView(generics.CreateAPIView):
             inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
             return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class AllPostView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+
+    def get(self,request,author_id):
+        author = get_object_or_404(Author,uid=author_id)
+        posts = Post.objects.filter(author=author)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
+        response = {
+            "type": "posts",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    def post(self,request,author_id):
+        author = get_object_or_404(Author,uid=author_id)
+        serializer = PostSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -32,6 +32,6 @@ urlpatterns = [
     path('authors/<uuid:author_id>/followers',views.getFollowers, name = 'getfollowers'),
     path('authors/<uuid:author_id>/followers/<uuid:foreign_author_id>',views.FriendshipView.as_view(), name = 'singlefriendship'),
     path('authors/<uuid:author_id>/inbox',views.InboxView.as_view(), name = 'inbox'),
-    #path('authors/<uuid:author_id>/posts/', views.AllPostView.as_view(), name = 'getallposts'),
+    path('authors/<uuid:author_id>/posts/', views.AllPostView.as_view(), name = 'getallposts'),
     path('authors/<uuid:author_id>/posts/<uuid:post_id>/', views.PostView.as_view(), name = 'getsinglepost'),
 ]

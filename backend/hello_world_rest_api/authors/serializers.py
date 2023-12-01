@@ -138,8 +138,6 @@ class AuthorSerializer(serializers.ModelSerializer):
         return instance
     def get_profilePicture(self, obj):
         request = self.context.get('request')
-        
-        
         profilePicture_url = obj.profilePicture.url
         return request.build_absolute_uri(profilePicture_url)
 '''
@@ -302,7 +300,7 @@ class PostSerializer(serializers.ModelSerializer):
                 unlisted = validated_data['unlisted'],
                 source = validated_data['source'],
                 origin = validated_data['origin'],
-                published = validated_data['published'],
+                
                 
             )
             
@@ -339,14 +337,16 @@ class InboxSerializer(serializers.ModelSerializer):
         
         # Get the related object
         related_obj = model.objects.get(uid=object.object_id)
-        
+        request = self.context.get('request')
         # Use the appropriate serializer based on the model class
         if isinstance(related_obj, Friendship):
-            request = self.context.get('request')
-            
             return FriendShipSerializer(related_obj, context={'request': request}).data
         elif isinstance(related_obj, Post):
-            return PostSerializer(related_obj).data
+            return PostSerializer(related_obj,context = {'request':request}).data
+        elif isinstance(related_obj, Comment):
+            pass
+        elif isinstance(related_obj, Like):
+            pass
         else:
             raise Exception('Unexpected model class')
     

@@ -39,7 +39,9 @@ class Author(AbstractBaseUser, PermissionsMixin):
     uid = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     displayName = models.CharField(max_length = 50, null = True,blank = True)
     github = models.URLField(max_length=255, null = True, blank = True)
-    host = models.CharField(max_length=255, default = settings.HOST_URL)
+    host = models.CharField(max_length=255, null = True,blank = True)
+    id = models.URLField(max_length=255, null = True, blank = True)
+    url = models.URLField(max_length=255, null = True, blank = True)
     is_approved = models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
@@ -47,18 +49,22 @@ class Author(AbstractBaseUser, PermissionsMixin):
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
     profilePicture = models.ImageField(upload_to='profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'
-    def __str__(self):
-        return self.username
     @property
     def type(self):
-        return "author"
-    @property
-    def url(self):
-        return self.host + "authors/" + str(self.uid)
-    @property
-    def id(self):
-        return self.host + "authors/" + str(self.uid)
-    objects = UserManager()
+        return 'author'
+    def save(self,*args,**kwargs):
+        if self.host is None:
+            self.host = settings.HOST_URL
+        if self.id is None:
+            self.id = f'{self.host}author/{self.uid}'
+            self.url = self.id
+        super(Author,self).save(*args,**kwargs)
+        img = Image.open(self.profilePicture.path)
+        if img.height > 300 or img.width > 300:
+            output_size = (300,300)
+            img.thumbnail(output_size)
+            img.save(self.profilePicture.path)
+    objects = UserManager()   
 
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
@@ -93,10 +99,14 @@ class Comment(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     
 class Friendship(models.Model):
-    sender = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='sender')
-    reciever = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='reciever')
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
     friend_status = [(1, 'Pending'), (2, 'Following'), (3, 'Friends')]
     status = models.SmallIntegerField(choices=friend_status, default=1)
+    summary = models.CharField(max_length=200, blank=True, null=True)
+    @property
+    def type(self):
+        return 'Follow'
     
 class Like(models.Model):
     liker = models.ForeignKey(Author, on_delete=models.CASCADE)

@@ -20,6 +20,7 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = Author
         fields = ('uid', 'username', 'password','password2', 'displayName', 'github', 'profilePicture')
     def create(self, validated_data):
+        
         user_data = {
             "username": validated_data['username'],
             "password": validated_data['password'],
@@ -122,15 +123,18 @@ class GetCommentSerializer(serializers.ModelSerializer):
 
 class AuthorSerializer(serializers.ModelSerializer):
     
-    
-    url = serializers.URLField(read_only=True)
     displayName = serializers.CharField(allow_null=True)
     github = serializers.URLField(allow_blank = True, allow_null = True)
     class Meta:
         model = Author
-        fields = ('type', 'uid', 'url', 'displayName', 'profilePicture', 'github','host')
-
-
+        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github','host')
+        read_only_fields = ('id', 'url', 'host','type')
+    def update(self, instance, validated_data):
+        instance.displayName = validated_data.get('displayName', instance.displayName)
+        instance.github = validated_data.get('github', instance.github)
+        instance.profilePicture = validated_data.get('profilePicture', instance.profilePicture)
+        instance.save()
+        return instance
 class LikeingSerializer(serializers.Serializer):
     content_type = serializers.ChoiceField(choices=['post', 'comment'], write_only=True)
     content_id = serializers.IntegerField()

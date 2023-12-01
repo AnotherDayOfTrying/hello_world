@@ -898,14 +898,13 @@ class CommentTest(TestCase):
         )
 
 
-    def test_post_comment(self):
+    def test_post_and_get_comment(self):
         '''
         Test for posting a comment on a post
         '''
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
 
 
-        url2 = reverse('authors:getoneauthor', args=[self.author.uid])
         url = reverse('authors:getcomment', args=[self.author.uid, self.post.uid])
         response = self.client.get(url)
         payload = {
@@ -913,9 +912,10 @@ class CommentTest(TestCase):
         'contentType' : 'text/markdown',
         }
         response = self.client.post(url, json.dumps(payload),content_type='application/json')
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Comment.objects.count(), 1)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
         self.client.credentials()
 
 

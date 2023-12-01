@@ -169,18 +169,14 @@ class InboxSerializer(serializers.ModelSerializer):
             raise Exception('Unexpected model class')
         
 class CommentSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
-    post = PostSerializer()
     class Meta:
         model = Comment
-        fields = ('id', 'post', 'author', 'comment', 'contentType', 'published')
+        fields = ('uid', 'comment', 'contentType', 'published')
 
     def create(self, validated_data):
-        actor_data = validated_data.pop('author')
-        post_data = validated_data.pop('post')
         comment = Comment.objects.create(
-            post = Post.objects.get(uid=post_data['uid'].split("/")[-1]),
-            author = Author.objects.get(uid=actor_data['id'].split("/")[-1]),
+            post = self.context['post'],
+            author = self.context['author'],
             comment = validated_data['comment'],
             contentType = validated_data['contentType'],
         )

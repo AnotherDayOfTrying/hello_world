@@ -73,15 +73,13 @@ class Post(models.Model):
     source = models.URLField(max_length=255, null = True, blank = True)
     origin = models.URLField(max_length=255, null = True, blank = True)
     description = models.CharField(max_length=200, blank=True, null=True)
-    Priv_Choices = [('PUBLIC', 'Public'), ('UNLISTED', 'Unlisted'), ('PRIVATE', 'Private')]
-    privacy = models.CharField(max_length=10, choices=Priv_Choices, default='PUBLIC')
+    Priv_Choices = [('PUBLIC', 'PUBLIC'), ('FRIENDS', 'FRIENDS')]
     visibility = models.CharField(max_length=20, choices=Priv_Choices, default='PUBLIC')
     # For now content is text, but set up options for content 
     content_choices = [('text/plain', 'text/plain'), ('text/markdown', 'text/markdown'), ('application/base64','application/base64'),('image/png','image/png'),('image/jpeg','image/jpeg')]
     contentType = models.CharField(max_length=20, choices=content_choices, default='text/plain')
     content = models.CharField(max_length=200, blank=True, null=True)
     #categories = models.CharField(max_length=200, blank=True, null=True)
-    image = models.ImageField(upload_to='postimages/', blank=True, null=True)
     published = models.DateTimeField(auto_now_add=True)
     comments = models.URLField(max_length=255, null = True, blank = True)
     unlisted = models.BooleanField(default=False)
@@ -105,12 +103,6 @@ class Post(models.Model):
         if self.comments is None:
             self.comments = f'{self.id}/comments'
         super(Post,self).save(*args,**kwargs)
-        if self.image:
-            img = Image.open(self.image.path)
-            if img.height > 1000 or img.width > 1000:
-                output_size = (1000,1000)
-                img.thumbnail(output_size)
-                img.save(self.image.path)
     
     
 #Not Changed    
@@ -151,8 +143,8 @@ class Like(models.Model):
 class Inbox_Item(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    item_object = GenericForeignKey('content_type', 'object_id')
+    object_id = models.UUIDField()
+    contentObject = GenericForeignKey('content_type', 'object_id')
     
 
     

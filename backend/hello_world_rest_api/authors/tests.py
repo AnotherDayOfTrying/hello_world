@@ -574,11 +574,11 @@ class InboxTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         response = self.client.get(url1)
         url = reverse('authors:inbox', args=[self.author2.uid])
-        response = self.client.post(url,json.dumps(response.data), content_type='application/json')
+        response = self.client.post(url,response.data, format='json') 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Inbox_Item.objects.count(), 1)
         self.assertEqual(Inbox_Item.objects.get().content_type, ContentType.objects.get_for_model(Post))
-        self.assertEqual(Post.objects.count(), 2)
+        self.assertEqual(Post.objects.count(), 1)
 
 
 class PostTest(TestCase):
@@ -917,7 +917,123 @@ class CommentTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.client.credentials()
+class PostImageTest(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create_superuser(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            username='will',
+            password='testpass123',
+            displayName='will',
+            github='',
+        )
+        self.post = Post.objects.create(
+            uid = '631f3ebe-d976-4248-a808-db2442a22168',
+            author = self.author,
+            title = 'testing',
+            description = 'testing',
+            contentType = 'text/plain',
+            content = 'testing',
+            categories = '[]',
+            visibility = 'PUBLIC',
+            unlisted = False,
+        )
+        
+        
+        
+        self.c = APIClient()
+        self.token1 = Token.objects.get_or_create(user=self.author)
+    
+    def test_get_post_image_1(self):
+        '''
+        Test for an post with no image
+        '''
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
+        response = self.c.get(url)
+        
+        self.assertEqual(response.status_code, 404)
+        self.assertIn(response.data['error'],  'no image')
+    
+    def test_get_post_image_2(self):
+        '''
+        Test for getting an image that exists
+        '''
+        img = Image.open('./media/postpicture1.jpg')
+        output = io.BytesIO()
+        img.save(output, format='JPEG',quality = 60)
+        file = InMemoryUploadedFile(output, 'ImageField', "postpicture2.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
+        self.post_image = PostImage.objects.create(
+            post = self.post,
+            image = file,
+        )
+        
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
+        response = self.c.get(url)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('http://testserver/media/postimages/postpicture2',response.data['image'] )
+    def test_delete_post_image_1(self):
+        img = Image.open('./media/postpicture1.jpg')
+        output = io.BytesIO()
+        img.save(output, format='JPEG',quality = 60)
+        file = InMemoryUploadedFile(output, 'ImageField', "postpicture2.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
+        self.post_image = PostImage.objects.create(
+            post = self.post,
+            image = file,
+        )
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
+        response = self.c.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(PostImage.objects.count(), 0)
+    def test_delete_post_image_2(self):
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
+        response = self.c.delete(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(PostImage.objects.count(), 0)
+    def test_post_post_image_1(self):
+        '''
+        Test for posting an image
+        '''
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
+        img = Image.open('./media/postpicture1.jpg')
+        output = io.BytesIO()
+        img.save(output, format='JPEG',quality = 60)
+        file = InMemoryUploadedFile(output, 'ImageField', "postpicture2.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
+        payload = {
+            'image' : file,
+        }
+        response = self.c.post(url, payload)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(PostImage.objects.count(), 1)
+        
+        
+    def test_post_post_image_2(self):
+        '''
+        Test for changing a post's image
+        '''
+        self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        img = Image.open('./media/2.jpg')
+        output = io.BytesIO()
+        img.save(output, format='JPEG',quality = 60)
+        file = InMemoryUploadedFile(output, 'ImageField', "2.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
+        self.post_image = PostImage.objects.create(
+            post = self.post,
+            image = file,
+        )
+        url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
+        payload = {
+            'image': './postpicture1.jpg',
+        }
+        response = self.c.post(url, payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(PostImage.objects.count(), 1)
+        self.c.credentials()
 
+    
 
 
 '''
@@ -1074,219 +1190,8 @@ class CommentTest(TestCase):
         response= self.c.post(f'/comments/{500}/', {'comment': 'Test comment'})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Comment.objects.count(), 0)
-<<<<<<< HEAD
         self.c.credentials()          
-=======
-        self.c.credentials()
 
-class GetFollowerTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.node = Author.objects.create_user(
-            username = 'node',
-            password = 'testpass123',
-            displayName = 'node',
-            github = '',
-            is_approved = False,
-            is_a_node = True,
-        )
-        self.author1 = Author.objects.create_user(
-            username='will1',
-            password= 'testpass1234',
-            displayName='will1',
-            github='',
-            is_approved = True,
-        )
-        self.author2 = Author.objects.create_user(
-            username='will2',
-            password= 'testpass1234',
-            displayName='will2',
-            github='',
-            is_approved = True,
-        )
-    def test_get_no_followers_remote(self):
-        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
-        userpass = base64.b64encode(userpass).decode("utf-8")
-        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
-        self.response = self.client.get(f'/authors/{self.author1.id}/followers')
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.response.data['items'], [])
-    def test_get_followers_remote(self):
-        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
-        userpass = base64.b64encode(userpass).decode("utf-8")
-        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
-        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author1, status=2)
-        self.response = self.client.get(f'/authors/{self.author1.id}/followers')
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.response.data['items'][0]['id'], str(self.author2.id))
-
-class GetAllAuthorsTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        for i in range(15):
-            self.author = Author.objects.create_user(
-                username=f'will{i}',
-                password=f'testpass{i}',
-                displayName=f'will{i}',
-                github='',
-                is_approved=True,
-            )
-        self.node = Author.objects.create_user(
-            username = 'node',
-            password = 'testpass123',
-            displayName = 'node',
-            github = '',
-            is_approved = False,
-            is_a_node = True,
-        )
-        
-    
-    def test_valid_pagination_authors(self):
-        
-    
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.client.get('/authors/',{'page': 2, 'page_size': 5})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check if the response contains the expected keys
-        self.assertIn('type', response.data)
-        self.assertIn('items', response.data)
-        self.assertIn('pagination', response.data)
-        self.assertIn('next', response.data['pagination'])
-        self.assertIn('previous', response.data['pagination'])
-        self.assertIn('page_number', response.data['pagination'])
-        self.assertIn('page_size', response.data['pagination'])
-
-        # Check if the response has the correct number of items based on the provided page_size
-        self.assertEqual(len(response.data['items']), 5)
-    def test_invalid_pagination(self):
-        
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        # Make a GET request with invalid pagination parameters
-        response = self.client.get('/authors/', {'page': 'invalid', 'page_size': 'invalid'})
-
-        # Check if the response has the expected status code
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        # Check if the response contains the expected error message
-        self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'Invalid page or page_size parameter')
-    def test_default_pagination(self):
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.client.get('/authors/')
-        # Check if the response has the expected status code
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check if the response contains the expected keys
-        self.assertIn('type', response.data)
-        self.assertIn('items', response.data)
-        self.assertIn('pagination', response.data)
-        self.assertIn('next', response.data['pagination'])
-        self.assertIn('previous', response.data['pagination'])
-        self.assertIn('page_number', response.data['pagination'])
-        self.assertIn('page_size', response.data['pagination'])
-
-        # Check if the response has the default number of items based on the default page_size
-        self.assertEqual(len(response.data['items']), 10)
-    def test_node_access(self):
-        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
-        userpass = base64.b64encode(userpass).decode("utf-8")
-        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
-        
-        self.response = self.client.get('/authors/')
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
-class CheckFollowingTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.node = Author.objects.create_user(
-            username = 'node',
-            password = 'testpass123',
-            displayName = 'node',
-            github = '',
-            is_approved = False,
-            is_a_node = True,
-        )
-        self.author1 = Author.objects.create_user(
-            username='will1',
-            password= 'testpass1234',
-            displayName='will1',
-            github='',
-            is_approved = True,
-        )
-        self.author2 = Author.objects.create_user(
-            username='will2',
-            password= 'testpass1234',
-            displayName='will2',
-            github='',
-            is_approved = True,
-        )
-        self.friendship = Friendship.objects.create(sender=self.author2, reciever=self.author1,status = 2)
-        self.token1 = Token.objects.get_or_create(user=self.author1)
-    def test_check_following_local(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        url = reverse('authors:checkfollowing', args=[self.author1.id,self.author2.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['is_follower'], True)
-        self.client.credentials()
-    def test_check_following_remote(self):
-        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
-        userpass = base64.b64encode(userpass).decode("utf-8")
-        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
-        url = reverse('authors:checkfollowing', args=[self.author1.id,self.author2.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['is_follower'], True)
-        self.client.credentials()
-class GetOneAuthorTest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.author = Author.objects.create_user(
-            id = '631f3ebe-d976-4248-a808-db2442a22168',
-            username='will',
-            password='testpass123',
-            displayName='will',
-            github='',
-        )
-        self.node = Author.objects.create_user(
-            username = 'node',
-            password = 'testpass123',
-            displayName = 'node',
-            github = '',
-            is_approved = False,
-            is_a_node = True,
-        )
-        self.url = reverse('authors:getoneauthor', args=[self.author.id])
-    def test_get_one_author(self):
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.client.get(self.url)
-        author = Author.objects.get(id=self.author.id)
-        serializer = AuthorSerializer(author)
-        self.assertEqual(response.data, serializer.data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-    def test_update_author(self):
-        data = {
-            'displayName': 'will2',
-        }
-        self.token1 = Token.objects.get_or_create(user=self.author)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        response = self.client.post(self.url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        author1 = Author.objects.get(id=self.author.id)
-        self.assertEqual(author1.displayName, data['displayName'])
-    def test_get_author_remote(self):
-        userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
-        userpass = base64.b64encode(userpass).decode("utf-8")
-        self.client.credentials(HTTP_AUTHORIZATION = f'Basic {userpass}')
-        self.response = self.client.get(self.url)
-        self.assertEqual(self.response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.response.data['id'], str(self.author.id))
-          
->>>>>>> dcc75c537b71a9fad1a1af0718ae943aae659102
 class GetFriendRequestsTest(TestCase):
     def setUp(self):
         self.client = APIClient()

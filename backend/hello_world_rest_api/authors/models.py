@@ -145,6 +145,20 @@ class Inbox_Item(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.UUIDField()
     contentObject = GenericForeignKey('content_type', 'object_id')
+
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='postimages/', blank=True, null=True)
+    @property
+    def type(self):
+        return 'image'
+    def save(self,*args,**kwargs):
+        super(PostImage,self).save(*args,**kwargs)
+        img = Image.open(self.image.path)
+        if img.height > 500 or img.width > 500:
+            output_size = (500,500)
+            img.thumbnail(output_size)
+            img.save(self.image.path)
     
 
     

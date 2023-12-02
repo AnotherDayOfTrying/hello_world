@@ -229,24 +229,41 @@ class InboxView(generics.CreateAPIView):
         if request.data.get('type') == 'Follow':
             serializer = FriendShipSerializer(data=request.data, context={'request': request})
             model = Friendship
+            if serializer.is_valid():
+            
+                instance = serializer.save()
+                
+                inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
+                inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'post':
-            serializer = PostSerializer(data=request.data, context={'request': request})
             model = Post
+            post_exist = Post.objects.get(uid=request.data.get('id').split('/')[-1])
+            if post_exist:
+                serializer = PostSerializer(post_exist, context={'request': request})
+                inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=post_exist.uid)
+                inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
+            else:
+                serializer = PostSerializer(data=request.data, context={'request': request})
+                if serializer.is_valid():
+            
+                    instance = serializer.save()
+                    
+                    inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
+                    inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                    return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
+
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'comment':
             pass
         elif request.data.get('type') == 'like':
             pass
         else:
             return Response({'message': 'Invalid type'}, status=status.HTTP_400_BAD_REQUEST)
-        if serializer.is_valid():
-            
-            instance = serializer.save()
-            
-            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
-            inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
-            return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     
 class AllPostView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -299,6 +316,44 @@ class CommentView(generics.CreateAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PostImageView(generics.CreateAPIView):
+    serializer_class = PostImageSerializer
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        postimage = PostImage.objects.filter(post=post).first()
+        if postimage == None or '':
+            return Response({'error': 'no image'}, status=404)
+        serializer = PostImageSerializer(postimage,context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        
+    def post(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        postimage = PostImage.objects.filter(post=post).first()
+        if postimage == None or '':
+            serializer = PostImageSerializer(data=request.data, context={'post': post, 'author': author, 'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response("Added an image to post", status=status.HTTP_201_CREATED)
+        else:
+            serializer = PostImageSerializer(instance=postimage, data=request.data, context={'post': post, 'author': author, 'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response("Updated Image Successfully", status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        postimage = PostImage.objects.filter(post=post).first()
+        if postimage == None or '':
+            return Response({'error': 'no image'}, status=404)
+        postimage.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
 '''
 class SendFriendRequest(generics.CreateAPIView):
     

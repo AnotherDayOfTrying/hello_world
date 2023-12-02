@@ -36,4 +36,5 @@ urlpatterns = [
     path('authors/<uuid:author_id>/posts/', views.AllPostView.as_view(), name = 'getallposts'),
     path('authors/<uuid:author_id>/posts/<uuid:post_id>/', views.PostView.as_view(), name = 'getsinglepost'),
     path('authors/<uuid:author_id>/posts/<uuid:post_id>/comments', views.CommentView.as_view(), name='getcomment'),
+    path('authors/<uuid:author_id>/posts/<uuid:post_id>/image', views.PostImageView.as_view(), name='getpostimage'),
 ]

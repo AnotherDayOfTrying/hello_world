@@ -94,7 +94,9 @@ class PostSerializer(serializers.ModelSerializer):
         
     def create(self, validated_data):
         actor_data = validated_data.pop('author')
-        if validated_data.get('source') is None or validated_data.get('origin') is None or validated_data.get('id') is None:
+        
+        # if the post is creates a new post but generates a new id
+        if validated_data.get('source') is None and validated_data.get('origin') is None and validated_data.get('id') is None:
             post = Post.objects.create(
                 author = Author.objects.get(uid=actor_data['id'].split("/")[-1]),
                 title = validated_data['title'],
@@ -106,9 +108,23 @@ class PostSerializer(serializers.ModelSerializer):
                 unlisted = validated_data['unlisted'],
                 
             )
-
-        else:  
+        # if the post is a new post but id is specified
+        elif validated_data.get('source') is None and validated_data.get('origin') is None:  
             post = Post.objects.create(
+                uid = validated_data['id'].split("/")[-1],
+                author = Author.objects.get(uid=actor_data['id'].split("/")[-1]),
+                title = validated_data['title'],
+                id = validated_data['id'],
+                description = validated_data['description'],
+                contentType = validated_data['contentType'],
+                content = validated_data['content'],
+                categories = validated_data['categories'],
+                visibility = validated_data['visibility'],
+                unlisted = validated_data['unlisted'], 
+            )
+        else:
+             post = Post.objects.create(
+                uid = validated_data['id'].split("/")[-1],
                 author = Author.objects.get(uid=actor_data['id'].split("/")[-1]),
                 title = validated_data['title'],
                 id = validated_data['id'],
@@ -120,9 +136,7 @@ class PostSerializer(serializers.ModelSerializer):
                 unlisted = validated_data['unlisted'],
                 source = validated_data['source'],
                 origin = validated_data['origin'],
-                
-                
-            )
+             )
             
         return post
     def update(self, instance, validated_data):
@@ -182,6 +196,32 @@ class CommentSerializer(serializers.ModelSerializer):
         )
         comment.save()
         return comment
+class PostImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    class Meta:
+        model = PostImage
+        fields = ('image',)
+    def create(self, validated_data):
+        request = self.context.get('request')
+        print(request.data)
+        image = PostImage.objects.create(
+            post = self.context['post'],
+            image = request.data['image'],
+        )
+        image.save()
+        return image
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        instance.image = request.data['image']
+        instance.save()
+        return instance
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        image_url = obj.image.url
+        return request.build_absolute_uri(image_url)
+    
+    
     
 '''
 class SendFriendRequestSerializer(serializers.Serializer):

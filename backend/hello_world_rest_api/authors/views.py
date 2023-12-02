@@ -299,6 +299,44 @@ class CommentView(generics.CreateAPIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PostImageView(generics.CreateAPIView):
+    serializer_class = PostImageSerializer
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        postimage = PostImage.objects.filter(post=post).first()
+        if postimage == None or '':
+            return Response({'error': 'no image'}, status=404)
+        serializer = PostImageSerializer(postimage,context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        
+    def post(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        postimage = PostImage.objects.filter(post=post).first()
+        if postimage == None or '':
+            serializer = PostImageSerializer(data=request.data, context={'post': post, 'author': author, 'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response("Added an image to post", status=status.HTTP_201_CREATED)
+        else:
+            serializer = PostImageSerializer(instance=postimage, data=request.data, context={'post': post, 'author': author, 'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response("Updated Image Successfully", status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, author_id, post_id):
+        author = get_object_or_404(Author,uid=author_id)
+        post = get_object_or_404(Post,uid=post_id)
+        postimage = PostImage.objects.filter(post=post).first()
+        if postimage == None or '':
+            return Response({'error': 'no image'}, status=404)
+        postimage.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
 '''
 class SendFriendRequest(generics.CreateAPIView):
     

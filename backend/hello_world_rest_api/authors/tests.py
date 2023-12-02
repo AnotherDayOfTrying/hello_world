@@ -574,11 +574,11 @@ class InboxTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         response = self.client.get(url1)
         url = reverse('authors:inbox', args=[self.author2.uid])
-        response = self.client.post(url,json.dumps(response.data), content_type='application/json')
+        response = self.client.post(url,response.data, format='json') 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Inbox_Item.objects.count(), 1)
         self.assertEqual(Inbox_Item.objects.get().content_type, ContentType.objects.get_for_model(Post))
-        self.assertEqual(Post.objects.count(), 2)
+        self.assertEqual(Post.objects.count(), 1)
 
 
 class PostTest(TestCase):

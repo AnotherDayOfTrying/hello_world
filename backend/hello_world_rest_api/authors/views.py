@@ -229,24 +229,41 @@ class InboxView(generics.CreateAPIView):
         if request.data.get('type') == 'Follow':
             serializer = FriendShipSerializer(data=request.data, context={'request': request})
             model = Friendship
+            if serializer.is_valid():
+            
+                instance = serializer.save()
+                
+                inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
+                inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'post':
-            serializer = PostSerializer(data=request.data, context={'request': request})
             model = Post
+            post_exist = Post.objects.get(uid=request.data.get('id').split('/')[-1])
+            if post_exist:
+                serializer = PostSerializer(post_exist, context={'request': request})
+                inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=post_exist.uid)
+                inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
+            else:
+                serializer = PostSerializer(data=request.data, context={'request': request})
+                if serializer.is_valid():
+            
+                    instance = serializer.save()
+                    
+                    inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
+                    inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                    return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
+
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'comment':
             pass
         elif request.data.get('type') == 'like':
             pass
         else:
             return Response({'message': 'Invalid type'}, status=status.HTTP_400_BAD_REQUEST)
-        if serializer.is_valid():
-            
-            instance = serializer.save()
-            
-            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
-            inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
-            return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     
 class AllPostView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]

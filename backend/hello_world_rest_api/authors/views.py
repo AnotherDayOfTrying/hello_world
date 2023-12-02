@@ -303,6 +303,7 @@ class CommentView(generics.CreateAPIView):
         #     authorData = authorSerializer.data
         response = {
             "type": "posts",
+            "post": post.id,
             "author": author.url,
             "items": commentSerializer.data
         }

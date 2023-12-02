@@ -167,6 +167,22 @@ class InboxSerializer(serializers.ModelSerializer):
             pass
         else:
             raise Exception('Unexpected model class')
+        
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('uid', 'comment', 'contentType', 'published')
+
+    def create(self, validated_data):
+        comment = Comment.objects.create(
+            post = self.context['post'],
+            author = self.context['author'],
+            comment = validated_data['comment'],
+            contentType = validated_data['contentType'],
+        )
+        comment.save()
+        return comment
+    
 '''
 class SendFriendRequestSerializer(serializers.Serializer):
     receiver_id = serializers.UUIDField(write_only=True)

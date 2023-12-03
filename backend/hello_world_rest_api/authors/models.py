@@ -55,7 +55,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
         if self.host is None:
             self.host = settings.HOST_URL
         if self.id is None:
-            self.id = f'{self.host}author/{self.uid}'
+            self.id = f'{self.host}authors/{self.uid}'
             self.url = self.id
         super(Author,self).save(*args,**kwargs)
         img = Image.open(self.profilePicture.path)

@@ -203,6 +203,12 @@ class InboxView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PostSerializer
+        else:
+            return PostImageSerializer # to allow input in swagger for testing
+    
     def get(self, request, author_id):
         author = get_object_or_404(Author, uid=author_id)
         inbox_items = Inbox_Item.objects.filter(author=author)
@@ -293,6 +299,7 @@ class InboxView(generics.CreateAPIView):
 class AllPostView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, NodesAuthentication]
+    serializer_class = PostSerializer
 
     def get(self,request,author_id):
         author = get_object_or_404(Author,uid=author_id)
@@ -315,6 +322,7 @@ class CommentView(generics.CreateAPIView):
     pagination_class = PageNumberPagination
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CommentSerializer
 
     def get(self, request, author_id, post_id):
         author = get_object_or_404(Author,uid=author_id)
@@ -396,6 +404,7 @@ class PostImageView(generics.CreateAPIView):
 class LikePostView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
     def get(self, request, author_id, post_id):
         author = get_object_or_404(Author, uid=author_id)
@@ -407,6 +416,7 @@ class LikePostView(generics.CreateAPIView):
 class LikeCommentView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
     def get(self, request, author_id, post_id, comment_id):
         author = get_object_or_404(Author, uid=author_id)
@@ -418,6 +428,7 @@ class LikeCommentView(generics.CreateAPIView):
 class LikedView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
     def get(self, request, author_id):
         author = get_object_or_404(Author, uid=author_id)

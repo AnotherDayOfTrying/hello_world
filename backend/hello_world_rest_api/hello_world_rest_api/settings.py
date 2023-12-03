@@ -29,7 +29,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+#!!! LOCAL DEVELOPMENT
+# HOST_URL = "http://localhost:8000/"
+#!!! PROD
 HOST_URL = "https://cmput404-project-backend-a299a47993fd.herokuapp.com/"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -131,13 +135,6 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication 
-
-class CsrfExemptSessionAuthentication(SessionAuthentication):
-
-    def enforce_csrf(self, request):
-        return  # To not perform the csrf check previously happening
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

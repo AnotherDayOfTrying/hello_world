@@ -906,8 +906,12 @@ class CommentTest(TestCase):
 
 
         url = reverse('authors:getcomment', args=[self.author.uid, self.post.uid])
-        response = self.client.get(url)
+        url2 = reverse('authors:getoneauthor', args=[self.author.uid])
+
+        response1 = self.client.get(url2)
+        
         payload = {
+        'author' : response1.data,
         'comment' : 'testing comment',
         'contentType' : 'text/markdown',
         }
@@ -915,6 +919,7 @@ class CommentTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Comment.objects.count(), 1)
         response = self.client.get(url)
+        print(response.data)
         self.assertEqual(response.status_code, 200)
         self.client.credentials()
 class PostImageTest(TestCase):

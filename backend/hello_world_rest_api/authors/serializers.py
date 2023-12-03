@@ -176,16 +176,17 @@ class InboxSerializer(serializers.ModelSerializer):
         elif isinstance(related_obj, Post):
             return PostSerializer(related_obj,context = {'request':request}).data
         elif isinstance(related_obj, Comment):
-            pass
+            return CommentSerializer(related_obj, context={'request': request}).data
         elif isinstance(related_obj, Like):
             pass
         else:
             raise Exception('Unexpected model class')
         
 class CommentSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
     class Meta:
         model = Comment
-        fields = ('uid', 'comment', 'contentType', 'published')
+        fields = ('author', 'id', 'comment', 'contentType', 'published', 'type')
 
     def create(self, validated_data):
         comment = Comment.objects.create(

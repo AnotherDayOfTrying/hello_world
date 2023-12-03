@@ -107,16 +107,22 @@ class Post(models.Model):
     
 #Not Changed    
 class Comment(models.Model):
-    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     comment = models.TextField()
     contentType = models.TextField()
     published = models.DateTimeField(auto_now_add=True)
+    id = models.URLField(max_length=255, null = True, blank = True)
     
     @property
-    def post_prime_key(self):
-        return f'{settings.HOST_URL}/authors/{self.author.id}/posts/{self.post.uid}/comments/{self.uid}'
+    def type(self):
+        return 'comment'
+    def save(self, *args, **kwargs):
+        if self.id is None:
+            self.id = f'{self.author.id}/posts/{self.post.uid}/comments/{self.uid}'
+        super(Comment, self).save(*args,**kwargs)
+
     
 class Friendship(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)

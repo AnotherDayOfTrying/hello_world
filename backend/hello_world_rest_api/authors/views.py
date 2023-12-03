@@ -287,32 +287,44 @@ class AllPostView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class CommentView(generics.CreateAPIView):
+    pagination_class = PageNumberPagination
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, author_id, post_id):
         author = get_object_or_404(Author,uid=author_id)
         post = get_object_or_404(Post, uid=post_id)
-        comments = Comment.objects.filter(post=post)
-        commentSerializer = CommentSerializer(comments, many=True, context={'request': request})
-        # postSerializer = PostSerializer(post, context)
-        # authorSerializer = AuthorSerializer(author)
-        # if postSerializer.is_valid():
-        #     postData = postSerializer.data
-        # if authorSerializer.is_valid():
-        #     authorData = authorSerializer.data
+        page_number = request.query_params.get('page',1)
+        page_size = request.query_params.get('page_size', self.pagination_class.page_size)
+        try:
+            page_number = int(page_number)
+            page_size = int(page_size)
+        except ValueError:
+            return Response({'error': 'Invalid page or page_size parameter'}, status=400)
+        
+        queryset = Comment.objects.filter(post=post).order_by('published')
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+        page = paginator.paginate_queryset(queryset,request)
+        comment = CommentSerializer(page, many=True, context={'post': post, 'author': author, 'request': request})
         response = {
-            "type": "posts",
+            "type": "comments",
+            "comments": comment.data,
             "post": post.id,
-            "author": author.url,
-            "items": commentSerializer.data
+            'id': f'{post.id}/comments',
+            'pagination': {
+                'next': paginator.get_next_link(),
+                'previous': paginator.get_previous_link(),
+                'page_number': page_number,
+                'page_size': page_size,
+            },
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def post(self, request, author_id, post_id):
         post = get_object_or_404(Post, uid=post_id)
-        author = request.user
-        serializer = CommentSerializer(data=request.data, context={'post': post, 'author': author})
+        author = get_object_or_404(Author, uid=author_id)
+        serializer = CommentSerializer(data=request.data, context={'post': post, 'author': author, 'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)

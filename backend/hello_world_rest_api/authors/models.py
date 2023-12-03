@@ -34,7 +34,7 @@ class UserManager(BaseUserManager):
         return self.create_user(username, password, **other_fields)
 
 class Author(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length = 20, unique = True)
+    username = models.CharField(max_length = 30, unique = True)
     uid = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     displayName = models.CharField(max_length = 50, null = True,blank = True)
     github = models.URLField(max_length=255, null = True, blank = True)
@@ -55,7 +55,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
         if self.host is None:
             self.host = settings.HOST_URL
         if self.id is None:
-            self.id = f'{self.host}author/{self.uid}'
+            self.id = f'{self.host}authors/{self.uid}'
             self.url = self.id
         super(Author,self).save(*args,**kwargs)
         img = Image.open(self.profilePicture.path)

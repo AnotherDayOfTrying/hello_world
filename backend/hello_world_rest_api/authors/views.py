@@ -204,18 +204,18 @@ class InboxView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     
     def get(self, request, author_id):
-        author = get_object_or_404(Author, id=author_id)
+        author = get_object_or_404(Author, uid=author_id)
         inbox_items = Inbox_Item.objects.filter(author=author)
         items = []
         for item in inbox_items:
-            if isinstance(item.item_object, Post):
-                serializer = PostSerializer(item.item_object)
-            elif isinstance(item.item_object, Comment):
-                '''serializer = CommentSerializer(item.item_object)'''
-            elif isinstance(item.item_object, Like):
-                '''serializer = LikeSerializer(item.item_object)'''
-            elif isinstance(item.item_object, Friendship):
-                serializer = FriendShipSerializer(item.item_object)
+            if isinstance(item.contentObject, Post):
+                serializer = PostSerializer(item.contentObject, context={'request': request})
+            # elif isinstance(item.item_object, Comment):
+            #     serializer = CommentSerializer(item.item_object)
+            # elif isinstance(item.item_object, Like):
+            #     serializer = LikeSerializer(item.item_object)
+            # elif isinstance(item.item_object, Friendship):
+            #     serializer = FriendShipSerializer(item.item_object)
             items.append(serializer.data)
         response = {
             'type': 'inbox',
@@ -267,10 +267,27 @@ class InboxView(generics.CreateAPIView):
             inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=request.data['id'].split('/')[-1])
             inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
             return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
-        elif request.data.get('type') == 'like':
-            pass
+        elif request.data.get('type') == 'Like':
+            liker = request.user
+
+            serializer = LikeSerializer(data=request.data, context={'author': liker, 'request': request})
+            model = Like
+            if serializer.is_valid():
+                instance = serializer.save()
+                inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
+                inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+                return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'message': 'Invalid type'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def delete(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        inbox = Inbox_Item.objects.filter(author=author)
+        inbox.delete()
+        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
         
     
 class AllPostView(generics.CreateAPIView):
@@ -375,404 +392,39 @@ class PostImageView(generics.CreateAPIView):
             return Response({'error': 'no image'}, status=404)
         postimage.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
-'''
-class SendFriendRequest(generics.CreateAPIView):
     
-    serializer_class = SendFriendRequestSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            response = serializer.save()
-            sender = request.user
-            reciever_id = serializer.validated_data['receiver_id']
-            reciver = get_object_or_404(Author, id=reciever_id)
-            sender_serializer = AuthorSerializer(sender)
-            reciever_serializer = AuthorSerializer(reciver)
-            return Response({'type':'Follow' ,'summary': f'{sender.displayName} wants to follow {reciver.displayName}', 'actor': sender_serializer.data, 'object': reciever_serializer.data, 'friendship_id': response.id}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class FriendRequestResponse(generics.CreateAPIView):
-
-    serializer_class = RespondFriendRequestSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request, friendship_id):
-        friendship = get_object_or_404(Friendship, id=friendship_id)
-        serializer = self.serializer_class(friendship, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class DeleteFriend(generics.CreateAPIView):
-    
-    #serializer_class = DeleteFriendSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def delete(self, request, friendship_id):
-        friendship = get_object_or_404(Friendship, id=friendship_id)
-        """serializer = self.serializer_class(friendship, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) """
-        reverse = Friendship.objects.filter(sender=friendship.reciever, reciever=friendship.sender).first()
-        if reverse and reverse.status == 3:
-            reverse.status = 2
-            reverse.save()
-        friendship.delete()
-        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
-
-
-class GetComment(generics.ListAPIView):
-    
-    serializer_class = GetCommentSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def get(self, request, post_id):
-        authors = Comment.objects.filter(post=post_id)
-        serializer = self.get_serializer(authors, many=True)
-        response = {
-            "type": "comments",
-            "items": serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-
-class PostComment(generics.CreateAPIView):
-    
-    serializer_class = PostCommentSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request, post_id):
-        post = get_object_or_404(Post, id=post_id)
-        author = request.user
-        serializer = self.serializer_class(data=request.data, context={'post': post, 'author': author})
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-class CallingAuthorView(generics.RetrieveAPIView):
-    serializer_class = AuthorSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    def get(self, request):
-        author = get_object_or_404(Author,uid=request.user.uid)
-        serializer = AuthorSerializer(author)
-        response = {
-            "type": "author",
-            "item": serializer.data,
-        }
-        return Response(response, status=status.HTTP_200_OK)
-
-
-
-
-        
-
-
-
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication, NodesAuthentication])
-@permission_classes([permissions.IsAuthenticated])
-def checkFollowing(request,author_id,foreign_author_id):
-    author = get_object_or_404(Author,uid=author_id)
-    foreign_author = get_object_or_404(Author,uid=foreign_author_id)
-    friendship = Friendship.objects.filter(sender=foreign_author,reciever=author,status__in = [2,3])
-    if friendship:
-        return Response({'is_follower': 1}, status=status.HTTP_200_OK)
-    else:
-        return Response({'is_follower': 0}, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-def getFriendRequests(request):
-    author = request.user
-    friends = Friendship.objects.filter(reciever=author,status=1)
-    serializer = FriendShipSerializer(friends, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-def getFriends(request):
-    author = request.user
-    friends = Friendship.objects.filter(reciever=author,status__in=[2,3])
-    serializer = FriendShipSerializer(friends, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class Liking(generics.CreateAPIView):
-    
-    serializer_class = LikeingSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request):
-        author = request.user
-        serializer = self.serializer_class(data=request.data, context={'author': author})
-        if serializer.is_valid():
-            like_instance = serializer.save()
-            author_serializer = AuthorSerializer(author)
-            response = {
-                'message': 'success',
-                'summary': f'{author.displayName} Likes your post',
-                'type': 'Like',
-                'author': author_serializer.data,
-                'like_id': like_instance.id,
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class Unliking(generics.CreateAPIView):
-    
-    # serializer_class = UnlikingSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    
-    def delete(self, request, like_id):
-        like = get_object_or_404(Like, id=like_id)
-        like.delete()
-        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
-        # serializer = self.serializer_class(like, data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response({'message': 'Success'}, status=status.HTTP_200_OK)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
-
-class UploadPost(generics.CreateAPIView):
-    # permission_classes = [permissions.IsAuthenticated]
-
-    serializer_class = UploadPostSerializer
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data, context={'author': request.user})
-        if serializer.is_valid():
-            serializer.save()
-            author_serializer = AuthorSerializer(request.user)
-            comments = Comment.objects.filter(post = serializer.data['id'])
-            if serializer.data['privacy'] == 'Unlisted':
-                unlisted = True
-            else:
-                unlisted = False
-            response = {
-                'type': 'post',
-                'title': serializer.data['title'], 
-                'message': 'Post created successfully',
-                'id': serializer.data['post_prime_key'],
-                'origin': serializer.data['post_origin'],
-                'source': serializer.data['post_source'],
-                'description': "This post describes something",
-                'contentType': serializer.data['content_type'],
-                'content': 'Content displayed on post',
-                'author': author_serializer.data,
-                'count': len(comments),
-                'comments': comments,
-                'visibility': serializer.data['privacy'],
-                'published': serializer.data['published'],
-                'unlisted': unlisted,
-                'data': serializer.data,
-                'id2': serializer.data['id']
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
-class EditPost(generics.CreateAPIView):
-
-    serializer_class = EditPostSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    def post(self, request, post_id):
-        post = get_object_or_404(Post, id=post_id)
-        serializer = self.serializer_class(post, data=request.data, context={'author': request.user, 'request': request,})
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'message': 'Post updated successfully',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-    
-    
-    
-class DeletePost(generics.CreateAPIView):
-
-    serializer_class = EditPostSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-
-    def delete(self, request, post_id):
-        post = get_object_or_404(Post, id=post_id)
-        # remove the associated image from media/postimages folder if it exists
-        if post.image:
-            if os.path.exists(post.image.path):
-                image = post.image.path
-                os.remove(image)
-        post.delete()
-        return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
-    
-
-class GetPublicPost(generics.CreateAPIView):
-
-    serializer_class = GetPostSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        public_posts = Post.objects.filter(privacy='PUBLIC')
-        serializer = self.serializer_class(public_posts, many=True)
-        response = {
-            "type": "post",
-            "items": serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-@api_view(['GET'])
-def getPrivatePost(request):
-    author = request.user
-    friends = Friendship.objects.filter(reciever=author,status__in=[2,3]) | Friendship.objects.filter(sender=author,status__in=[2,3])
-    serializer = FriendShipSerializer(friends, many=True)
-    friends = []
-    for friendship in serializer.data:
-        friends.append(friendship['sender'])
-        friends.append(friendship['reciever'])
-    friends = set(friends)
-    response = {"type": "posts", "items": []}
-    for friend in friends:
-        author = Author.objects.filter(id=friend)
-        posts = Post.objects.filter(author__in = author, privacy='PRIVATE')#.exclude(author=request.user)
-        serializer = GetPostSerializer(posts, many = True)
-        if serializer.data:
-            response["items"].append(serializer.data)
-    return Response(response, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def getUnlistedPost(request):
-    author = request.user
-    unlisted_posts = Post.objects.filter(privacy='UNLISTED', author=author)
-    serializer = GetPostSerializer(unlisted_posts, many=True)
-    response = {
-        "type": "posts",
-        "items": serializer.data
-    }
-    return Response(response, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def getOwnPost(request):
-    author = request.user
-    posts = Post.objects.filter(author=author)
-    serializer = GetPostSerializer(posts, many=True)
-    response = {
-        "type": "posts",
-        "items": serializer.data
-    }
-    return Response(response, status=status.HTTP_200_OK)
-    
-@api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-def getlikesonpost(request, author_id, post_id):
-    post_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Post), object_id=post_id)
-    serializer = LikeSerializer(post_likes, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-    
-@api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-def getlikesoncomment(request, author_id, post_id, comment_id):
-    comment_likes = Like.objects.filter(content_type=ContentType.objects.get_for_model(Comment), object_id=comment_id)
-    serializer = LikeSerializer(comment_likes, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-# @permission_classes([permissions.IsAuthenticated])
-def getlikesfromauthor(request):
-    author = request.user
-    likes = Like.objects.filter(liker=author)
-    serializer = LikeSerializer(likes, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-<<<<<<< HEAD
-class AllPostView(generics.CreateAPIView):
-    pagination_class = PageNumberPagination
-    serializer_class = RemotePostSerializer
+class LikePostView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    def get(self, request,author_id):
-        author = get_object_or_404(Author,uid=author_id)
-        page_number = request.query_params.get('page',1)
-        page_size = request.query_params.get('page_size', self.pagination_class.page_size)
-        try:
-            page_number = int(page_number)
-            page_size = int(page_size)
-        except ValueError:
-            return Response({'error': 'Invalid page or page_size parameter'}, status=400)
-        
-        queryset = Post.objects.filter(author=author).order_by('-published')
-        paginator = PageNumberPagination()
-        paginator.page_size = page_size
-        page = paginator.paginate_queryset(queryset,request)
-        translated_post = []
-        for i in page:
-            if i.content_type == 'IMAGE':
-                contentType = 'image/png'
-            elif i.content_type == 'TEXT':
-                contentType = 'text/plain'
-            if i.privacy == 'PUBLIC':
-                visibility = 'PUBLIC'
-                unlisted = False
-            elif i.privacy == 'PRIVATE':
-                visibility = 'FRIENDS'
-                unlisted = False
-            elif i.privacy == 'UNLISTED':
-                visibility = 'PUBLIC'
-                unlisted = True
-            translated = {
-                'type': 'post',
-                'title': i.title,
-                'id': i.post_prime_key,
-                'origin': i.post_origin,
-                'source': i.post_source,
-                'description': "This post describes something",
-                'contentType': contentType,
-                'content': i.text,
-                'author': AuthorSerializer(i.author).data,
-                'count': len(Comment.objects.filter(post=i.id)),
-                'comments': i.post_prime_key + '/comments/',
-                'visibility': visibility,
-                'published': i.published,
-                'unlisted': unlisted,
-                'categories': [],
-            }
-            translated_post.append(translated)
-        serializer = RemotePostSerializer(translated_post, many=True)
-        response = {
-            "type": "posts",
-            "items": serializer.data,
-            'pagination': {
-                'next': paginator.get_next_link(),
-                'previous': paginator.get_previous_link(),
-                'page_number': page_number,
-                'page_size': page_size,
-            },
-        }
-        return Response(response, status=status.HTTP_200_OK)
 
-class PostImageView(generics.CreateAPIView):
-    serializer_class = RemotePostImageSerializer
-    authentication_classes = [TokenAuthentication, NodesAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, author_id, post_id):
-        author = get_object_or_404(Author,uid=author_id)
-        post = get_object_or_404(Post,uid=post_id)
-        if post.image == None or '':
-            return Response({'error': 'no image'}, status=404)
-        image_path = post.image.path
-        with open(image_path, "rb") as image_file:
-            image_data = image_file.read()
+        author = get_object_or_404(Author, uid=author_id)
+        post = get_object_or_404(Post, uid=post_id)
+        likes = Like.objects.filter(object_id=post.uid)
+        serializer = LikeSerializer(likes, many=True, context={'author': author, 'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class LikeCommentView(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-            img_str = base64.b64encode(image_data)
-            response_str = {'data':"image/jpeg;base64," + img_str.decode('utf-8')}
-        serializer = RemotePostImageSerializer(response_str)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
-'''
+    def get(self, request, author_id, post_id, comment_id):
+        author = get_object_or_404(Author, uid=author_id)
+        comment = get_object_or_404(Comment, uid=comment_id)
+        likes = Like.objects.filter(object_id=comment.uid)
+        serializer = LikeSerializer(likes, many=True, context={'author': author, 'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class LikedView(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        likes = Like.objects.filter(author=author)
+        serializer = LikeSerializer(likes, many=True, context={'request': request})
+        response = {
+            'type': 'liked',
+            'items': serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)

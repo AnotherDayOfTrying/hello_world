@@ -136,15 +136,25 @@ class Friendship(models.Model):
         return 'Follow'
 #Not changed     
 class Like(models.Model):
-    liker = models.ForeignKey(Author, on_delete=models.CASCADE)
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
     # Use generic content type since one can like post or comment
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    object_id = models.UUIDField(default=uuid.uuid4, editable=False)
     content_object = GenericForeignKey('content_type', 'object_id')
+    object = models.URLField(max_length=255, null = True, blank = True)
     
     @property
-    def post_prime_key(self):
-        return f'{settings.HOST_URL}/authors/{self.liker.id}/posts/{self.content_object.uid}'
+    def type(self):
+        return 'Like'
+    @property
+    def summary(self):
+        return f'{self.author.displayName} sent a Like'
+    def save(self, *args, **kwargs):
+        if self.object is None:
+            self.object = self.content_object.id
+        super(Like, self).save(*args,**kwargs)
+
     
 class Inbox_Item(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='inbox')

@@ -176,7 +176,7 @@ class InboxSerializer(serializers.ModelSerializer):
         elif isinstance(related_obj, Post):
             return PostSerializer(related_obj,context = {'request':request}).data
         elif isinstance(related_obj, Comment):
-            return CommentSerializer(related_obj, context={'request': request}).data
+            return CommentSerializer(related_obj, context={'post': related_obj.post, 'author': related_obj.author,'request': request}).data
         elif isinstance(related_obj, Like):
             pass
         else:

@@ -507,6 +507,12 @@ class InboxTest(TestCase):
             visibility = 'PUBLIC',
             unlisted = False,
         )
+        self.comment = Comment.objects.create(
+            author = self.author,
+            comment = 'testing the inbox',
+            contentType = 'text/plain',
+            post = self.post
+        )
     def test_create_friendrequest_1(self):
         '''
         Test to send a friend request to an author that exists and is not a friend
@@ -579,6 +585,19 @@ class InboxTest(TestCase):
         self.assertEqual(Inbox_Item.objects.count(), 1)
         self.assertEqual(Inbox_Item.objects.get().content_type, ContentType.objects.get_for_model(Post))
         self.assertEqual(Post.objects.count(), 1)
+
+    def test_comment_inbox(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url1 = reverse('authors:getoneauthor', args=[self.author.uid])
+        url2 = reverse('authors:getoneauthor', args=[self.author2.uid])
+        response1 = self.client.get(url1)
+        response2 = self.client.get(url2)
+        url = reverse('authors:inbox', args=[self.author2.uid])
+        response3 = self.client.post(url, json.dumps(serializer), content_type='application/json')
+        self.assertEqual(response3.status_code, 201)
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(Inbox_Item.objects.count(), 1)
+        self.assertEqual(Comment.objects.get().comment, 'testing the inbox')
 
 
 class PostTest(TestCase):
@@ -915,12 +934,18 @@ class CommentTest(TestCase):
         'comment' : 'testing comment',
         'contentType' : 'text/markdown',
         }
-        response = self.client.post(url, json.dumps(payload),content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        response2 = self.client.post(url, json.dumps(payload),content_type='application/json')
+        self.assertEqual(response2.status_code, 201)
         self.assertEqual(Comment.objects.count(), 1)
         response = self.client.get(url)
-        print(response.data)
         self.assertEqual(response.status_code, 200)
+        url = reverse('authors:inbox', args=[self.author.uid])
+        response3 = self.client.post(url, json.dumps(response2.data), content_type='application/json')
+        print(response3.data)
+        self.assertEqual(response3.status_code, 201)
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(Inbox_Item.objects.count(), 1)
+        self.assertEqual(Comment.objects.get().comment, 'testing comment')
         self.client.credentials()
 class PostImageTest(TestCase):
     def setUp(self):

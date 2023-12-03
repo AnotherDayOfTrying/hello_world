@@ -258,7 +258,15 @@ class InboxView(generics.CreateAPIView):
 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'comment':
-            pass
+            post = Post.objects.get(uid=request.data['id'].split("/")[6])
+            author = Author.objects.get(uid=request.data['author']['id'].split('/')[-1])
+            comment = Comment.objects.get(uid=request.data['id'].split('/')[-1])
+            serializer = CommentSerializer(comment, context={'request': request})
+            model = Comment
+            
+            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=request.data['id'].split('/')[-1])
+            inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
+            return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
         elif request.data.get('type') == 'like':
             pass
         else:

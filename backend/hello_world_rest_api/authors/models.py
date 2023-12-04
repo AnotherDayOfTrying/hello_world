@@ -34,7 +34,7 @@ class UserManager(BaseUserManager):
         return self.create_user(username, password, **other_fields)
 
 class Author(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length = 20, unique = True)
+    username = models.CharField(max_length = 30, unique = True)
     uid = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     displayName = models.CharField(max_length = 50, null = True,blank = True)
     github = models.URLField(max_length=255, null = True, blank = True)

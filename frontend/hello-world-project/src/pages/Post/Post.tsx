@@ -7,9 +7,8 @@ import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
 import { useLocation } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { AuthorOutput, getAuthorByAuthorIdAsync } from '../../api/author';
 import { useAuth } from '../../providers/AuthProvider';
-import { createPostAsync, sendPostAsync } from '../../api/post';
+import { PostOutput, createPostAsync, editPostAsync, sendPostAsync } from '../../api/post';
 
 
 
@@ -20,13 +19,11 @@ export default function PostShare() {
     const { state } = useLocation();
     const {enqueueSnackbar} = useSnackbar()
     const {userInfo} = useAuth()
-    const data = state as any;
-
+    const {data}: {data: PostOutput} = state as any;
     const location = useLocation();
 
     useEffect(() => {
       // Fetch or update data based on the route change
-      console.log(location.pathname);
       if (location.pathname === '/post') {
         setText('');
         setImage(null);
@@ -39,17 +36,20 @@ export default function PostShare() {
     }
     , [data]);
 
+    console.log("DATA")
+    console.log(data)
+
     const setData = async () => {
         if (data) {
-            if (data.data.text !== '') {
-                setText(data.data.text);
+            if (data.content !== '') {
+                setText(data.content);
             }
-            if (data.data.image !== null) {
-                console.log('image:', data.data.image);
-                setImage({
-                    image: `${APIURL}${data.data.image}`,
-                });
-            }
+            // if (data.data.image !== null) {
+            //     console.log('image:', data.data.image);
+            //     setImage({
+            //         image: `${APIURL}${data.data.image}`,
+            //     });
+            // }
         }
     } 
 
@@ -57,8 +57,6 @@ export default function PostShare() {
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.files && event.target.files[0]) {
           let img: File = event.target.files[0];
-            console.log('img:', img);
-            console.log('imgFile:', URL.createObjectURL(img));
           setImage({
             image: URL.createObjectURL(img),
           });
@@ -70,61 +68,49 @@ export default function PostShare() {
     };
 
     const handlePostSubmit = async (privacy: string)  => {
-        const formData = new FormData();
-        formData.append('title', 'Post Title');
-        formData.append('content_type', 'TEXT');
-        formData.append('text', text);
+        // const formData = new FormData();
+        // formData.append('title', 'Post Title');
+        // formData.append('content_type', 'TEXT');
+        // formData.append('text', text);
 
         if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
             console.log("got in")
             console.log(ImageRef.current.files);
-            formData.append('image', ImageRef.current.files[0]);
-            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+            // formData.append('image', ImageRef.current.files[0]);
+            // formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
         } else if (image && image.image) {
             // If image is not provided through the file input but exists in the state
             // Fetch the image from the URL and convert it to a file
-            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+            // formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
             const response = await axios.get(`${image.image}`, {
                 responseType: 'blob'
             });
             const blob = await response.data;
             const file = new File([blob], "image.jpg", {type: "image/jpeg"});
-            formData.append('image', file);
-            console.log('file:', file);
+            // formData.append('image', file);
+            // console.log('file:', file);
         } else {
-            formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
-            formData.append('image', '');
+            // formData.append('image_url', "https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&q=80&w=1000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D");
+            // formData.append('image', '');
         }
 
         if (privacy === 'Edit') {
-            formData.append('privacy', data.data.privacy);
             try {
-                // await createPostAsync(userId, {
-                //     title: '',
-                //     author: author!,
-                //     description: '',
-                //     content: '',
-                //     contentType: 'text/plain',
-                //     visibility: 'PUBLIC',
-                //     unlisted: false,
-                //     categories: '',
-                // });
-                const response = await axios.post(`${APIURL}/post/edit/${data.data.id}/`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: getAuthorizationHeader(),
-                    }
-                });
-                const responseData: any = response.data;
-                console.log('post Edit response:', responseData);
-                enqueueSnackbar('Post Edited Successfully', {variant: 'success'});
-                return responseData;
+                const response = editPostAsync(data.id, {
+                    title: 'Post Title',
+                    author: userInfo,
+                    description: text,
+                    content: text,
+                    contentType: 'text/plain',
+                    visibility: data.visibility,
+                    unlisted: data.unlisted,
+                    categories: '',
+                })
+                return response;
             } catch (error: any) {
                 console.log(error);
-            };      
-    
+            };
         } else{
-            formData.append('privacy', privacy);
             try {
                 const response = await createPostAsync(userInfo.id, {
                     title: 'Post Title',
@@ -132,8 +118,8 @@ export default function PostShare() {
                     description: text,
                     content: text,
                     contentType: 'text/plain',
-                    visibility: privacy == 'PUBLIC' ? 'PUBLIC' : 'FRIENDS',
-                    unlisted: privacy == 'UNLISTED',
+                    visibility: privacy === 'PUBLIC' ? 'PUBLIC' : 'FRIENDS',
+                    unlisted: privacy === 'UNLISTED',
                     categories: '',
                 });
                 //!!! TODO: fetch user friends and send
@@ -145,11 +131,11 @@ export default function PostShare() {
                 return response;
             } catch (error: any) {
                 console.log(error);
-            };      
-    
+            };
         }
     };
 
+    console.log(text)
   return (
     <>
     <div className="shareContainer">

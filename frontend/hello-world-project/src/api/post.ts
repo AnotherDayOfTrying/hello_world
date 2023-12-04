@@ -126,12 +126,25 @@ const createPostAsync = async (authorId: string, postInput: PostInput): Promise<
     }
 }
 
-const deletePostAsync = async (postId: string) => {
+const editPostAsync = async (postId: string, postInput: PostInput) => {
     try {
-        await axios.delete(postId, {
+        await axios.post(`${postId}/`, postInput, { //trailing slash is required
             headers: {
                 Authorization: getAuthorizationHeader()
             }
+        })
+        enqueueSnackbar('Post Edited Successfully', {variant: 'success'});
+    } catch {
+        enqueueSnackbar('Unable to Edit Post', {variant: 'error'})
+    }
+}
+
+const deletePostAsync = async (postId: string) => {
+    try {
+        await axios.delete(`${postId}/`, { //trailing slash is required
+            headers: {
+                Authorization: getAuthorizationHeader(),
+            },
         });
     } catch {
         enqueueSnackbar('Unable to Delete Post', {variant: 'error'})
@@ -160,4 +173,5 @@ export {
     getUnlistedPostsAsync,
     deletePostAsync,
     sendPostAsync,
+    editPostAsync,
 }

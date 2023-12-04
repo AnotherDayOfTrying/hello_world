@@ -38,7 +38,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
-    const [likeId, setLikeId] = React.useState(likeid);
     const [openComments, setOpenComments] = useState<boolean>(false);
     const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
     const commentButton = useRef<any>(null);
@@ -193,7 +192,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     }
 
     const handleEdit = () => {
-        console.log("navigate: ")
         navigate('/post/edit', { state: { data: data } });
     }
     return (
@@ -205,8 +203,8 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 
-                    <DeleteIcon style={{color: "#ff6b6b"}} onClick={handleDelete}/>
-                    <EditIcon style={{color: "#ff6b6b"}} onClick={handleEdit}>
+                    <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleDelete}/>
+                    <EditIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleEdit}>
                     </EditIcon>
                 </div>}
             </div>

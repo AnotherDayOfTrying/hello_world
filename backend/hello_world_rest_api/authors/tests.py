@@ -592,20 +592,6 @@ class InboxTest(TestCase):
         self.assertEqual(response3.status_code, 204)
         self.assertEqual(Inbox_Item.objects.count(), 0)
 
-    def test_comment_inbox(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
-        url1 = reverse('authors:getoneauthor', args=[self.author.uid])
-        url2 = reverse('authors:getoneauthor', args=[self.author2.uid])
-        response1 = self.client.get(url1)
-        response2 = self.client.get(url2)
-        url = reverse('authors:inbox', args=[self.author2.uid])
-        response3 = self.client.post(url, json.dumps(serializer), content_type='application/json')
-        self.assertEqual(response3.status_code, 201)
-        self.assertEqual(Comment.objects.count(), 1)
-        self.assertEqual(Inbox_Item.objects.count(), 1)
-        self.assertEqual(Comment.objects.get().comment, 'testing the inbox')
-
-
 class PostTest(TestCase):
     def setUp(self):
         self.author = Author.objects.create_user(

@@ -3,40 +3,44 @@ import Leftbar from '../../components/leftbar/Leftbar';
 import AuthorSearch from './AuthorSearch';
 import NotificationCard from './NotificationCard';
 import './notifications.css';
-import axios, { AxiosError } from "axios";
-import APIURL, { getAuthorizationHeader } from "../../api/config";
+import axios from "axios";
+import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config";
 import { useSnackbar } from 'notistack';
 
 export default function Notifications() {
   const [data, setData] = useState<any>(null);
   const {enqueueSnackbar} = useSnackbar();
+  
 
     const getFriendRequests = useCallback(async () => {
       try {
-        const response = await axios.get(`${APIURL}/authors/requests/`, {
+        const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/requests`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: getAuthorizationHeader(),
           },
         });
         const friendRequests: any[] = response.data;
+        console.log('Friend Requests:', friendRequests);
 
         const requestsWithAuthors = await Promise.all(
           friendRequests.map(async (request) => {
-            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
+            // split the url to get the actor id
+            const actorId = request.actor.id.split('/').pop();
+            const authorResponse = await axios.get(`${APIURL}/authors/${actorId}`, {headers: {Authorization: getAuthorizationHeader(),}});
             const authorData = {
               ...request,
-              sender: authorResponse.data,
+              actor: authorResponse.data,
             };
             console.log('Author Data:', authorData);
             return authorData;
           })
         );
         console.log('Friend Requests:', requestsWithAuthors);
-        setData(requestsWithAuthors);
+        setData(friendRequests);
 
       } catch (error) {
-        enqueueSnackbar('Unable to fetch notifications.', {variant: 'error'})
+        enqueueSnackbar('Unable to fetch notifications.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         console.log(error);
       }
     }, []);

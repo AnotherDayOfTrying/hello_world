@@ -51,7 +51,7 @@ const Github: React.FC = () => {
         }
       } catch (error: any) {
         if (error.response.status === 403) {
-          enqueueSnackbar('Github API rate limit exceeded\nPlease try again later', {variant: 'warning'})
+          enqueueSnackbar('Github API rate limit exceeded\nPlease try again later', {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
         console.error('Error fetching data:', error);
       }

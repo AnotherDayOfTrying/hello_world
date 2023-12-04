@@ -34,7 +34,7 @@ const getCommentsAsync = async(url: string): Promise<CommentListOutput | undefin
         })
         return data
     } catch {
-        enqueueSnackbar(`Unable to Fetch Comments`, {variant: 'error'})
+        enqueueSnackbar(`Unable to Fetch Comments`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
 }
 
@@ -45,10 +45,10 @@ const createCommentAsync = async (commentURL: string, commentInput: CommentInput
                 Authorization: getAuthorizationHeader()
             }
         });
-        enqueueSnackbar('Created Comment', {variant: 'success'})
+        enqueueSnackbar('Created Comment', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return data
     } catch {
-        enqueueSnackbar('Unable to Create Comment', {variant: 'error'})
+        enqueueSnackbar('Unable to Create Comment', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
 }
 

@@ -439,3 +439,23 @@ class LikedView(generics.CreateAPIView):
             'items': serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
+    
+class FollowRequestView(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        requests = Friendship.objects.filter(object=author, status=1)
+        serializer = FriendShipSerializer(requests, many=True, context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+class FriendsView(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        requests = Friendship.objects.filter(object=author, status=3) | Friendship.objects.filter(actor=author, status=3)
+        serializer = FriendShipSerializer(requests, many=True, context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

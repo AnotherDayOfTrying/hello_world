@@ -79,7 +79,7 @@ const getPublicPostsAsync = async (authorId: string) => {
         const { items: posts } = await getInbox(authorId)
         return posts.filter(({visibility, unlisted}) => visibility == 'PUBLIC' && !unlisted)
     } catch {
-        enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error'})
+        enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -89,7 +89,7 @@ const getPrivatePostsAsync = async (authorId: string) => {
         const { items: posts } = await getInbox(authorId)
         return posts.filter(({visibility, unlisted}) => visibility == 'FRIENDS' && !unlisted)
     } catch {
-        enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error'})
+        enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' } })
         return undefined
     }
 }
@@ -99,7 +99,7 @@ const getUnlistedPostsAsync = async (authorId: string) => {
         const { items: posts } = await getInbox(authorId)
         return posts.filter(({unlisted}) => unlisted)
     } catch {
-        enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error'})
+        enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -126,10 +126,10 @@ const createPostAsync = async (authorId: string, postInput: PostInput): Promise<
                 Authorization: getAuthorizationHeader(),
             }
         })
-        enqueueSnackbar('Post Uploaded Successfully', {variant: 'success'});
+        enqueueSnackbar('Post Uploaded Successfully', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
         return data
     } catch {
-        enqueueSnackbar('Unable to Create Post', {variant: 'error'});
+        enqueueSnackbar('Unable to Create Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
         return undefined
     }
 }
@@ -155,7 +155,7 @@ const deletePostAsync = async (postId: string) => {
             },
         });
     } catch {
-        enqueueSnackbar('Unable to Delete Post', {variant: 'error'})
+        enqueueSnackbar('Unable to Delete Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
 }
 
@@ -168,7 +168,7 @@ const sendPostAsync = async (authorId: string, sendPostInput: SendPostInput): Pr
         });
         return data
     } catch {
-        enqueueSnackbar(`Unable to Send Post to ${authorId}`, {variant: 'error'})
+        enqueueSnackbar(`Unable to Send Post to ${authorId}`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }

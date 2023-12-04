@@ -30,7 +30,7 @@ const login = async (signinDetails: LoginInterface) => {
         if (err instanceof AxiosError) {
             return err.response?.data
         } else {
-            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
+            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             throw err;
         }
     }
@@ -58,7 +58,7 @@ const signup = async (signupDetails: SignUpInterface) => {
         if (err instanceof AxiosError) {
             return err.response?.data
         } else {
-            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
+            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             throw err;
         }
     }
@@ -80,7 +80,7 @@ const verifySession = async() => {
         if (err instanceof AxiosError) {
             return false
         } else {
-            enqueueSnackbar("Unable to verify session.", {variant: 'error'})
+            enqueueSnackbar("Unable to verify session.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
     }
 }
@@ -91,7 +91,7 @@ const logout = async() => {
         localStorage.removeItem('user_id')
         return true
     } catch (err) {
-        enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
+        enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return false
     }
 }

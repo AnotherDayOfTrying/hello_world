@@ -22,7 +22,7 @@ function AuthorSearch() {
       })
       setUser(response.data)
     } catch (e) {
-      enqueueSnackbar('Unable to fetch your details', {variant: "error"})
+      enqueueSnackbar('Unable to fetch your details', {variant: "error", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.error(e)
     }
   }
@@ -58,7 +58,7 @@ function AuthorSearch() {
           const authorId = filteredAuthor[0].id.split('/').pop();
           sendFriendRequest(filteredAuthor[0], authorId);
         } else {
-          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning'})
+          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
       }
       return responseData;
@@ -90,7 +90,7 @@ function AuthorSearch() {
              auth = 'Basic node-hello-world:socialpassword';
           } else if (url === ' https://distributed-network-37d054f03cf4.herokuapp.com/') {
           // TODO: change this to the correct creds
-           auth = 'Basic node-hello-world:socialpassword';
+           auth = 'Basic node-hello-world:node-hello-world';
           } else {
             auth = getAuthorizationHeader();
             url = APIURL
@@ -105,14 +105,14 @@ function AuthorSearch() {
             const status = response.status;
             console.log('Status:', status);
             if (status === 201) {
-              enqueueSnackbar("Friend request sent successfully!", {variant: 'success'})
+              enqueueSnackbar("Friend request sent successfully!", {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             }
             const responseData: any = response.data;
             return responseData;
           } catch (error: any) {
             console.log(error);
             if (error.response.status === 400) {
-              enqueueSnackbar("You are already friends with this user, or you already sent them a request!", {variant: 'info'})
+              const key = enqueueSnackbar("You are already friends with this user, or you already sent them a request!", {variant: 'info', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             }
           };
         }

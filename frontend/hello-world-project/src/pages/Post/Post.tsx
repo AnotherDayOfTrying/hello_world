@@ -117,7 +117,7 @@ export default function PostShare() {
                 });
                 const responseData: any = response.data;
                 console.log('post Edit response:', responseData);
-                enqueueSnackbar('Post Edited Successfully', {variant: 'success'});
+                enqueueSnackbar('Post Edited Successfully', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
                 return responseData;
             } catch (error: any) {
                 console.log(error);

@@ -36,7 +36,7 @@ export default function Notifications() {
         setData(requestsWithAuthors);
 
       } catch (error) {
-        enqueueSnackbar('Unable to fetch notifications.', {variant: 'error'})
+        enqueueSnackbar('Unable to fetch notifications.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         console.log(error);
       }
     }, []);

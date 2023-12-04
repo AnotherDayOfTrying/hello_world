@@ -46,7 +46,7 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
         getFriends();
       }
     } catch (err) {
-      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error'})
+      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(err);
     }
   };

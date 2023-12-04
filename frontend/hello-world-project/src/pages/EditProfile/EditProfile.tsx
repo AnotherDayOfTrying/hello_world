@@ -90,7 +90,7 @@ const EditProfile: React.FC = () => {
             Authorization: getAuthorizationHeader(),
           },
         });
-        enqueueSnackbar('Your profile was updated successfully!', {variant: 'success'})
+        enqueueSnackbar('Your profile was updated successfully!', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         setDisplayName(response.data.displayName);
         setGitHub(response.data.github);
         setProfilePicture(response.data.profilePicture);

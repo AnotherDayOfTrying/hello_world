@@ -31,12 +31,12 @@ export const AuthProvider = ({ children }: any) => {
     try {
       const response = await signup(data)
       if (response.token) {
-        enqueueSnackbar("Signed up!", {variant: 'success'})
+        enqueueSnackbar("Signed up!", {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         navigate("/login")
       }
       return response
     } catch {
-      enqueueSnackbar("Unable to sign up! Try again later.", {variant: 'error'})
+      enqueueSnackbar("Unable to sign up! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
   }
 
@@ -48,20 +48,20 @@ export const AuthProvider = ({ children }: any) => {
       localStorage.setItem('user_token', response.token || '')
       localStorage.setItem('user_id', response.data || '')
       if (await verifySession()) {
-        enqueueSnackbar("Logged in!", {variant: 'success'})
+        enqueueSnackbar("Logged in!", {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         navigate("/home") 
       }
   
       return response
     } catch {
-      enqueueSnackbar("Unable to login! Try again later.", {variant: 'error'})
+      enqueueSnackbar("Unable to login! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
   };
 
   // call this function to sign out logged in user
   const logoutUser = async () => {
     await logout()
-    enqueueSnackbar("Logged out!", {variant: 'success'})
+    enqueueSnackbar("Logged out!", {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     setUser('')
     navigate("/login", { replace: true })
   };

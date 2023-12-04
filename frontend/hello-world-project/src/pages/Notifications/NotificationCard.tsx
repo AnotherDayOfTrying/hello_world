@@ -30,7 +30,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
       getFriendRequests();
       return responseData;
     } catch (error) {
-      enqueueSnackbar('Unable to accept friend request. Try again later.', {variant: 'error'})
+      enqueueSnackbar('Unable to accept friend request. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(error);
     }
     
@@ -53,7 +53,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
       getFriendRequests();
       return responseData;
     } catch (error) {
-      enqueueSnackbar('Unable to decline friend request. Try again later.', {variant: 'error'})
+      enqueueSnackbar('Unable to decline friend request. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(error);
     }
     

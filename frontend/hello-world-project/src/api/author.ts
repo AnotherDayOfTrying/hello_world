@@ -29,7 +29,7 @@ const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput 
         });
         return data
     } catch {
-        enqueueSnackbar("Could not find current author", {variant: 'error'})
+        enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -43,7 +43,7 @@ const getAuthorAsync = async (url: string): Promise<AuthorOutput | undefined> =>
         })
         return data
     } catch {
-        enqueueSnackbar("Could not find current author", {variant: 'error'})
+        enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }

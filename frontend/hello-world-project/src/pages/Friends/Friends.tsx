@@ -3,7 +3,7 @@ import FriendsCard from './FriendCard'
 import Leftbar from '../../components/leftbar/Leftbar';
 import './friends.css'
 import FriendSearch from './FriendSearch';
-import APIURL, { getAuthorizationHeader } from "../../api/config"
+import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 
@@ -19,7 +19,7 @@ export default function Friends() {
 
     const getFriends = useCallback(async () => { 
         try {
-        const response = await axios.get(`${APIURL}/authors/friends/`, {
+        const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/friends`, {
             headers: {
             "Content-Type": "application/json",
             Authorization: getAuthorizationHeader(),

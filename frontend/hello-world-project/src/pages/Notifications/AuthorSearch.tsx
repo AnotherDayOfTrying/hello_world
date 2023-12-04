@@ -82,21 +82,19 @@ function AuthorSearch() {
           };
           let auth = ''
           let url = author.host
+          console.log('URL:', url);
           if (url === 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/') {
-             auth = getAuthorizationHeader();
-          } else if (url === 'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/') {
-             auth = 'Basic node-hello-world:chimpchatapi';  
-          } else if (url === 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/') {
-             auth = 'Basic node-hello-world:socialpassword';
-          } else if (url === ' https://distributed-network-37d054f03cf4.herokuapp.com/') {
-          // TODO: change this to the correct creds
-           auth = 'Basic node-hello-world:node-hello-world';
-          } else {
             auth = getAuthorizationHeader();
-            url = APIURL
+            url = APIURL + '/';
+          } else if (url === 'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/') {
+            auth = 'Basic node-hello-world:chimpchatapi';  
+          } else if (url === 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/') {
+            auth = 'Basic node-hello-world:socialpassword';
+          } else if (url === ' https://distributed-network-37d054f03cf4.herokuapp.com/') {
+            auth = 'Basic node-hello-world:node-hello-world';
           }
           try {
-            const response = await axios.post(`${url}/authors/${authorId}/inbox`, requestBody,
+            const response = await axios.post(`${url}authors/${authorId}/inbox`, requestBody,
             {
               headers: {
                 Authorization: auth,
@@ -111,9 +109,9 @@ function AuthorSearch() {
             return responseData;
           } catch (error: any) {
             console.log(error);
-            if (error.response.status === 400) {
+            if (error.response?.status === 400) {
               const key = enqueueSnackbar("You are already friends with this user, or you already sent them a request!", {variant: 'info', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-            }
+            } 
           };
         }
   

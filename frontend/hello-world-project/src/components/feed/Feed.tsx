@@ -12,23 +12,22 @@ interface FeedProps {
 }
 const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, messages: ismessages, myposts: isMyPosts}: FeedProps) => {
   const [data, setData] = useState<any>(null);
-  const {userId} = useAuth();
+  const {userInfo} = useAuth();
 
   
   const fetchData = async () => {
     try {
       let response;
-
       if (isPrivate) {
-        response = await getPrivatePostsAsync(userId)
+        response = await getPrivatePostsAsync(userInfo.id)
       } else if (isUnlisted) {
-        response = await getUnlistedPostsAsync(userId)
+        response = await getUnlistedPostsAsync(userInfo.id)
       } else if (ismessages) {
         // response = await axios.get(`${APIURL}/post/getmessages/`, {headers: {Authorization: getAuthorizationHeader()}});
       } else if (isMyPosts) {
-        response = (await getAuthorsPostsAsync(userId))?.items
+        response = (await getAuthorsPostsAsync(userInfo.id))?.items
       } else {
-        response = await getPublicPostsAsync(userId)
+        response = await getPublicPostsAsync(userInfo.id)
       }
       // sort by to post being most recent
       response?.sort((x, y) => x.published > y.published ? -1 : 1)

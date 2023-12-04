@@ -20,7 +20,7 @@ export interface AuthorOutput {
     host: string
   }
 
-const getAuthorAsync = async (authorId: string): Promise<AuthorOutput | undefined> => {
+const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput | undefined> => {
     try {
         const { data } = await axios.get<AuthorOutput>(`${APIURL}/authors/${authorId}`, {
             headers: {
@@ -34,4 +34,18 @@ const getAuthorAsync = async (authorId: string): Promise<AuthorOutput | undefine
     }
 }
 
-export {getAuthorAsync}
+const getAuthorAsync = async (url: string): Promise<AuthorOutput | undefined> => {
+    try {
+        const { data } = await axios.get<AuthorOutput>(url, {
+            headers:  {
+                Authorization: getAuthorizationHeader(),
+            }
+        })
+        return data
+    } catch {
+        enqueueSnackbar("Could not find current author", {variant: 'error'})
+        return undefined
+    }
+}
+
+export {getAuthorAsync, getAuthorByAuthorIdAsync}

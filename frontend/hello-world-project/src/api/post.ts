@@ -58,7 +58,7 @@ export interface SendPostOutput {
 
 // Do not use directly in react code
 const getInbox = async (authorId: string) => {
-    const { data } = await axios.get<InboxOutput>(`${APIURL}/authors/${authorId}/inbox`, {
+    const { data } = await axios.get<InboxOutput>(`${authorId}/inbox`, {
         headers: {
             Authorization: getAuthorizationHeader()
         }
@@ -98,13 +98,11 @@ const getUnlistedPostsAsync = async (authorId: string) => {
 
 const getAuthorsPostsAsync = async (authorId: string): Promise<PostListOutput | undefined> => {
     try {
-        console.log("ATTEMPTING TO FETCH USER POSTS")
-        const { data } = await axios.get<PostListOutput>(`${APIURL}/authors/${authorId}/posts/`, {
+        const { data } = await axios.get<PostListOutput>(`${authorId}/posts/`, {
             headers: {
                 Authorization: getAuthorizationHeader(),
             }
         })
-        console.log(data)
         return data
     } catch {
         enqueueSnackbar('Unable to Fetch Author\'s Posts', {variant: 'error'})
@@ -115,7 +113,7 @@ const getAuthorsPostsAsync = async (authorId: string): Promise<PostListOutput | 
 
 const createPostAsync = async (authorId: string, postInput: PostInput): Promise<PostOutput | undefined> => {
     try {
-        const { data } = await axios.post<PostOutput>(`${APIURL}/authors/${authorId}/posts/`, postInput, {
+        const { data } = await axios.post<PostOutput>(`${authorId}/posts/`, postInput, {
             headers: {
                 Authorization: getAuthorizationHeader(),
             }
@@ -142,7 +140,7 @@ const deletePostAsync = async (postId: string) => {
 
 const sendPostAsync = async (authorId: string, sendPostInput: SendPostInput): Promise<SendPostOutput | undefined> => {
     try {
-        const { data } = await axios.post<SendPostOutput>(`${sendPostInput.author.host}authors/${authorId}/inbox`, sendPostInput, {
+        const { data } = await axios.post<SendPostOutput>(`${authorId}/inbox`, sendPostInput, {
             headers: {
                 Authorization: getAuthorizationHeader(),
             }

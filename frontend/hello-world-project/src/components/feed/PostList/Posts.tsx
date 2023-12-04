@@ -14,10 +14,10 @@ interface PostsProps {
 
 const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
   const [likedPosts, setLikedPosts] = useState<LikeListOutput>();
-  const {userId} = useAuth();
+  const {userInfo} = useAuth();
 
   const fetchLiked = async() => {
-    setLikedPosts(await getAuthorsLikedAsync(userId))
+    setLikedPosts(await getAuthorsLikedAsync(userInfo.id))
   }
 
   useEffect(() => {

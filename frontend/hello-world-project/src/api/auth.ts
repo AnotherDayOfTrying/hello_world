@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios"
 import { enqueueSnackbar } from 'notistack'
 import APIURL from "./config"
+import { AuthorOutput, getAuthorByAuthorIdAsync } from "./author";
 
 export interface LoginInterface {
     username: string;
@@ -73,12 +74,8 @@ const verifySession = async() => {
         if (response.status !== 200) 
             return false
 
-        const author = await axios.get(`${APIURL}/author/`, {
-            headers: {
-                "Authorization": "Token " + localStorage.getItem('user_token'),
-            }
-        })
-        return author.data.item;
+        const author = await getAuthorByAuthorIdAsync(localStorage.getItem('user_id') || '')
+        return author!;
     } catch (err) {
         if (err instanceof AxiosError) {
             return false
@@ -91,6 +88,7 @@ const verifySession = async() => {
 const logout = async() => {
     try {
         localStorage.removeItem('user_token')
+        localStorage.removeItem('user_id')
         return true
     } catch (err) {
         enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})

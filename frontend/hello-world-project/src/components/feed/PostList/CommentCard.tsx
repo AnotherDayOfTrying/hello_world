@@ -2,8 +2,6 @@ import React, {useEffect} from 'react';
 import './comment.css';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
-import APIURL, { getAuthorizationHeader } from "../../../api/config"
-import axios from "axios"
 import { CommentOutput } from '../../../api/comment';
 import { likeObjectAsync } from '../../../api/like';
 import { useAuth } from '../../../providers/AuthProvider';
@@ -17,7 +15,7 @@ type CommentCardProps = {
 
 const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
     const [isliked, setIsLiked] = React.useState(isLiked);
-    const {userId} = useAuth()
+    const {userInfo} = useAuth()
 
     useEffect(() => {
         setIsLiked(isLiked);
@@ -44,9 +42,9 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
         } else {
             setIsLiked(!isliked);
             try {
-                const response = await likeObjectAsync(userId, {
+                const response = await likeObjectAsync(comment.author.id, {
                     type: 'Like',
-                    author: comment.author,
+                    author: userInfo,
                     object: comment.id,
                 })
                 setIsLiked(true);

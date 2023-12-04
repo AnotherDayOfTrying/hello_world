@@ -7,7 +7,7 @@ import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
 import { useLocation } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
-import { AuthorOutput, getAuthorAsync } from '../../api/author';
+import { AuthorOutput, getAuthorByAuthorIdAsync } from '../../api/author';
 import { useAuth } from '../../providers/AuthProvider';
 import { createPostAsync, sendPostAsync } from '../../api/post';
 
@@ -17,10 +17,9 @@ export default function PostShare() {
     const [image, setImage] = useState<any | null>(null);
     const ImageRef = React.createRef<HTMLInputElement>()
     const [text, setText] = useState<string>('');
-    const [author, setAuthor] = useState<AuthorOutput>();
     const { state } = useLocation();
     const {enqueueSnackbar} = useSnackbar()
-    const {userId} = useAuth()
+    const {userInfo} = useAuth()
     const data = state as any;
 
     const location = useLocation();
@@ -52,7 +51,6 @@ export default function PostShare() {
                 });
             }
         }
-        setAuthor(await getAuthorAsync(userId))
     } 
 
 
@@ -128,9 +126,9 @@ export default function PostShare() {
         } else{
             formData.append('privacy', privacy);
             try {
-                const response = await createPostAsync(userId, {
+                const response = await createPostAsync(userInfo.id, {
                     title: 'Post Title',
-                    author: author!,
+                    author: userInfo,
                     description: text,
                     content: text,
                     contentType: 'text/plain',
@@ -138,9 +136,10 @@ export default function PostShare() {
                     unlisted: privacy == 'UNLISTED',
                     categories: '',
                 });
-                await sendPostAsync(userId, {
+                //!!! TODO: fetch user friends and send
+                await sendPostAsync(userInfo.id, {
                     type: 'post',
-                    author: author!,
+                    author: userInfo,
                     object: response!.id,
                 })
                 return response;
@@ -156,7 +155,7 @@ export default function PostShare() {
     <div className="shareContainer">
         <Leftbar/>
             <div className="postShare">
-                <img src={`${author?.profilePicture || ''}`} alt='' />
+                <img src={`${userInfo.profilePicture || ''}`} alt='' />
                 <div>
                     <textarea  placeholder="What's on your mind?" value={text} onChange={handleTextChange}/>
                     <div className="postOptions">

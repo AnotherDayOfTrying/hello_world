@@ -50,7 +50,7 @@ Local Development
 3. Start virtual environment: `./venv/Scripts/activate`
 4. Install python packages: `pip install -r requirements.txt`
 5. Navigate to `hello_world_rest_api`
-5. Run local server: `python manage.py runserver`
+5. Run local server: `python .\manage.py runserver --settings=hello_world_rest_api.local_settings`
 
 
 **React**

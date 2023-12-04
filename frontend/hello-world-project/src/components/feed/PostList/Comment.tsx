@@ -13,16 +13,17 @@ import { PostOutput } from '../../../api/post';
 
 interface CommentProps {
   data: PostOutput;
+  Reload: () => void;
 }
 
-const Comment: React.FC<CommentProps> = ({ data }) => {
+const Comment: React.FC<CommentProps> = ({ data, Reload }) => {
   const [comments, setComments] = useState<CommentListOutput>()
   const [text, setText] = useState<string>('')
   const [likedComments, setLikedComments] = useState<LikeListOutput>();
-  const {userId} = useAuth()
+  const {userInfo} = useAuth()
 
   const fetchLiked = async() => {
-    setLikedComments(await getAuthorsLikedAsync(userId))
+    setLikedComments(await getAuthorsLikedAsync(userInfo.id))
   }
 
   useEffect(() => {
@@ -44,6 +45,7 @@ const Comment: React.FC<CommentProps> = ({ data }) => {
       comment: text,
       contentType: 'text/plain',
     })
+    .then(() => {Reload()})
   }
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setText(event.target.value);

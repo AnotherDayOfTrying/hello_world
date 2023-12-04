@@ -25,9 +25,9 @@ export interface CommentListOutput {
     comments: CommentOutput[],
 }
 
-const getCommentsAsync = async(commentURL: string): Promise<CommentListOutput | undefined> => {
+const getCommentsAsync = async(url: string): Promise<CommentListOutput | undefined> => {
     try {
-        const { data } = await axios.get<CommentListOutput>(commentURL, {
+        const { data } = await axios.get<CommentListOutput>(url, {
             headers: {
                 Authorization: getAuthorizationHeader()
             }

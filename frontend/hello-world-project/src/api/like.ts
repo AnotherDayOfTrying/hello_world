@@ -24,7 +24,7 @@ export interface LikeListOutput {
 
 const likeObjectAsync = async (authorId: string, likeInput: LikeInput): Promise<LikeOutput | undefined> => {
     try {
-        const { data } = await axios.post<LikeOutput>(`${APIURL}/authors/${authorId}/inbox`, likeInput, {
+        const { data } = await axios.post<LikeOutput>(`${authorId}/inbox`, likeInput, {
             headers: {
                 Authorization: getAuthorizationHeader(),
             }
@@ -38,7 +38,7 @@ const likeObjectAsync = async (authorId: string, likeInput: LikeInput): Promise<
 
 const getAuthorsLikedAsync = async (authorId: string): Promise<LikeListOutput | undefined> => {
     try {
-        const { data } = await axios.get<LikeListOutput>(`${APIURL}/authors/${authorId}/liked`, {
+        const { data } = await axios.get<LikeListOutput>(`${authorId}/liked`, {
             headers: {
                 Authorization: getAuthorizationHeader(),
             }

@@ -92,7 +92,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     };
 
     const fetchUserInfo = async () => {
-        setUserInfo(await getAuthorAsync(userId));
+        setUserInfo(await getAuthorAsync(data.author.id));
     }
 
     useEffect(() => {
@@ -217,7 +217,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
                 <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
                 <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
-                    <Comment data={data} />
+                    <Comment data={data} Reload={Reload}/>
                 </Popover> 
                 <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupContent />

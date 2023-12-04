@@ -3,10 +3,9 @@ import './editProfile.css';
 import Leftbar from '../../components/leftbar/Leftbar';
 import { TextField, Typography } from '@mui/material';
 import axios from 'axios';
-import APIURL, { getAuthorizationHeader } from '../../api/config';
+import APIURL, { getAuthorizationHeader, getAuthorId} from '../../api/config';
 import gsap from 'gsap';
 import ClearIcon from '@mui/icons-material/Clear';
-import { Alert } from '@mui/material';
 import { useSnackbar } from 'notistack';
 
 
@@ -24,17 +23,17 @@ const EditProfile: React.FC = () => {
 
   const getAuthor = async () => {
     try {
-      const response = await axios.get(`${APIURL}/author/`, {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
         headers: {
           Authorization: getAuthorizationHeader(),
         },
       });
-      setDisplayName(response.data.item.displayName);
-      setGitHub(response.data.item.github);
-      setProfilePicture(response.data.item.profilePicture);
-      setID(response.data.item.id)
-      setAuthor(response.data.item);
-      console.log("author: ", response.data.item);
+      setDisplayName(response.data.displayName);
+      setGitHub(response.data.github);
+      setProfilePicture(response.data.profilePicture);
+      setID(response.data.id)
+      setAuthor(response.data);
+      console.log("editpro: ", response.data);
     } catch (e) {
       console.error(e);
     }
@@ -80,11 +79,12 @@ const EditProfile: React.FC = () => {
         formData.append('github', github)
     }
 
-    if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0])
+    if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
+        console.log('ImageRef: ', ImageRef.current.files[0]);
         formData.append('profilePicture', ImageRef.current.files[0])
-
+    }
     try {
-        const response = await axios.post(`${APIURL}/authors/${id}`, formData,{
+        const response = await axios.post(`${APIURL}/authors/${getAuthorId()}`, formData,{
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: getAuthorizationHeader(),
@@ -153,7 +153,7 @@ const EditProfile: React.FC = () => {
           ) : profilePicture && (
                 <img
                 className="profilePicture"
-                src={APIURL + profilePicture}
+                src={profilePicture}
                 /> 
           ) }
           <button 

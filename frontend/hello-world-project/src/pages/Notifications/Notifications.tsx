@@ -3,7 +3,6 @@ import Leftbar from '../../components/leftbar/Leftbar';
 import AuthorSearch from './AuthorSearch';
 import NotificationCard from './NotificationCard';
 import './notifications.css';
-import { PostData } from '../../components/feed/PostList/data/postsData';
 import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
 import { useSnackbar } from 'notistack';

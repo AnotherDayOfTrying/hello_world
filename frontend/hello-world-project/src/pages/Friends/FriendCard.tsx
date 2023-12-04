@@ -18,20 +18,6 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
   const profilePicture = data.sender.profile_picture ? data.sender.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
   const {enqueueSnackbar} = useSnackbar();
 
-  const handleMessage = async () => {
-    // try {
-    //   const response = await axios.post(`${APIURL}/friend/message/${data.id}`, {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   });
-    //   const responseData = await response.data;
-    //   console.log(responseData);
-    // } catch (err) {
-    //   console.log(err);
-    // }
-  };
-
   const handleUnfriend = async () => {
     try {
       const response = await axios.delete(`${APIURL}/frequests/delete/${data.id}/`, {
@@ -69,7 +55,6 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
         <div className="friendCardUsername">
             <span >{data.sender.displayName}</span>
         </div>
-        <button onClick={handleMessage} className='Message'>Message</button>
         <button onClick={handleUnfriend} className='Unfriend'>Unfriend</button>
       </div>
     )

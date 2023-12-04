@@ -3,7 +3,7 @@ import Leftbar from '../../components/leftbar/Leftbar';
 import Activity from './Activity';
 import './github.css';
 import axios from 'axios';
-import APIURL, { getAuthorizationHeader } from '../../api/config';
+import APIURL, { getAuthorizationHeader, getAuthorId } from '../../api/config';
 import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router';
 
@@ -23,12 +23,12 @@ const Github: React.FC = () => {
 
   const getAuthor = async () => {
     try {
-      const response = await axios.get(`${APIURL}/author/`, {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
         headers: {
           Authorization: getAuthorizationHeader(),
         },
       });
-      const github = response.data.item.github;
+      const github = response.data.github;
       console.log('github: ', github);
       const path = github.split('/');
       const username = path[path.length - 1]; 

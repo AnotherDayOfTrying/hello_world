@@ -2,22 +2,29 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { LoginInterface, SignUpInterface, login, signup, verifySession, logout } from "../api/auth"
 import { useSnackbar } from "notistack";
+import { AuthorOutput } from "../api/author";
 
 const AuthContext = createContext<any>({});
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<string>('')
+  const [userId, setUserId] = useState<string>('')
+  const [userInfo, setUserInfo] = useState<AuthorOutput>()
   const [verifiedSession, setVerifiedSession] = useState<boolean>(false) 
   const { enqueueSnackbar } = useSnackbar()
   const navigate = useNavigate()
 
   useEffect(() => {
     verifySession()
-      .then((data) => {
+      .then((author) => {
         setUser(localStorage.getItem('user_token') || '')
-        setVerifiedSession(true)
+        setUserId(localStorage.getItem('user_id') || '')
+        if (author) {
+          setUserInfo(author)
+          setVerifiedSession(true)
+        }
       })
-  },[]) // only run once on load
+  },[user]) // only run once on load
 
   // call this function to sign up a user
   const signupUser = async(data: SignUpInterface) => {
@@ -49,7 +56,6 @@ export const AuthProvider = ({ children }: any) => {
     } catch {
       enqueueSnackbar("Unable to login! Try again later.", {variant: 'error'})
     }
-    
   };
 
   // call this function to sign out logged in user
@@ -63,12 +69,14 @@ export const AuthProvider = ({ children }: any) => {
   const value = useMemo(
     () => ({
       user,
+      userId,
+      userInfo,
       verifiedSession,
       signupUser,
       loginUser,
       logoutUser,
     }),
-    [user, verifiedSession]
+    [user, userId, userInfo, verifiedSession]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -435,7 +435,7 @@ class FollowRequestView(generics.CreateAPIView):
     
     def get(self, request, author_id):
         author = get_object_or_404(Author, uid=author_id)
-        requests = Friendship.objects.filter(object=author, friend_status=1)
+        requests = Friendship.objects.filter(object=author, status=1)
         serializer = FriendShipSerializer(requests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
         

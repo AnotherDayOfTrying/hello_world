@@ -18,7 +18,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Popover } from '@mui/material';
-import { PostOutput, deletePostAsync } from '../../../api/post';
+import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
 import { useAuth } from '../../../providers/AuthProvider';
 import { likeObjectAsync } from '../../../api/like';
@@ -38,7 +38,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
-    const [likeId, setLikeId] = React.useState(likeid);
+    const [image, setImage] = useState<ImageOutput>()
     const [openComments, setOpenComments] = useState<boolean>(false);
     const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
     const commentButton = useRef<any>(null);
@@ -77,7 +77,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
         } else {
             setIsLiked(!isliked);
             try {
-            const response = await likeObjectAsync(userId, {
+            const response = await likeObjectAsync(data.author.id, {
                 type: 'Like',
                 author: userInfo,
                 object: data.id
@@ -86,7 +86,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
             return response;
         } catch (error: any) {
             console.log(error);
-            
         };
         }
     };
@@ -94,10 +93,14 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const fetchUserInfo = async () => {
         setUserInfo(await getAuthorAsync(data.author.id));
     }
+    const fetchImageData = async () => {
+        setImage(await getPostImageAsync(data.id))
+    }
 
     useEffect(() => {
         fetchUserInfo()
         getFriendList()
+        fetchImageData()
     }, [data]);
 
     const renderDescription = (description: string) => {
@@ -193,8 +196,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     }
 
     const handleEdit = () => {
-        console.log("navigate: ")
-        navigate('/post/edit', { state: { data: data } });
+        navigate('/post/edit', { state: { post: data, image: image } });
     }
     return (
         <div className="PostCard">
@@ -205,13 +207,13 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 
-                    <DeleteIcon style={{color: "#ff6b6b"}} onClick={handleDelete}/>
-                    <EditIcon style={{color: "#ff6b6b"}} onClick={handleEdit}>
+                    <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleDelete}/>
+                    <EditIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleEdit}>
                     </EditIcon>
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {/* {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>} */}
+            {image && <img src={`${image.image}`} alt="image" className='postImage'/>}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}  
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>

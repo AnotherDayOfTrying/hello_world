@@ -456,6 +456,6 @@ class FriendsView(generics.CreateAPIView):
     
     def get(self, request, author_id):
         author = get_object_or_404(Author, uid=author_id)
-        requests = Friendship.objects.filter(object=author, status=3)
+        requests = Friendship.objects.filter(object=author, status=3) | Friendship.objects.filter(actor=author, status=3)
         serializer = FriendShipSerializer(requests, many=True, context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import APIURL, {getAuthorizationHeader} from './config'
 import { enqueueSnackbar } from 'notistack';
 import { AuthorInput, AuthorOutput } from './author';
@@ -54,6 +54,14 @@ export interface SendPostInput {
 
 export interface SendPostOutput {
 
+}
+
+export interface ImageInput {
+    image: Blob
+}
+
+export interface ImageOutput {
+    image: string
 }
 
 // Do not use directly in react code
@@ -165,6 +173,52 @@ const sendPostAsync = async (authorId: string, sendPostInput: SendPostInput): Pr
     }
 }
 
+const getPostImageAsync = async (postId: string) => {
+    try {
+        const { data } = await axios.get<ImageOutput>(`${postId}/image`, {
+            headers: {
+                Authorization: getAuthorizationHeader()
+            }
+        });
+        return data
+    } catch (e) {
+        if (e instanceof AxiosError && e.response?.status !== 404) {
+            enqueueSnackbar('Unable to fetch Image', {variant: 'error'})
+        }
+    }
+}
+
+const createPostImageAsync = async (postId: string, imageInput: ImageInput): Promise<ImageOutput | undefined> => {
+    try {
+        const formData = new FormData()
+        formData.append('image', imageInput.image)
+        const { data } = await axios.post<ImageOutput>(`${postId}/image`, formData, {
+            headers: {
+                Authorization: getAuthorizationHeader(),
+                "Content-Type": 'multipart/form-data'
+            }
+        })
+        return data
+    } catch {
+        enqueueSnackbar('Unable to upload image', {variant: 'error'})
+        return undefined
+    }
+}
+
+const deletePostImageAsync = async (postId: string) => {
+    try {
+        const { data } = await axios.delete(`${postId}/image`, {
+            headers: {
+                Authorization: getAuthorizationHeader(),
+            }
+        })
+        return data
+    } catch {
+        enqueueSnackbar('Unable to delete image', {variant: 'error'})
+        return undefined
+    }
+}
+
 export {
     createPostAsync,
     getAuthorsPostsAsync,
@@ -174,4 +228,7 @@ export {
     deletePostAsync,
     sendPostAsync,
     editPostAsync,
+    createPostImageAsync,
+    deletePostImageAsync,
+    getPostImageAsync,
 }

@@ -18,7 +18,18 @@ export interface AuthorOutput {
     profilePicture: string,
     github: string | null,
     host: string
-  }
+}
+
+export interface AuthorListOutput {
+    items: AuthorOutput[],
+    pagination: {
+        next: string | undefined,
+        previous: string | undefined,
+        page_number: number,
+        page_size: number,
+    },
+    type: 'authors'
+}
 
 const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput | undefined> => {
     try {
@@ -48,4 +59,18 @@ const getAuthorAsync = async (url: string): Promise<AuthorOutput | undefined> =>
     }
 }
 
-export {getAuthorAsync, getAuthorByAuthorIdAsync}
+const getAllLocalAuthorsAsync = async (): Promise<AuthorListOutput | undefined> => {
+    try {
+        const { data } = await axios.get<AuthorListOutput>(`${APIURL}/authors/`, {
+            headers: {
+                Authorization: getAuthorizationHeader()
+            }
+        })
+        return data
+    } catch {
+        enqueueSnackbar('Unable to Fetch All Authors', {variant: 'error'})
+        return undefined
+    }
+}
+
+export {getAuthorAsync, getAuthorByAuthorIdAsync, getAllLocalAuthorsAsync}

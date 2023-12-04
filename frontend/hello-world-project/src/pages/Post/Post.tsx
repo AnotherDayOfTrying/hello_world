@@ -7,6 +7,9 @@ import axios, { AxiosError } from "axios";
 import APIURL, { getAuthorizationHeader } from "../../api/config";
 import { useLocation } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { AuthorOutput, getAuthorAsync } from '../../api/author';
+import { useAuth } from '../../providers/AuthProvider';
+import { createPostAsync, sendPostAsync } from '../../api/post';
 
 
 
@@ -14,9 +17,10 @@ export default function PostShare() {
     const [image, setImage] = useState<any | null>(null);
     const ImageRef = React.createRef<HTMLInputElement>()
     const [text, setText] = useState<string>('');
-    const [author, setAuthor] = useState<any>();
+    const [author, setAuthor] = useState<AuthorOutput>();
     const { state } = useLocation();
     const {enqueueSnackbar} = useSnackbar()
+    const {userId} = useAuth()
     const data = state as any;
 
     const location = useLocation();
@@ -48,17 +52,7 @@ export default function PostShare() {
                 });
             }
         }
-
-        try {
-            const response = await axios.get(`${APIURL}/author/`, {
-              headers: {
-                Authorization: getAuthorizationHeader(),
-              },
-            });
-            setAuthor(response.data.item)
-        } catch {
-            enqueueSnackbar("Could not find current author", {variant: 'error'})
-        }
+        setAuthor(await getAuthorAsync(userId))
     } 
 
 
@@ -107,6 +101,16 @@ export default function PostShare() {
         if (privacy === 'Edit') {
             formData.append('privacy', data.data.privacy);
             try {
+                // await createPostAsync(userId, {
+                //     title: '',
+                //     author: author!,
+                //     description: '',
+                //     content: '',
+                //     contentType: 'text/plain',
+                //     visibility: 'PUBLIC',
+                //     unlisted: false,
+                //     categories: '',
+                // });
                 const response = await axios.post(`${APIURL}/post/edit/${data.data.id}/`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -124,17 +128,22 @@ export default function PostShare() {
         } else{
             formData.append('privacy', privacy);
             try {
-                const response = await axios.post(`${APIURL}/post/upload/`, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: getAuthorizationHeader(),
-                    }
+                const response = await createPostAsync(userId, {
+                    title: 'Post Title',
+                    author: author!,
+                    description: text,
+                    content: text,
+                    contentType: 'text/plain',
+                    visibility: privacy == 'PUBLIC' ? 'PUBLIC' : 'FRIENDS',
+                    unlisted: privacy == 'UNLISTED',
+                    categories: '',
                 });
-                const responseData: any = response.data;
-                console.log('post upload response:', responseData);
-                enqueueSnackbar('Post Uploaded Successfully', {variant: 'success'});
-                
-                return responseData;
+                await sendPostAsync(userId, {
+                    type: 'post',
+                    author: author!,
+                    object: response!.id,
+                })
+                return response;
             } catch (error: any) {
                 console.log(error);
             };      
@@ -147,7 +156,7 @@ export default function PostShare() {
     <div className="shareContainer">
         <Leftbar/>
             <div className="postShare">
-                <img src={`${APIURL}/${author?.profilePicture || ''}`} alt='' />
+                <img src={`${author?.profilePicture || ''}`} alt='' />
                 <div>
                     <textarea  placeholder="What's on your mind?" value={text} onChange={handleTextChange}/>
                     <div className="postOptions">

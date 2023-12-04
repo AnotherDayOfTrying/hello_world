@@ -30,9 +30,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 #!!! LOCAL DEVELOPMENT
-# HOST_URL = "http://localhost:8000/"
+HOST_URL = "http://localhost:8000/"
 #!!! PROD
-HOST_URL = "https://cmput404-project-backend-a299a47993fd.herokuapp.com/"
+# HOST_URL = "https://cmput404-project-backend-a299a47993fd.herokuapp.com/"
 
 # Application definition
 

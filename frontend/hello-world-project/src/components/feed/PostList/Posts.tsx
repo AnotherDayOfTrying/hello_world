@@ -1,65 +1,42 @@
 import React, {useState, useEffect} from 'react'
 import './posts.css'
 import PostCard from './PostCard'
-import APIURL, { getAuthorizationHeader } from "../../../api/config"
-import axios, { AxiosError } from "axios"
+import { PostOutput } from '../../../api/post'
 import EmptyPostCard from './EmptyPostCard'
-import { useSnackbar } from 'notistack'
+import { LikeListOutput, getAuthorsLikedAsync } from '../../../api/like'
+import { useAuth } from '../../../providers/AuthProvider'
 
 interface PostsProps {
-  data: any;
+  data: PostOutput[];
   myposts?: boolean;
   Reload: () => void;
 }
 
 const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
-  const [likedPosts, setLikedPosts] = useState<Set<number>>(new Set());
-  const {enqueueSnackbar} = useSnackbar()
+  const [likedPosts, setLikedPosts] = useState<LikeListOutput>();
+  const {userId} = useAuth();
+
+  const fetchLiked = async() => {
+    setLikedPosts(await getAuthorsLikedAsync(userId))
+  }
 
   useEffect(() => {
-    const fetchLikedPosts = async () => {
-      let likedPostIds = []
-      try {
-        const response = await axios.get(`${APIURL}/authors/likes/`, {headers: {Authorization: getAuthorizationHeader(),}});
-        likedPostIds = response.data.map((likedPost: any) => ({
-          post_id: likedPost.content_object.post_id,
-          like_id: likedPost.id,
-        }));
-        setLikedPosts(new Set(likedPostIds));
-      } catch (error) {
-        enqueueSnackbar('Unable to fetch liked posts', {variant: 'error'})
-        console.error('Error fetching liked posts:', error);
-      }
-    };
-
-    fetchLikedPosts();
+    fetchLiked()
   }, [Reload]); 
 
   const dataIsEmpty = data ? data.length === 0 : false;
   return (
     <div className="posts">
-      {data && !dataIsEmpty ? (
+      {data && !dataIsEmpty && likedPosts ? (
         isMyPosts ? (
-          data.map((post: any, id: number) => {
-            var isLiked = false;
-            likedPosts.forEach((likedPost: any) => {
-              if (likedPost.post_id === post.id) {
-                isLiked = true;
-                post.like_id = likedPost.like_id;
-              }
-            });
-            return <PostCard Reload={Reload} myposts data={post} isLiked={isLiked} likeid={post.like_id}/>;
+          data.map((post) => {
+            const isLiked = !!likedPosts.items.find((likedPost) => likedPost.object === post.id);
+            return <PostCard Reload={Reload} myposts data={post} isLiked={isLiked} />;
           })
         ) : (
-          data.map((post: any, id: number) => {
-            var isLiked = false;
-            likedPosts.forEach((likedPost: any) => {
-              if (likedPost.post_id === post.id) {
-                isLiked = true;
-                post.like_id = likedPost.like_id;
-              }
-            });
-            return <PostCard Reload={Reload} data={post} isLiked={isLiked} likeid={post.like_id}/>;
+          data.map((post) => {
+            const isLiked = !!likedPosts.items.find((likedPost) => likedPost.object === post.id);
+            return <PostCard Reload={Reload} data={post} isLiked={isLiked} />;
           })
       )) : <EmptyPostCard />}
     </div>

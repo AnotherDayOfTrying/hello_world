@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import './feed.css'
 import Posts from './PostList/Posts'
-import APIURL, { getAuthorizationHeader } from "../../api/config"
-import axios, { AxiosError } from "axios"
+import { getAuthorsPostsAsync, getPrivatePostsAsync, getPublicPostsAsync, getUnlistedPostsAsync } from '../../api/post'
+import { useAuth } from '../../providers/AuthProvider'
 
 interface FeedProps {
   private?: boolean;
@@ -12,45 +12,30 @@ interface FeedProps {
 }
 const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, messages: ismessages, myposts: isMyPosts}: FeedProps) => {
   const [data, setData] = useState<any>(null);
+  const {userId} = useAuth();
 
   
   const fetchData = async () => {
     try {
       let response;
-      // const test = await axios.get('https://chimp-chat-1e0cca1cc8ce.herokuapp.com/posts/public/', {headers: {Authorization: 'Basic bm9kZS00MDQtdGVhbS1ub3QtZm91bmQ6Y2hpbXBjaGF0YXBp'}});
-
-      // test.data.items = test.data.items.map((post: any) => {
-      //   return {
-      //     text: post.content,
-      //     privacy: post.visibility,
-      //     author: post.author,
-      //   }
-      // })
 
       if (isPrivate) {
-        response = await axios.get(`${APIURL}/post/getprivate/`, {headers: {Authorization: getAuthorizationHeader()}});
+        response = await getPrivatePostsAsync(userId)
       } else if (isUnlisted) {
-        response = await axios.get(`${APIURL}/post/getunlisted/`, {headers: {Authorization: getAuthorizationHeader()}});
+        response = await getUnlistedPostsAsync(userId)
       } else if (ismessages) {
-        response = await axios.get(`${APIURL}/post/getmessages/`, {headers: {Authorization: getAuthorizationHeader()}});
+        // response = await axios.get(`${APIURL}/post/getmessages/`, {headers: {Authorization: getAuthorizationHeader()}});
       } else if (isMyPosts) {
-        response = await axios.get(`${APIURL}/post/getowned/`, {headers: {Authorization: getAuthorizationHeader()}});
-      }
-      else {
-        response = await axios.get(`${APIURL}/post/getpublic/`, {headers: {Authorization: getAuthorizationHeader()}});
-      }
-
-      console.log("DATA")
-      const responseData: any = response.data.items;
-      // responseData.push(...test.data.items)
-      setData(responseData);
-      console.log('Fetched posts:', responseData);
-    } catch (err: any) {
-      if (err instanceof AxiosError) {
-        console.error('API Error:', err.response?.data);
+        response = (await getAuthorsPostsAsync(userId))?.items
       } else {
-        console.error('Unknown Error:', err);
+        response = await getPublicPostsAsync(userId)
       }
+      // sort by to post being most recent
+      response?.sort((x, y) => x.published > y.published ? -1 : 1)
+      if (response)
+        setData(response)
+    } catch (err: any) {
+      console.error('Unknown Error:', err);
     }
   };
 

@@ -7,6 +7,7 @@ const AuthContext = createContext<any>({});
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<string>('')
+  const [userId, setUserId] = useState<string>('')
   const [verifiedSession, setVerifiedSession] = useState<boolean>(false) 
   const { enqueueSnackbar } = useSnackbar()
   const navigate = useNavigate()
@@ -15,6 +16,7 @@ export const AuthProvider = ({ children }: any) => {
     verifySession()
       .then((data) => {
         setUser(localStorage.getItem('user_token') || '')
+        setUserId(localStorage.getItem('user_id') || '')
         setVerifiedSession(true)
       })
   },[]) // only run once on load
@@ -39,6 +41,7 @@ export const AuthProvider = ({ children }: any) => {
       const response = await login(data);
       setUser(response.token)
       localStorage.setItem('user_token', response.token || '')
+      localStorage.setItem('user_id', response.data || '')
       if (await verifySession()) {
         enqueueSnackbar("Logged in!", {variant: 'success'})
         navigate("/home") 
@@ -62,12 +65,13 @@ export const AuthProvider = ({ children }: any) => {
   const value = useMemo(
     () => ({
       user,
+      userId,
       verifiedSession,
       signupUser,
       loginUser,
       logoutUser,
     }),
-    [user, verifiedSession]
+    [user, userId, verifiedSession]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

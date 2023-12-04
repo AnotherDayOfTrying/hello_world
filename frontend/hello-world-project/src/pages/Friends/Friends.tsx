@@ -26,20 +26,7 @@ export default function Friends() {
             },
         });
         const friends: any[] = response.data;
-
-        const FriendInfo = await Promise.all(
-            friends.map(async (request) => {
-            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
-            const authorData = {
-              ...request,
-              sender: authorResponse.data,
-            };
-            console.log('Friend Data:', authorData);
-            return authorData;
-          })
-        );
-        console.log('Friends:', FriendInfo);
-        setData(FriendInfo);
+        setData(friends);
 
       } catch (error) {
         enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
@@ -61,7 +48,11 @@ export default function Friends() {
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
                     {data && !isDataEmpty ?
                     (data.map((data: any, id: number) => {  
-                        return <FriendsCard data={data}  getFriends={getFriends} key={id}/>})
+                      const actorId = data.actor.id.split('/').pop();
+                      if (actorId !== getAuthorId()) {
+                        return <FriendsCard data={data}  getFriends={getFriends} key={id}/>
+                      }
+                      })
                     ): 
                     (<h4 style={{alignSelf: 'center' }}>No Friends</h4>)
                     }

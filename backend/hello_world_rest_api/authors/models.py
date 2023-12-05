@@ -46,7 +46,8 @@ class Author(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default = False)
     is_a_node = models.BooleanField(default = False)
     #friends = models.ManyToManyField('self',blank=True,related_name='friend')
-    profilePicture = models.ImageField(upload_to='profilepictures/', default = 'default-profile-picture.jpg')
+    profilePicture = models.URLField(max_length=255, null = True, blank = True)
+    profilePictureImage = models.ImageField(upload_to='profilepictures/', default = 'default-profile-picture.jpg')
     USERNAME_FIELD = 'username'
     @property
     def type(self):
@@ -58,12 +59,7 @@ class Author(AbstractBaseUser, PermissionsMixin):
             self.id = f'{self.host}authors/{self.uid}'
             self.url = self.id
         super(Author,self).save(*args,**kwargs)
-        img = Image.open(self.profilePicture.path)
-        if img.height > 300 or img.width > 300:
-            output_size = (300,300)
-            img.thumbnail(output_size)
-            img.save(self.profilePicture.path)
-    objects = UserManager()   
+    objects = UserManager()
 
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author')

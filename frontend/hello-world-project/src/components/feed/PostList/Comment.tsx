@@ -4,108 +4,66 @@ import CommentCard from './CommentCard';
 import axios, { AxiosError } from "axios"
 import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import SendIcon from '@mui/icons-material/Send';
+import { LikeListOutput, getAuthorsLikedAsync } from '../../../api/like';
+import { useAuth } from '../../../providers/AuthProvider';
+import { CommentListOutput, createCommentAsync, getCommentsAsync } from '../../../api/comment';
+import { PostOutput } from '../../../api/post';
 
 
 
 interface CommentProps {
-    postID: number; 
+  data: PostOutput;
+  Reload: () => void;
 }
 
-const Comment: React.FC<CommentProps> = ({ postID }) => {
-  const [data, setData] = useState<any[]>([])
+const Comment: React.FC<CommentProps> = ({ data, Reload }) => {
+  const [comments, setComments] = useState<CommentListOutput>()
   const [text, setText] = useState<string>('')
-  const [likedComments, setLikedComments] = useState<Set<number>>(new Set());
+  const [likedComments, setLikedComments] = useState<LikeListOutput>();
+  const {userInfo} = useAuth()
+
+  const fetchLiked = async() => {
+    setLikedComments(await getAuthorsLikedAsync(userInfo.id))
+  }
 
   useEffect(() => {
-    const fetchLikedComments = async () => {
-      try {
-        const response = await axios.get(`${APIURL}/authors/likes/`, {headers: {Authorization: getAuthorizationHeader(),}});
-        const likedCommentIds = response.data.map((likedComment: any) => ({
-          comment_id: likedComment.content_object.comment_id,
-          like_id: likedComment.id,
-        }));
-        setLikedComments(new Set(likedCommentIds));
-      } catch (error) {
-        console.error('Error fetching liked comments:', error);
-      }
-    };
+    fetchLiked()
+  }, [data]); 
 
-    fetchLikedComments();
-  }, [postID]); 
-
-  const date = new Date();
     
   const getComments = async () => {
-    try {
-      const response = await axios.get(`${APIURL}/comments/get/${postID}`, {
-          headers: {
-          "Content-Type": "application/json",
-          Authorization: getAuthorizationHeader(),
-          },
-      });
-      const comments: any[] = response.data.items;
-      const commentsWithAuthors = await Promise.all(
-          comments.map(async (request) => {
-          const authorResponse = await axios.get(`${APIURL}/authors/${request.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
-          const authorData = {
-            ...request,
-            author: authorResponse.data,
-          };
-          return authorData;
-        })
-      );
-      console.log('comments:', commentsWithAuthors);
-      setData(commentsWithAuthors);
-
-    } catch (error) {
-      console.log(error);
-    }
-    
+    setComments(await getCommentsAsync(data.comments))
   }
 
   useEffect(() => {
     getComments();
-  }, [postID]);
+  }, [data]);
 
   const sendComment = async () => {
-    try {
-      const response = await axios.post(`${APIURL}/comments/${postID}/`,
-      {
-        comment: text,
-        time: date.getHours() + ':' + date.getMinutes() 
-      },
-      {
-      headers: {
-          'Content-Type': 'application/json',
-          Authorization: getAuthorizationHeader(),
-      }
-      });
-      const responseData: any = response.data;
-      console.log('send comment response: ', responseData);
-      setText('')
-      getComments();
-      return responseData;
-  } catch (error: any) {
-      console.log(error);
-      
-  };
+    createCommentAsync(data.comments, {
+      author: data.author,
+      comment: text,
+      contentType: 'text/plain',
+    })
+    .then(() => {Reload()})
   }
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setText(event.target.value);
 };
     return (
         <div className="comments">
-          {data.length>0? (data.map((comment: any, id: number) => {
-            let isLiked = false;
-            likedComments.forEach((likedComment: any) => {
-              if (likedComment.comment_id === comment.id) {
-                isLiked = true;
-                comment.like_id = likedComment.like_id;
-              }
-
-            });
-            return <CommentCard comment={comment} isLiked={isLiked} likeid={comment.like_id}/>})):
-           (<h3 style={{padding: "1rem"}}>No Comments</h3>)}
+          {
+          comments && comments.comments.length > 0 && likedComments ? 
+            (
+              comments.comments.map((comment) => {
+              const isLiked = !!likedComments.items.find((likedComment) => likedComment.object === comment.id);
+              return <CommentCard comment={comment} isLiked={isLiked} />})
+            )
+            :
+            (
+              (<h3 style={{padding: "1rem"}}>No Comments</h3>)
+            )
+          }
           <div className="sendComment">
             <input value={text} onChange={handleTextChange} placeholder='Add a comment'></input>
             <SendIcon onClick={sendComment} style={{color: "#ff6b6b", alignSelf: "center"}}></SendIcon>

@@ -15,7 +15,7 @@ type FriendSearchProps = {
 
   const handleSearch = async () => {
     const filteredFriend = data.filter((item) =>
-    item.sender.displayName.toLowerCase() === displayName.toLowerCase());
+    item.actor.displayName.toLowerCase() === displayName.toLowerCase());
     if (filteredFriend.length > 0) {
       console.log('Filtered Friend:', filteredFriend);
       onSearch(filteredFriend);

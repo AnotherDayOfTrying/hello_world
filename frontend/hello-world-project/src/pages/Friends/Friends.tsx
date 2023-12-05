@@ -3,7 +3,7 @@ import FriendsCard from './FriendCard'
 import Leftbar from '../../components/leftbar/Leftbar';
 import './friends.css'
 import FriendSearch from './FriendSearch';
-import APIURL, { getAuthorizationHeader } from "../../api/config"
+import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 
@@ -19,30 +19,17 @@ export default function Friends() {
 
     const getFriends = useCallback(async () => { 
         try {
-        const response = await axios.get(`${APIURL}/authors/friends/`, {
+        const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/friends`, {
             headers: {
             "Content-Type": "application/json",
             Authorization: getAuthorizationHeader(),
             },
         });
         const friends: any[] = response.data;
-
-        const FriendInfo = await Promise.all(
-            friends.map(async (request) => {
-            const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
-            const authorData = {
-              ...request,
-              sender: authorResponse.data,
-            };
-            console.log('Friend Data:', authorData);
-            return authorData;
-          })
-        );
-        console.log('Friends:', FriendInfo);
-        setData(FriendInfo);
+        setData(friends);
 
       } catch (error) {
-        enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error'})
+        enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         console.log(error);
       }
     }, []);
@@ -61,7 +48,11 @@ export default function Friends() {
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
                     {data && !isDataEmpty ?
                     (data.map((data: any, id: number) => {  
-                        return <FriendsCard data={data}  getFriends={getFriends} key={id}/>})
+                      const actorId = data.actor.id.split('/').pop();
+                      if (actorId !== getAuthorId()) {
+                        return <FriendsCard data={data}  getFriends={getFriends} key={id}/>
+                      }
+                      })
                     ): 
                     (<h4 style={{alignSelf: 'center' }}>No Friends</h4>)
                     }

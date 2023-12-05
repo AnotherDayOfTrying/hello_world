@@ -16,15 +16,9 @@
     font-weight: bold;
     width: 10rem;
 }
-.Message{
-    height: 2rem;
-    margin-left: 2rem;
-    padding-left: 20px;
-    padding-right: 20px;
-}
 .Unfriend{
     height: 2rem;
-    margin-left: 1rem;
+    margin-left: 2rem;
     padding-left: 20px;
     padding-right: 20px;
 }

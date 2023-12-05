@@ -21,13 +21,13 @@ export default function LeftbarList() {
               <li className="leftbarListItem">
                 <NavLink to="/home" className="leftbarLink" end> 
                   <HomeIcon className="leftbarIcon"/>
-                  <span className="leftbarListItemText"> Home </span>
+                  <span className="leftbarListItemText"> Public </span>
                 </NavLink>
               </li>
               <li className="leftbarListItem">
                 <NavLink to="/private" className="leftbarLink" end>
                   <TagIcon className="leftbarIcon"/>
-                  <span className="leftbarListItemText"> Private </span>
+                  <span className="leftbarListItemText"> Friends Only </span>
                 </NavLink>
               </li>
               <li className="leftbarListItem">
@@ -39,13 +39,13 @@ export default function LeftbarList() {
               <li className="leftbarListItem">
                 <NavLink to="/messages" className="leftbarLink" end>
                   <MailIcon className="leftbarIcon"/>
-                  <span className="leftbarListItemText"> Messages </span>
+                  <span className="leftbarListItemText"> Inbox </span>
                 </NavLink>
               </li>
               <li className="leftbarListItem">
                 <NavLink to="/notifications" className="leftbarLink" end>
                   <NotificationsIcon className="leftbarIcon"/>
-                  <span className="leftbarListItemText"> Notifications </span>
+                  <span className="leftbarListItemText"> Requests </span>
                 </NavLink>
               </li>
               <li className="leftbarListItem">

@@ -18,10 +18,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Popover } from '@mui/material';
+import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync } from '../../../api/post';
+import { getAuthorAsync } from '../../../api/author';
+import { useAuth } from '../../../providers/AuthProvider';
+import { likeObjectAsync } from '../../../api/like';
 
 
 type PostCardProps = {
-    data: any;
+    data: PostOutput;
     isLiked: boolean;
     likeid?: number;
     myposts?: boolean;
@@ -34,12 +38,13 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
-    const [likeId, setLikeId] = React.useState(likeid);
+    const [image, setImage] = useState<ImageOutput>()
     const [openComments, setOpenComments] = useState<boolean>(false);
     const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
     const commentButton = useRef<any>(null);
     const sendButton = useRef<any>(null);
     const navigate = useNavigate();
+    const {userId} = useAuth();
     useEffect(() => {
         setIsLiked(isLiked);
       }, [isLiked]);
@@ -47,78 +52,55 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const handleShare = () => {
         // send api post req
         setIsAlertVisible(true);
-
-      };
+    };
 
     const handleLike = async () => {
         if (isliked) {
             setIsLiked(!isliked);
-            try {
-            const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
-            {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: getAuthorizationHeader(),
-            }
-            });
-            const responseData: any = response.data;
-            console.log('unlike response: ', responseData);
-            setIsLiked(false);
-            return responseData;
-        } catch (error: any) {
-            console.log(error);
+        //     try {
+        //     const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
+        //     {
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         Authorization: getAuthorizationHeader(),
+        //     }
+        //     });
+        //     const responseData: any = response.data;
+        //     console.log('unlike response: ', responseData);
+        //     setIsLiked(false);
+        //     return responseData;
+        // } catch (error: any) {
+        //     console.log(error);
             
-        };
+        // };
             
         } else {
             setIsLiked(!isliked);
             try {
-            const response = await axios.post(`${APIURL}/likes/`,
-            {
-                content_type: "post",
-                content_id: data.id
-            },
-            {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: getAuthorizationHeader(),
-            }
-            });
-            const responseData: any = response.data;
-            console.log('like response: ', responseData);
-            setLikeId(responseData.like_id)
+            const response = await likeObjectAsync(data.author.id, {
+                type: 'Like',
+                author: userInfo,
+                object: data.id
+            })
             setIsLiked(true);
-            return responseData;
+            return response;
         } catch (error: any) {
             console.log(error);
-            
         };
-        }
-        
-
-};
-
-    console.log("AUTHOR")
-    console.log(data)
-    const fetchUserInfo = async () => {
-        try {
-            let authorResponse = undefined
-            if (!data.author.id) {
-                authorResponse = await axios.get(`${APIURL}/authors/${data.author}`, {headers: {Authorization: getAuthorizationHeader(),}});
-            } else {
-                authorResponse = {}
-            }
-            console.log(authorResponse)
-            setUserInfo(authorResponse.data); 
-            return authorResponse.data;
-        } catch (error) {
-            console.error('Error fetching user information: ', error);
         }
     };
 
+    const fetchUserInfo = async () => {
+        setUserInfo(await getAuthorAsync(data.author.id));
+    }
+    const fetchImageData = async () => {
+        setImage(await getPostImageAsync(data.id))
+    }
+
     useEffect(() => {
-        fetchUserInfo(); 
-        getFriendList();
+        fetchUserInfo()
+        getFriendList()
+        fetchImageData()
     }, [data]);
 
     const renderDescription = (description: string) => {
@@ -206,50 +188,38 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
 
     const handleDelete = async () => {
         try {
-            const response = await axios.delete(`${APIURL}/post/delete/${data.id}/`,
-            {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: getAuthorizationHeader(),
-            }
-            });
-            const responseData: any = response.data;
-            console.log('delete response: ', responseData);
+            await deletePostAsync(data.id)
             Reload();
-            return responseData;
         } catch (error: any) {
             console.log(error);
-            
         };
-        
     }
 
     const handleEdit = () => {
-        console.log("navigate: ")
-        navigate('/post/edit', { state: { data: data } });
+        navigate('/post/edit', { state: { post: data, image: image } });
     }
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={data.author.id ? data.author.profileImage : `${APIURL}${userInfo.profilePicture}`} alt="" className="postProfileImg" />
+                <img src={`${userInfo.profilePicture}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
                     <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 
-                    <DeleteIcon style={{color: "#ff6b6b"}} onClick={handleDelete}/>
-                    <EditIcon style={{color: "#ff6b6b"}} onClick={handleEdit}>
+                    <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleDelete}/>
+                    <EditIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleEdit}>
                     </EditIcon>
                 </div>}
             </div>
-            {data.text && renderDescription(data.text)}
-            {data.image && <img src={`${APIURL}${data.image}`} alt="title" className='postImage'/>}
+            {data.content && renderDescription(data.content)}
+            {image && <img src={`${image.image}`} alt="image" className='postImage'/>}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}  
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
                 <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
                 <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
-                    <Comment postID = {data.id} />
+                    <Comment data={data} Reload={Reload}/>
                 </Popover> 
                 <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupContent />

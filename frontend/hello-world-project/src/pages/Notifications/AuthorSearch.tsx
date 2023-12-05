@@ -1,7 +1,7 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import SearchIcon from '@mui/icons-material/Search';
 import './authorSearch.css'
-import APIURL, { getAuthorizationHeader } from "../../api/config"
+import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 
@@ -9,7 +9,27 @@ import { useSnackbar } from 'notistack';
 function AuthorSearch() {
   const [displayName, setDisplayName] = useState<string>('');
   const [filteredAuthor, setFilteredAuthor] = useState<any[]>([]);
+  const [user, setUser] = useState<any>({})
   const {enqueueSnackbar} = useSnackbar();
+
+
+  const getAuthor = async () => {
+    try {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
+        headers: {
+          Authorization: getAuthorizationHeader()
+        }
+      })
+      setUser(response.data)
+    } catch (e) {
+      enqueueSnackbar('Unable to fetch your details', {variant: "error", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+      console.error(e)
+    }
+  }
+
+  useEffect(() => {
+    getAuthor()
+  }, [])
 
   const handleSearch = async (): Promise<any[] | undefined> => {
   
@@ -35,9 +55,10 @@ function AuthorSearch() {
         setFilteredAuthor(filteredAuthor);
         console.log(filteredAuthor);
         if (filteredAuthor.length > 0) {
-          sendFriendRequest(filteredAuthor[0].id);
+          const authorId = filteredAuthor[0].id.split('/').pop();
+          sendFriendRequest(filteredAuthor[0], authorId);
         } else {
-          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning'})
+          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
       }
       return responseData;
@@ -51,31 +72,46 @@ function AuthorSearch() {
 
   };
   
-  const sendFriendRequest = async (authorId: string): Promise<any[] | undefined> => {
+  const sendFriendRequest = async (author:any, authorId: string): Promise<any[] | undefined> => {
           console.log('Author ID:', authorId);
+          const requestBody = {
+            type: "Follow",
+            summary: `${user.displayName} wants to be a friend to you`,
+            actor: user,
+            object:author,
+          };
+          let auth = ''
+          let url = author.host
+          console.log('URL:', url);
+          if (url === 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/') {
+            auth = getAuthorizationHeader();
+            url = APIURL + '/';
+          } else if (url === 'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/') {
+            auth = 'Basic node-hello-world:chimpchatapi';  
+          } else if (url === 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/') {
+            auth = 'Basic node-hello-world:socialpassword';
+          } else if (url === ' https://distributed-network-37d054f03cf4.herokuapp.com/') {
+            auth = 'Basic node-hello-world:node-hello-world';
+          }
           try {
-            const response = await axios.post(`${APIURL}/frequests/send/`,
-            {
-              receiver_id: authorId,
-            },
+            const response = await axios.post(`${url}authors/${authorId}/inbox`, requestBody,
             {
               headers: {
-                'Content-Type': 'application/json',
-                Authorization: getAuthorizationHeader(),
+                Authorization: auth,
               }
             });
             const status = response.status;
             console.log('Status:', status);
-            if (status === 200) {
-              enqueueSnackbar("Friend request sent successfully!", {variant: 'success'})
+            if (status === 201) {
+              enqueueSnackbar("Friend request sent successfully!", {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             }
             const responseData: any = response.data;
             return responseData;
           } catch (error: any) {
             console.log(error);
-            if (error.response.status === 400) {
-              enqueueSnackbar("You are already friends with this user, or you already sent them a request!", {variant: 'info'})
-            }
+            if (error.response?.status === 400) {
+              const key = enqueueSnackbar("You are already friends with this user, or you already sent them a request!", {variant: 'info', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+            } 
           };
         }
   

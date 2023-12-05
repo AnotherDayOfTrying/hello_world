@@ -8,11 +8,10 @@ import './home.css';
 interface HomeProps {
   private?: boolean;
   unlisted?: boolean;
-  messages?: boolean;
   myposts?: boolean;
 }
 
-const Home: React.FC<HomeProps> = ({ private: isPrivate, unlisted: isUnlisted, messages: ismessages, myposts: isMyPosts }: HomeProps) => {
+const Home: React.FC<HomeProps> = ({ private: isPrivate, unlisted: isUnlisted,  myposts: isMyPosts }: HomeProps) => {
   if (isPrivate) {
     return(
     <>
@@ -31,17 +30,6 @@ const Home: React.FC<HomeProps> = ({ private: isPrivate, unlisted: isUnlisted, m
     <div className="homeContainer">
       <Leftbar/>
       <Feed unlisted/>
-      <Rightbar/>
-    </div>
-    </>
-    )
-  }
-  else if (ismessages) {
-    return (
-    <>
-    <div className="homeContainer">
-      <Leftbar/>
-      <Feed messages/>
       <Rightbar/>
     </div>
     </>

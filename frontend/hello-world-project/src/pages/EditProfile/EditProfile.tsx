@@ -81,7 +81,7 @@ const EditProfile: React.FC = () => {
 
     if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
         console.log('ImageRef: ', ImageRef.current.files[0]);
-        formData.append('profilePicture', ImageRef.current.files[0])
+        formData.append('profilePictureImage', ImageRef.current.files[0])
     }
     try {
         const response = await axios.post(`${APIURL}/authors/${getAuthorId()}`, formData,{

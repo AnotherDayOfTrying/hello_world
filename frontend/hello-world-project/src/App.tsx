@@ -18,7 +18,7 @@ import Github from './pages/Github/Github';
 const App: React.FC = () => {
   return (
     <div className="App">
-      <SnackbarProvider>
+      <SnackbarProvider anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}>
         <Router>
           <Routes>
             <Route element={<AuthLayout />}>

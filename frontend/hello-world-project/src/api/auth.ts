@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios"
 import { enqueueSnackbar } from 'notistack'
 import APIURL from "./config"
+import { AuthorOutput, getAuthorByAuthorIdAsync } from "./author";
 
 export interface LoginInterface {
     username: string;
@@ -29,7 +30,7 @@ const login = async (signinDetails: LoginInterface) => {
         if (err instanceof AxiosError) {
             return err.response?.data
         } else {
-            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
+            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             throw err;
         }
     }
@@ -57,7 +58,7 @@ const signup = async (signupDetails: SignUpInterface) => {
         if (err instanceof AxiosError) {
             return err.response?.data
         } else {
-            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
+            enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
             throw err;
         }
     }
@@ -73,17 +74,13 @@ const verifySession = async() => {
         if (response.status !== 200) 
             return false
 
-        const author = await axios.get(`${APIURL}/author/`, {
-            headers: {
-                "Authorization": "Token " + localStorage.getItem('user_token'),
-            }
-        })
-        return author.data.item;
+        const author = await getAuthorByAuthorIdAsync(localStorage.getItem('user_id') || '')
+        return author!;
     } catch (err) {
         if (err instanceof AxiosError) {
             return false
         } else {
-            enqueueSnackbar("Unable to verify session.", {variant: 'error'})
+            enqueueSnackbar("Unable to verify session.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
     }
 }
@@ -91,9 +88,10 @@ const verifySession = async() => {
 const logout = async() => {
     try {
         localStorage.removeItem('user_token')
+        localStorage.removeItem('user_id')
         return true
     } catch (err) {
-        enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error'})
+        enqueueSnackbar("Something went wrong! Try again later.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return false
     }
 }

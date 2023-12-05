@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import './friendCard.css'
 import { NavLink } from 'react-router-dom';
-import APIURL, { getAuthorizationHeader } from "../../api/config"
+import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 
@@ -15,47 +15,35 @@ type FriendsCardProps = {
 
 
 function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
-  const profilePicture = data.sender.profile_picture ? data.sender.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
+  const profilePicture = data.actor.profile_picture ? data.actor.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
   const {enqueueSnackbar} = useSnackbar();
 
-  const handleMessage = async () => {
-    // try {
-    //   const response = await axios.post(`${APIURL}/friend/message/${data.id}`, {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //   });
-    //   const responseData = await response.data;
-    //   console.log(responseData);
-    // } catch (err) {
-    //   console.log(err);
-    // }
-  };
-
   const handleUnfriend = async () => {
+    const actorId = data.actor.id.split('/').pop();
     try {
-      const response = await axios.delete(`${APIURL}/frequests/delete/${data.id}/`, {
+      const response = await axios.delete(`${APIURL}/authors/${getAuthorId()}/followers/${actorId}`,
+      {
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: getAuthorizationHeader(),
-        },
+        }
       });
-      const responseData = await response.data;
-      console.log(responseData);
+      const responseData: any = response.data;
+      console.log('rejecting request: ', responseData);
       if (getFriends) {
         getFriends();
       }
     } catch (err) {
-      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error'})
+      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(err);
     }
   };
   if (shareList) {
     return(
       <div className="shareListCard" onClick={onClick}>
-        <img src={`${APIURL}${data.sender.profilePicture}`} alt="" className="shareListImg" />
+        <img src={`${APIURL}${data.actor.profilePicture}`} alt="" className="shareListImg" />
         <div className="shareListUsername">
-          <span>{data.sender.displayName}</span>
+          <span>{data.actor.displayName}</span>
         </div>
     </div>
     )
@@ -65,11 +53,10 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
     return (
       
       <div className="FriendCard">
-        <img src={`${APIURL}${data.sender.profilePicture}`} alt="" className="friendCardImg" />
+        <img src={`${data.actor.profilePicture}`} alt="" className="friendCardImg" />
         <div className="friendCardUsername">
-            <span >{data.sender.displayName}</span>
+            <span >{data.actor.displayName}</span>
         </div>
-        <button onClick={handleMessage} className='Message'>Message</button>
         <button onClick={handleUnfriend} className='Unfriend'>Unfriend</button>
       </div>
     )

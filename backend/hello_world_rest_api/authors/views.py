@@ -203,6 +203,12 @@ class InboxView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PostSerializer
+        else:
+            return PostImageSerializer # to allow input in swagger for testing
+    
     def get(self, request, author_id):
         author = get_object_or_404(Author, uid=author_id)
         inbox_items = Inbox_Item.objects.filter(author=author)
@@ -216,7 +222,7 @@ class InboxView(generics.CreateAPIView):
             #     serializer = LikeSerializer(item.item_object)
             # elif isinstance(item.item_object, Friendship):
             #     serializer = FriendShipSerializer(item.item_object)
-            items.append(serializer.data)
+                items.append(serializer.data)
         response = {
             'type': 'inbox',
             'author': author.url,
@@ -240,7 +246,7 @@ class InboxView(generics.CreateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'post':
             model = Post
-            post_exist = Post.objects.get(uid=request.data.get('id').split('/')[-1])
+            post_exist = Post.objects.get(uid=request.data.get('object').split('/')[-1])
             if post_exist:
                 serializer = PostSerializer(post_exist, context={'request': request})
                 inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=post_exist.uid)
@@ -258,13 +264,13 @@ class InboxView(generics.CreateAPIView):
 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'comment':
-            post = Post.objects.get(uid=request.data['id'].split("/")[6])
+            post = Post.objects.get(uid=request.data['object'].split("/")[6])
             author = Author.objects.get(uid=request.data['author']['id'].split('/')[-1])
-            comment = Comment.objects.get(uid=request.data['id'].split('/')[-1])
+            comment = Comment.objects.get(uid=request.data['object'].split('/')[-1])
             serializer = CommentSerializer(comment, context={'request': request})
             model = Comment
             
-            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=request.data['id'].split('/')[-1])
+            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=request.data['object'].split('/')[-1])
             inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
             return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
         elif request.data.get('type') == 'Like':
@@ -293,6 +299,7 @@ class InboxView(generics.CreateAPIView):
 class AllPostView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, NodesAuthentication]
+    serializer_class = PostSerializer
 
     def get(self,request,author_id):
         author = get_object_or_404(Author,uid=author_id)
@@ -315,6 +322,7 @@ class CommentView(generics.CreateAPIView):
     pagination_class = PageNumberPagination
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CommentSerializer
 
     def get(self, request, author_id, post_id):
         author = get_object_or_404(Author,uid=author_id)
@@ -396,6 +404,7 @@ class PostImageView(generics.CreateAPIView):
 class LikePostView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
     def get(self, request, author_id, post_id):
         author = get_object_or_404(Author, uid=author_id)
@@ -407,6 +416,7 @@ class LikePostView(generics.CreateAPIView):
 class LikeCommentView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
     def get(self, request, author_id, post_id, comment_id):
         author = get_object_or_404(Author, uid=author_id)
@@ -418,6 +428,7 @@ class LikeCommentView(generics.CreateAPIView):
 class LikedView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = LikeSerializer
 
     def get(self, request, author_id):
         author = get_object_or_404(Author, uid=author_id)
@@ -428,3 +439,23 @@ class LikedView(generics.CreateAPIView):
             'items': serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
+    
+class FollowRequestView(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        requests = Friendship.objects.filter(object=author, status=1)
+        serializer = FriendShipSerializer(requests, many=True, context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+class FriendsView(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        requests = Friendship.objects.filter(object=author, status=3) | Friendship.objects.filter(actor=author, status=3)
+        serializer = FriendShipSerializer(requests, many=True, context={'request':request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

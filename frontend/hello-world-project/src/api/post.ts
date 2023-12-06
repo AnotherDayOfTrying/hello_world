@@ -65,18 +65,20 @@ export interface ImageOutput {
 }
 
 // Do not use directly in react code
-const getInbox = async (authorId: string) => {
-    const { data } = await axios.get<InboxOutput>(`${authorId}/inbox`, {
+const getInbox = async (author: AuthorOutput) => {
+    console.log("author:",author.host)
+    const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
         headers: {
-            Authorization: getAuthorizationHeader()
+            Authorization: getAuthorizationHeader(author.host)
         }
     })
+    console.log("inbox:",data)
     return data;
 }
 
-const getPublicPostsAsync = async (authorId: string) => {
+const getPublicPostsAsync = async (author: AuthorOutput) => {
     try {
-        const { items: posts } = await getInbox(authorId)
+        const { items: posts } = await getInbox(author)
         return posts.filter(({visibility, unlisted}) => visibility == 'PUBLIC' && !unlisted)
     } catch {
         enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
@@ -84,9 +86,9 @@ const getPublicPostsAsync = async (authorId: string) => {
     }
 }
 
-const getPrivatePostsAsync = async (authorId: string) => {
+const getPrivatePostsAsync = async (author: AuthorOutput) => {
     try {
-        const { items: posts } = await getInbox(authorId)
+        const { items: posts } = await getInbox(author)
         return posts.filter(({visibility, unlisted}) => visibility == 'FRIENDS' && !unlisted)
     } catch {
         enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' } })
@@ -94,9 +96,9 @@ const getPrivatePostsAsync = async (authorId: string) => {
     }
 }
 
-const getUnlistedPostsAsync = async (authorId: string) => {
+const getUnlistedPostsAsync = async (author: AuthorOutput) => {
     try {
-        const { items: posts } = await getInbox(authorId)
+        const { items: posts } = await getInbox(author)
         return posts.filter(({unlisted}) => unlisted)
     } catch {
         enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})

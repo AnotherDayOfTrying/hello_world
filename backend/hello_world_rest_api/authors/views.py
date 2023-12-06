@@ -251,7 +251,7 @@ class InboxView(generics.CreateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'post':
             model = Post
-            post_exist = Post.objects.get(uid=request.data.get('object').split('/')[-1])
+            post_exist = Post.objects.get(uid=request.data.get('id').split('/')[-1])
             if post_exist:
                 serializer = PostSerializer(post_exist, context={'request': request})
                 inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=post_exist.uid)
@@ -269,13 +269,13 @@ class InboxView(generics.CreateAPIView):
 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type') == 'comment':
-            post = Post.objects.get(uid=request.data['object'].split("/")[6])
+            post = Post.objects.get(uid=request.data['id'].split("/")[6])
             author = Author.objects.get(uid=request.data['author']['id'].split('/')[-1])
-            comment = Comment.objects.get(uid=request.data['object'].split('/')[-1])
+            comment = Comment.objects.get(uid=request.data['id'].split('/')[-1])
             serializer = CommentSerializer(comment, context={'request': request})
             model = Comment
             
-            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=request.data['object'].split('/')[-1])
+            inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=request.data['id'].split('/')[-1])
             inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
             return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
         elif request.data.get('type') == 'Like':
@@ -466,8 +466,7 @@ class FriendsView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class SetupNode(generics.CreateAPIView):
-    authentication_classes = [TokenAuthentication, NodesAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    
     
     def get(self, request):
         name = 'node-hello-world'
@@ -504,7 +503,7 @@ class SetupNode(generics.CreateAPIView):
                                 id = post['id'],
                                 origin = post['origin'],
                                 source = post['source'],
-                                contentType = post['content_type'],
+                                contentType = post['contentType'],
                                 content = post['content'],
                                 author = curr_author, 
                                 categories = str(post['categories']),
@@ -705,7 +704,17 @@ class SetupNode(generics.CreateAPIView):
                                         contentType = comment['contentType'],
                                         published = comment['published']
                                     )
-                        
-                             
-                        
         return Response('Set up complete', status=status.HTTP_200_OK)
+
+class GetPublicPost(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PostSerializer
+    def get(self, request):
+        posts = Post.objects.filter(visibility='PUBLIC', unlisted=False)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
+        response = {
+            "type": "posts",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)

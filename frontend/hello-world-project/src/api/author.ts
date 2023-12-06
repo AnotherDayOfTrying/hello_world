@@ -40,7 +40,7 @@ const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput 
         });
         return data
     } catch {
-        enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -54,7 +54,7 @@ const getAuthorAsync = async (author: AuthorOutput): Promise<AuthorOutput | unde
         })
         return data
     } catch {
-        enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -68,7 +68,7 @@ const getAllLocalAuthorsAsync = async (): Promise<AuthorListOutput | undefined> 
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to Fetch All Authors', {variant: 'error'})
+        // enqueueSnackbar('Unable to Fetch All Authors', {variant: 'error'})
         return undefined
     }
 }

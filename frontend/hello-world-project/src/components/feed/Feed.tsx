@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import './feed.css'
 import Posts from './PostList/Posts'
-import { getAuthorsPostsAsync, getPrivatePostsAsync, getPublicPostsAsync, getUnlistedPostsAsync } from '../../api/post'
+import { getAuthorsPostsAsync, getPosts, getPrivatePostsAsync, getPublicPostsAsync, getUnlistedPostsAsync } from '../../api/post'
 import { useAuth } from '../../providers/AuthProvider'
 
 interface FeedProps {
@@ -17,6 +17,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
   const fetchData = async () => {
     try {
       let response;
+      
       if (isPrivate) {
         response = await getPrivatePostsAsync(userInfo)
       } else if (isUnlisted) {
@@ -25,6 +26,8 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
         response = (await getAuthorsPostsAsync(userInfo))?.items
       } else {
         response = await getPublicPostsAsync(userInfo)
+        const posts = (await getPosts(userInfo)).items
+        response!.push(...posts)
       }
       // sort by to post being most recent
       response?.reverse()

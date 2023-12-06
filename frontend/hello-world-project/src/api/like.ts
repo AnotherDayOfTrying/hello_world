@@ -32,7 +32,7 @@ const likeObjectAsync = async (author: AuthorOutput, likeInput: LikeInput): Prom
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to Like Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Like Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -46,7 +46,7 @@ const getAuthorsLikedAsync = async (author: AuthorOutput): Promise<LikeListOutpu
         })
         return data;
     } catch {
-        enqueueSnackbar('Unable to Fetch Liked Objects', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Fetch Liked Objects', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }

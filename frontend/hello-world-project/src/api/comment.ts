@@ -34,7 +34,7 @@ const getCommentsAsync = async(url: string): Promise<CommentListOutput | undefin
         })
         return data
     } catch {
-        enqueueSnackbar(`Unable to Fetch Comments`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar(`Unable to Fetch Comments`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
 }
 

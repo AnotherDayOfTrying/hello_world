@@ -66,6 +66,15 @@ export interface ImageOutput {
 
 // Do not use directly in react code
 const getInbox = async (author: AuthorOutput) => {
+    const { data } = await axios.get<InboxOutput>(`${author.id}/inbox`, {
+        headers: {
+            Authorization: getAuthorizationHeader(author.host)
+        }
+    })
+    return data;
+}
+
+const getPosts = async (author: AuthorOutput) => {
     const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
         headers: {
             Authorization: getAuthorizationHeader(author.host)
@@ -79,7 +88,7 @@ const getPublicPostsAsync = async (author: AuthorOutput) => {
         const { items: posts } = await getInbox(author)
         return posts.filter(({visibility, unlisted}) => visibility == 'PUBLIC' && !unlisted)
     } catch {
-        enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -89,7 +98,7 @@ const getPrivatePostsAsync = async (author: AuthorOutput) => {
         const { items: posts } = await getInbox(author)
         return posts.filter(({visibility, unlisted}) => visibility == 'FRIENDS' && !unlisted)
     } catch {
-        enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' } })
+        // enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' } })
         return undefined
     }
 }
@@ -99,7 +108,7 @@ const getUnlistedPostsAsync = async (author: AuthorOutput) => {
         const { items: posts } = await getInbox(author)
         return posts.filter(({unlisted}) => unlisted)
     } catch {
-        enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -113,7 +122,7 @@ const getAuthorsPostsAsync = async (author: AuthorOutput): Promise<PostListOutpu
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to Fetch Author\'s Posts', {variant: 'error'})
+        // enqueueSnackbar('Unable to Fetch Author\'s Posts', {variant: 'error'})
         return undefined
     }
 }
@@ -129,7 +138,7 @@ const createPostAsync = async (authorId: string, postInput: PostInput): Promise<
         enqueueSnackbar('Post Uploaded Successfully', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
         return data
     } catch {
-        enqueueSnackbar('Unable to Create Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
+        // enqueueSnackbar('Unable to Create Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
         return undefined
     }
 }
@@ -143,7 +152,7 @@ const editPostAsync = async (postId: string, postInput: PostInput) => {
         })
         enqueueSnackbar('Post Edited Successfully', {variant: 'success'});
     } catch {
-        enqueueSnackbar('Unable to Edit Post', {variant: 'error'})
+        // enqueueSnackbar('Unable to Edit Post', {variant: 'error'})
     }
 }
 
@@ -155,7 +164,7 @@ const deletePostAsync = async (postId: string) => {
             },
         });
     } catch {
-        enqueueSnackbar('Unable to Delete Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Delete Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
     }
 }
 
@@ -168,14 +177,14 @@ const sendPostAsync = async (authorId: string, sendPostInput: SendPostInput): Pr
         });
         return data
     } catch {
-        enqueueSnackbar(`Unable to Send Post to ${authorId}`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar(`Unable to Send Post to ${authorId}`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
 
 const getPostImageAsync = async (post: PostOutput) => {
     try {
-        const { data } = await axios.get<ImageOutput>(`${post.id}/image/`, {
+        const { data } = await axios.get<ImageOutput>(`${post.id}/image${post.author.host === 'https://distributed-network-37d054f03cf4.herokuapp.com/' ? '/': ''}`, {
             headers: {
                 Authorization: getAuthorizationHeader(post.author.host)
             }
@@ -183,7 +192,7 @@ const getPostImageAsync = async (post: PostOutput) => {
         return data
     } catch (e) {
         if (e instanceof AxiosError && e.response?.status !== 404) {
-            enqueueSnackbar('Unable to fetch Image', {variant: 'error'})
+            // enqueueSnackbar('Unable to fetch Image', {variant: 'error'})
         }
     }
 }
@@ -198,7 +207,7 @@ const likeObjectsAsync = async (post: PostOutput) => {
         const formattedData = data.map((like: any) => ({ actor: like.author }));
         return formattedData
     } catch {
-        enqueueSnackbar('Unable to fetch likes', {variant: 'error'})
+        // enqueueSnackbar('Unable to fetch likes', {variant: 'error'})
         return undefined
     }
 }
@@ -216,7 +225,7 @@ const createPostImageAsync = async (postId: string, imageInput: ImageInput): Pro
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to upload image', {variant: 'error'})
+        // enqueueSnackbar('Unable to upload image', {variant: 'error'})
         return undefined
     }
 }
@@ -230,7 +239,7 @@ const deletePostImageAsync = async (postId: string) => {
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to delete image', {variant: 'error'})
+        // enqueueSnackbar('Unable to delete image', {variant: 'error'})
         return undefined
     }
 }
@@ -248,4 +257,5 @@ export {
     deletePostImageAsync,
     getPostImageAsync,
     likeObjectsAsync,
+    getPosts
 }

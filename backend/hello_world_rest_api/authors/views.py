@@ -710,8 +710,7 @@ class GetPublicPost(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = PostSerializer
-    def get(self, request, author_id):
-        author = get_object_or_404(Author, uid=author_id)
+    def get(self, request):
         posts = Post.objects.filter(visibility='PUBLIC', unlisted=False)
         serializer = PostSerializer(posts, many=True, context={'request': request})
         response = {

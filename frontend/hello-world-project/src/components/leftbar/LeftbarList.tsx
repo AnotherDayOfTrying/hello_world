@@ -37,12 +37,6 @@ export default function LeftbarList() {
                 </NavLink>
               </li>
               <li className="leftbarListItem">
-                <NavLink to="/messages" className="leftbarLink" end>
-                  <MailIcon className="leftbarIcon"/>
-                  <span className="leftbarListItemText"> Inbox </span>
-                </NavLink>
-              </li>
-              <li className="leftbarListItem">
                 <NavLink to="/notifications" className="leftbarLink" end>
                   <NotificationsIcon className="leftbarIcon"/>
                   <span className="leftbarListItemText"> Requests </span>

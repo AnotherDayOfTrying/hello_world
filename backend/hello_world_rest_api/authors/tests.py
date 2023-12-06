@@ -1163,6 +1163,9 @@ class NodeTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         url = reverse('authors:getnodeauthors')
         response = self.client.get(url)
+        #print(response.data)
         self.assertEqual(response.status_code, 200)
+        print(Post.objects.count())
+        print(PostImage.objects.count())
         self.client.credentials()
         

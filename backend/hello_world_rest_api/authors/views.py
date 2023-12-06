@@ -534,6 +534,25 @@ class SetupNode(generics.CreateAPIView):
                                         post = curr_post,
                                         image = data
                                     )
+                        finally:
+                            comment_request = requests.get(f'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/authors/{curr_author.uid}/posts/{curr_post.uid}/comments/', auth=HTTPBasicAuth(name, password))
+                            
+                            if 'comments' in comment_request.json():
+                                comments = comment_request.json()['comments']
+                                for comment in comments:
+                                    try:
+                                        curr_comment = Comment.objects.get(uid=comment['id'].split('/')[-1])
+                                    except:
+                                        curr_comment = Comment.objects.create(
+                                            uid = comment['id'].split('/')[-1],
+                                            author = curr_author,
+                                            post = curr_post,
+                                            comment = comment['comment'],
+                                            contentType = comment['contentType'],
+                                            published = comment['published']
+                                        )
+
+
         name2 = 'node-hello-world'
         password2 = 'chimpchatapi'
         request2 = requests.get('https://chimp-chat-1e0cca1cc8ce.herokuapp.com/authors/', auth=HTTPBasicAuth(name2, password2))
@@ -594,6 +613,23 @@ class SetupNode(generics.CreateAPIView):
                                 visibility = post['visibility'],
                                 unlisted = post['unlisted']
                             )
+                        finally:
+                            comment_request2 = requests.get(f'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/authors/{curr_author.uid}/posts/{curr_post.uid}/comments/?page=1&size=1000', auth=HTTPBasicAuth(name2, password2))
+                            if 'comments' in comment_request2.json():
+                                comments = comment_request2.json()['comments']
+                                for comment in comments:
+                                    try:
+                                        curr_comment = Comment.objects.get(uid=comment['id'].split('/')[-1])
+                                    except:
+                                        curr_comment = Comment.objects.create(
+                                            uid = comment['id'].split('/')[-1],
+                                            author = curr_author,
+                                            post = curr_post,
+                                            comment = comment['comment'],
+                                            contentType = comment['contentType'],
+                                            published = comment['published']
+                                        )
+                        
         name3 = 'node-hello-world'
         password3 = 'node-hello-world'
         request3 = requests.get('https://distributed-network-37d054f03cf4.herokuapp.com/api/authors/', auth=HTTPBasicAuth(name3, password3), headers={'Referer':'https://cmput404-project-backend-a299a47993fd.herokuapp.com/'})
@@ -652,6 +688,24 @@ class SetupNode(generics.CreateAPIView):
                             count = post['count'],
                             visibility = post['visibility'],
                             unlisted = post['unlisted']
-                        )           
+                        )
+                    finally:
+                        comment_request3 = requests.get(f'https://distributed-network-37d054f03cf4.herokuapp.com/api/authors/{curr_author.uid}/posts/{curr_post.uid}/comments/', auth=HTTPBasicAuth(name3, password3), headers={'Referer':'https://cmput404-project-backend-a299a47993fd.herokuapp.com/'})
+                        if 'comments' in comment_request3.json():
+                            comments = comment_request3.json()['comments']
+                            for comment in comments:
+                                try:
+                                    curr_comment = Comment.objects.get(uid=comment['id'].split('/')[-1])
+                                except:
+                                    curr_comment = Comment.objects.create(
+                                        uid = comment['id'].split('/')[-1],
+                                        author = curr_author,
+                                        post = curr_post,
+                                        comment = comment['comment'],
+                                        contentType = comment['contentType'],
+                                        published = comment['published']
+                                    )
                         
-        return Response(post_request3.json(), status=status.HTTP_200_OK)
+                             
+                        
+        return Response('Set up complete', status=status.HTTP_200_OK)

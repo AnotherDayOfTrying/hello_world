@@ -1165,7 +1165,6 @@ class NodeTest(TestCase):
         response = self.client.get(url)
         #print(response.data)
         self.assertEqual(response.status_code, 200)
-        print(Post.objects.count())
-        print(PostImage.objects.count())
+        print(Comment.objects.count())
         self.client.credentials()
         

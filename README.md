@@ -81,7 +81,7 @@ User Stories:
 - [x] As an author, posts I create can be private to another author
 - [x] As an author, posts I create can be private to my friends
 - [x] As an author, I can share other author’s public posts
-- [ ] As an author, I can re-share other author’s friend posts to my friends
+- [x] As an author, I can re-share other author’s friend posts to my friends
 - [x] As an author, posts I make can be in simple plain text
 - [x] As an author, posts I make can be in CommonMark
 - [x] As an author, I want a consistent identity per server

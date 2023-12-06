@@ -180,7 +180,6 @@ const getPostImageAsync = async (postId: string) => {
                 Authorization: getAuthorizationHeader()
             }
         });
-        console.log(data)
         return data
     } catch (e) {
         if (e instanceof AxiosError && e.response?.status !== 404) {

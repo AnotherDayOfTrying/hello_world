@@ -4,19 +4,22 @@ import { NavLink } from 'react-router-dom';
 import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
+import { FriendshipOutput } from '../../api/friend';
+import { PostOutput, SendPostInput, editPostAsync, sendPostAsync } from '../../api/post';
+import { useAuth } from '../../providers/AuthProvider';
 
 
 type FriendsCardProps = {
-  data: any;
+  data: FriendshipOutput;
+  post?: PostOutput;
   shareList?: boolean;
-  onClick?: () => void;
   getFriends?: () => Promise<void>;
 };
 
 
-function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
-  const profilePicture = data.actor.profile_picture ? data.actor.profile_picture : 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/media/profilepictures/default-profile-picture.jpg';
+function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
   const {enqueueSnackbar} = useSnackbar();
+  const {userInfo} = useAuth()
 
   const handleUnfriend = async () => {
     const actorId = data.actor.id.split('/').pop();
@@ -38,10 +41,22 @@ function FriendsCard({data, shareList, onClick, getFriends}: FriendsCardProps) {
       console.log(err);
     }
   };
+
+  const handleShare = async () => {
+    await sendPostAsync(data.actor.id, {
+      'type': 'post',
+      'author': userInfo,
+      'object': post!.id,
+    })
+
+    await editPostAsync(post!.id, {...post!, visibility: 'FRIENDS', unlisted: false })
+    enqueueSnackbar(`Successfully sent to ${data.actor.displayName}`, {variant: 'success'})
+  }
+
   if (shareList) {
     return(
-      <div className="shareListCard" onClick={onClick}>
-        <img src={`${APIURL}${data.actor.profilePicture}`} alt="" className="shareListImg" />
+      <div className="shareListCard" onClick={handleShare}>
+        <img src={`${data.actor.profilePicture}`} alt="" className="shareListImg" />
         <div className="shareListUsername">
           <span>{data.actor.displayName}</span>
         </div>

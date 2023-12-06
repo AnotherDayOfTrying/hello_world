@@ -188,6 +188,22 @@ const getPostImageAsync = async (postId: string) => {
     }
 }
 
+const likeObjectsAsync = async (postId: string) => {
+    try {
+        const { data } = await axios.get(`${postId}/likes`,{
+            headers: {
+                Authorization: getAuthorizationHeader(),
+            }
+        })
+        const formattedData = data.map((like: any) => ({ actor: like.author }));
+        return formattedData
+    } catch {
+        enqueueSnackbar('Unable to fetch likes', {variant: 'error'})
+        return undefined
+    }
+}
+
+
 const createPostImageAsync = async (postId: string, imageInput: ImageInput): Promise<ImageOutput | undefined> => {
     try {
         const formData = new FormData()
@@ -231,4 +247,5 @@ export {
     createPostImageAsync,
     deletePostImageAsync,
     getPostImageAsync,
+    likeObjectsAsync,
 }

@@ -14,7 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Popover } from '@mui/material';
-import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync } from '../../../api/post';
+import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync, likeObjectsAsync } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
 import { likeObjectAsync } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
@@ -35,8 +35,11 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const [image, setImage] = useState<ImageOutput>()
     const [openComments, setOpenComments] = useState<boolean>(false);
     const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
+    const [openLikes, setOpenLikes] = useState<boolean>(false);
+    const [likeAuthors, setLikeAuthors] = useState<any>(null);
     const commentButton = useRef<any>(null);
     const sendButton = useRef<any>(null);
+    const likes = useRef<any>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -69,10 +72,14 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const fetchImageData = async () => {
         setImage(await getPostImageAsync(data.id))
     }
+    const fetchLikes = async () => {
+        setLikeAuthors(await likeObjectsAsync(data.id)) 
+    }
 
     useEffect(() => {
         fetchUserInfo()
         fetchImageData()
+        fetchLikes()
     }, [data]);
 
     const renderDescription = (description: string) => {
@@ -95,6 +102,16 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         return(
             <div className='popupContainer'>
                 {friends ? friends.map((friend) => (
+                <FriendCard data={friend} post={data} shareList/>
+                )) : <></>}
+            </div>
+        )
+    };
+
+    const PopupLikes: React.FC = () => {
+        return(
+            <div className='popupContainer'>
+                {likeAuthors ? likeAuthors.map((friend: any) => (
                 <FriendCard data={friend} post={data} shareList/>
                 )) : <></>}
             </div>
@@ -130,7 +147,10 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
             {data.content && renderDescription(data.content)}
             {image && <img src={`${image.image_url}`} alt="image" className='postImage'/>}
             <div className="reactions">
-                {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}  
+                <div className="likes">
+                    {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 
+                    {data.visibility === 'FRIENDS'? <div ref={likes} onClick = {() => {setOpenLikes(!openLikes)}}>likes</div>: <></>}
+                </div> 
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
                 <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
                 <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
@@ -138,6 +158,9 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
                 </Popover> 
                 <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupContent />
+                </Popover>
+                <Popover open={openLikes} anchorEl={likes.current} onClose={() => {setOpenLikes(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
+                    <PopupLikes />
                 </Popover>
             </div>
         </div>

@@ -1,8 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import './comment.css';
 import CommentCard from './CommentCard';
-import axios, { AxiosError } from "axios"
-import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import SendIcon from '@mui/icons-material/Send';
 import { LikeListOutput, getAuthorsLikedAsync } from '../../../api/like';
 import { useAuth } from '../../../providers/AuthProvider';
@@ -41,7 +39,7 @@ const Comment: React.FC<CommentProps> = ({ data, Reload }) => {
 
   const sendComment = async () => {
     createCommentAsync(data.comments, {
-      author: data.author,
+      author: userInfo,
       comment: text,
       contentType: 'text/plain',
     })

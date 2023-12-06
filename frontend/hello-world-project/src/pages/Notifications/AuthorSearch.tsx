@@ -83,7 +83,7 @@ function AuthorSearch() {
           let auth = ''
           let url = author.host
           console.log('URL:', url);
-          if (url === 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/') {
+          if (url === 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/' || 'http://localhost:3000/') {
             auth = getAuthorizationHeader();
             url = APIURL + '/';
           } else if (url === 'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/') {

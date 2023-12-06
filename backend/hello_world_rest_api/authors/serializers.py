@@ -203,13 +203,13 @@ class CommentSerializer(serializers.ModelSerializer):
         comment.save()
         return comment
 class PostImageSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    image = serializers.ImageField(write_only=True, required=False)
     class Meta:
         model = PostImage
-        fields = ('image',)
+        fields = ('image','image_url')
     def create(self, validated_data):
         request = self.context.get('request')
-        print(request.data)
         image = PostImage.objects.create(
             post = self.context['post'],
             image = request.data['image'],
@@ -222,10 +222,13 @@ class PostImageSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def get_image(self, obj):
-        request = self.context.get('request')
-        image_url = obj.image.url
-        return request.build_absolute_uri(image_url)
+    def get_image_url(self, obj):
+        if obj.image_url is None:
+            request = self.context.get('request')
+            post_image_url = obj.image.url
+            return request.build_absolute_uri(post_image_url)
+        else:
+            return obj.image_url
     
 
 class LikeSerializer(serializers.ModelSerializer):

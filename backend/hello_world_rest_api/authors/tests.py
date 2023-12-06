@@ -1145,3 +1145,24 @@ class LikeTest(TestCase):
         print(response.data)
         self.assertEqual(response.status_code, 200)
         self.client.credentials()
+        
+class NodeTest(TestCase):
+    
+    def setUp(self):
+        self.client = APIClient()
+        self.author = Author.objects.create_user(
+                uid = '631f3ebe-d976-4248-a808-db2442a22168',
+                username='will',
+                password='testpass123',
+                displayName='will',
+                github='',
+            )
+        self.token1 = Token.objects.get_or_create(user=self.author)
+        
+    def test_setup(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
+        url = reverse('authors:getnodeauthors')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.client.credentials()
+        

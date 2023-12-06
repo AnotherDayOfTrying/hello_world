@@ -18,6 +18,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from PIL import Image
 from io import BytesIO
 import base64
+import requests
+from requests.auth import HTTPBasicAuth
+import random
 
 
 # Create your views here.
@@ -459,3 +462,70 @@ class FriendsView(generics.CreateAPIView):
         requests = Friendship.objects.filter(object=author, status=3) | Friendship.objects.filter(actor=author, status=3)
         serializer = FriendShipSerializer(requests, many=True, context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SetupNode(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        name = 'node-hello-world'
+        password = 'socialpassword'
+        request = requests.get('https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/authors/', auth=HTTPBasicAuth(name, password))
+        authors = request.json()['items']
+        for author in authors:
+            try:
+                Author.objects.get(uid=author['id'].split('/')[-1])
+            except:            
+                Author.objects.create(
+                    uid = author['id'].split('/')[-1],
+                    username = author['displayName'] + str(random.randint(0, 1000)),
+                    password = author['displayName'],
+                    displayName = author['displayName'],
+                    github = author['github'],
+                    host = author['host'],
+                    id = author['id'],
+                    url = author['url'],
+                    profilePicture = author['profileImage'],
+                    is_approved = author['registered']        
+                )
+        name2 = 'node-hello-world'
+        password2 = 'chimpchatapi'
+        request2 = requests.get('https://chimp-chat-1e0cca1cc8ce.herokuapp.com/authors/', auth=HTTPBasicAuth(name2, password2))
+        authors2 = request2.json()['items']
+        for author in authors2:
+            try:
+                Author.objects.get(uid=author['id'].split('/')[-1])
+            except:            
+                Author.objects.create(
+                    uid = author['id'].split('/')[-1],
+                    username = author['displayName'] + str(random.randint(0, 1000)),
+                    password = author['displayName'],
+                    displayName = author['displayName'],
+                    github = author['github'],
+                    host = author['host'],
+                    id = author['id'],
+                    url = author['url'],
+                    profilePicture = author['profileImage'],
+                    is_approved = True        
+                )
+        name3 = 'node-hello-world'
+        password3 = 'node-hello-world'
+        request3 = requests.get('https://distributed-network-37d054f03cf4.herokuapp.com/api/authors/', auth=HTTPBasicAuth(name3, password3), headers={'Referer':'https://cmput404-project-backend-a299a47993fd.herokuapp.com/'})
+        authors3 = request3.json()['items']
+        for author in authors3:
+            try:
+                Author.objects.get(uid=author['id'].split('/')[-1])
+            except:            
+                Author.objects.create(
+                    uid = author['id'].split('/')[-1],
+                    username = author['displayName'] + str(random.randint(0, 1000)),
+                    password = author['displayName'],
+                    displayName = author['displayName'],
+                    github = author['github'],
+                    host = author['host'],
+                    id = author['id'],
+                    url = author['url'],
+                    profilePicture = author['profileImage'],
+                    is_approved = True        
+                )
+        return Response('Remote Authors Added', status=status.HTTP_200_OK)

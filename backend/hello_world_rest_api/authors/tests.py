@@ -1,7 +1,7 @@
 import io
 import os
 import shutil
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
 
 from django.test import TestCase,Client, override_settings
 import base64
@@ -994,7 +994,7 @@ class PostImageTest(TestCase):
         response = self.c.get(url)
         
         self.assertEqual(response.status_code, 200)
-        self.assertIn('http://testserver/media/postimages/postpicture2',response.data['image'] )
+        self.assertIn('http://testserver/media/postimages/postpicture2',response.data['image_url'] )
     def test_delete_post_image_1(self):
         img = Image.open('./media/postpicture1.jpg')
         output = io.BytesIO()
@@ -1021,14 +1021,12 @@ class PostImageTest(TestCase):
         '''
         self.c.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
-        img = Image.open('./media/postpicture1.jpg')
-        output = io.BytesIO()
-        img.save(output, format='JPEG',quality = 60)
-        file = InMemoryUploadedFile(output, 'ImageField', "postpicture2.jpg", 'image/jpeg', output.getbuffer().nbytes, None)
-        payload = {
-            'image' : file,
-        }
-        response = self.c.post(url, payload)
+        with open('./media/postpicture1.jpg', 'rb') as f:
+            payload = {
+                'image': f,
+            }
+            response = self.c.post(url, payload)
+        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(PostImage.objects.count(), 1)
         
@@ -1047,12 +1045,15 @@ class PostImageTest(TestCase):
             image = file,
         )
         url = reverse('authors:getpostimage', args=[self.author.uid, self.post.uid])
-        payload = {
-            'image': './postpicture1.jpg',
-        }
-        response = self.c.post(url, payload)
+        with open('./media/postpicture1.jpg', 'rb') as f:
+            payload = {
+                'image': f,
+            }
+            response = self.c.post(url, payload)
+        
         self.assertEqual(response.status_code, 200)
         self.assertEqual(PostImage.objects.count(), 1)
+        self.assertEqual('Updated Image Successfully',response.data )
         self.c.credentials()
 
 class LikeTest(TestCase):

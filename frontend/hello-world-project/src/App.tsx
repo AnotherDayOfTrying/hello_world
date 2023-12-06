@@ -60,12 +60,6 @@ const App: React.FC = () => {
                   <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
                   <Post />
                 </>} />
-                <Route path="/messages" element={
-                  <>
-                    <div className="blur" style={{top: '-18%', right:'0'}}></div>
-                    <div className="blur" style={{top: '36%', left: '-8rem'}}></div>
-                    <Home messages />
-                  </>} />
                 <Route path="/notifications" element={
                   <>
                     <div className="blur" style={{top: '-18%', right:'0'}}></div>

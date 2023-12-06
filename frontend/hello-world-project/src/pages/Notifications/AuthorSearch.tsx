@@ -94,7 +94,7 @@ function AuthorSearch() {
             auth = 'Basic node-hello-world:node-hello-world';
           }
           try {
-            const response = await axios.post(`${url}authors/${authorId}/inbox`, requestBody,
+            const response = await axios.post(`${author.id}/inbox`, requestBody,
             {
               headers: {
                 Authorization: auth,

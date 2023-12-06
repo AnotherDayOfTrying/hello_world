@@ -7,10 +7,9 @@ import { useAuth } from '../../providers/AuthProvider'
 interface FeedProps {
   private?: boolean;
   unlisted?: boolean;
-  messages?: boolean;
   myposts?: boolean;
 }
-const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, messages: ismessages, myposts: isMyPosts}: FeedProps) => {
+const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, myposts: isMyPosts}: FeedProps) => {
   const [data, setData] = useState<any>(null);
   const {userInfo} = useAuth();
 
@@ -22,8 +21,6 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
         response = await getPrivatePostsAsync(userInfo.id)
       } else if (isUnlisted) {
         response = await getUnlistedPostsAsync(userInfo.id)
-      } else if (ismessages) {
-        // response = await axios.get(`${APIURL}/post/getmessages/`, {headers: {Authorization: getAuthorizationHeader()}});
       } else if (isMyPosts) {
         response = (await getAuthorsPostsAsync(userInfo.id))?.items
       } else {
@@ -40,7 +37,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
 
   useEffect(() => {
     fetchData();
-  }, [isPrivate, isUnlisted, ismessages, isMyPosts]); 
+  }, [isPrivate, isUnlisted, isMyPosts]); 
 
   const Reload = () => {
     fetchData();    

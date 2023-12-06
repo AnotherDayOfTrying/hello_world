@@ -10,7 +10,7 @@ from .serializers import *
 from rest_framework.authtoken.models import Token
 
 class SignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 20)
+    username = serializers.CharField(write_only = True, required = True, validators = [UniqueValidator(queryset = Author.objects.all())], max_length = 30)
     password = serializers.CharField(write_only = True, required = True, validators = [validate_password])
     password2 = serializers.CharField(write_only = True, required = True)
     displayName = serializers.CharField(required = True, max_length = 50)
@@ -18,7 +18,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Author
-        fields = ('uid', 'username', 'password','password2', 'displayName', 'github', 'profilePicture')
+        fields = ('uid', 'username', 'password','password2', 'displayName', 'github', 'profilePictureImage')
     def create(self, validated_data):
         
         user_data = {
@@ -27,8 +27,8 @@ class SignUpSerializer(serializers.ModelSerializer):
             "displayName": validated_data['displayName'],
             "github": validated_data['github'],
         }
-        if validated_data.get('profilePicture') is not None:
-            user_data = {**user_data, "profilePicture": validated_data['profilePicture']}
+        if validated_data.get('profilePictureImage') is not None:
+            user_data = {**user_data, "profilePictureImage": validated_data['profilePictureImage']}
         user = Author.objects.create_user(**user_data)
         return user
     def validate(self, attrs):
@@ -58,20 +58,25 @@ class AuthorSerializer(serializers.ModelSerializer):
     displayName = serializers.CharField(allow_null=True)
     github = serializers.URLField(allow_blank = True, allow_null = True)
     profilePicture = serializers.SerializerMethodField()
+    profilePictureImage = serializers.ImageField(write_only=True, required=False)
     class Meta:
         model = Author
-        fields = ('type', 'id', 'url', 'displayName', 'profilePicture', 'github','host')
+        fields = ('type', 'id', 'url', 'displayName', 'profilePicture','profilePictureImage', 'github','host')
         
     def update(self, instance, validated_data):
         instance.displayName = validated_data.get('displayName', instance.displayName)
         instance.github = validated_data.get('github', instance.github)
-        instance.profilePicture = validated_data.get('profilePicture', instance.profilePicture)
+        if validated_data.get('profilePictureImage') is not None:
+            instance.profilePictureImage = validated_data.get('profilePictureImage', instance.profilePictureImage)
         instance.save()
         return instance
     def get_profilePicture(self, obj):
-        request = self.context.get('request')
-        profilePicture_url = obj.profilePicture.url
-        return request.build_absolute_uri(profilePicture_url)
+        if obj.profilePicture is None:
+            request = self.context.get('request')
+            profilePicture_url = obj.profilePictureImage.url
+            return request.build_absolute_uri(profilePicture_url)
+        else:
+            return obj.profilePicture
 class FriendShipSerializer(serializers.ModelSerializer):
     actor = AuthorSerializer()
     object = AuthorSerializer()
@@ -198,13 +203,13 @@ class CommentSerializer(serializers.ModelSerializer):
         comment.save()
         return comment
 class PostImageSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    image = serializers.ImageField(write_only=True, required=False)
     class Meta:
         model = PostImage
-        fields = ('image',)
+        fields = ('image','image_url')
     def create(self, validated_data):
         request = self.context.get('request')
-        print(request.data)
         image = PostImage.objects.create(
             post = self.context['post'],
             image = request.data['image'],
@@ -217,10 +222,13 @@ class PostImageSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def get_image(self, obj):
-        request = self.context.get('request')
-        image_url = obj.image.url
-        return request.build_absolute_uri(image_url)
+    def get_image_url(self, obj):
+        if obj.image_url is None:
+            request = self.context.get('request')
+            post_image_url = obj.image.url
+            return request.build_absolute_uri(post_image_url)
+        else:
+            return obj.image_url
     
 
 class LikeSerializer(serializers.ModelSerializer):

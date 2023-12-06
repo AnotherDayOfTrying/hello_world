@@ -504,7 +504,7 @@ class SetupNode(generics.CreateAPIView):
                                 id = post['id'],
                                 origin = post['origin'],
                                 source = post['source'],
-                                contentType = post['content_type'],
+                                contentType = post['contentType'],
                                 content = post['content'],
                                 author = curr_author, 
                                 categories = str(post['categories']),

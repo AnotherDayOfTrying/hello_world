@@ -8,8 +8,7 @@ import { useAuth } from '../../providers/AuthProvider';
 import { ImageOutput, PostOutput, createPostAsync, createPostImageAsync, deletePostImageAsync, editPostAsync, sendPostAsync } from '../../api/post';
 import axios from 'axios';
 import { AuthorOutput, getAllLocalAuthorsAsync } from '../../api/author';
-import APIURL from '../../api/config'
-import { enqueueSnackbar } from 'notistack';
+import { getFriendsAsync } from '../../api/friend';
 
 
 
@@ -120,7 +119,10 @@ export default function PostShare() {
                    sendList.push(...(await getAllLocalAuthorsAsync())!.items)
                    // TODO: send to other apps
                 } else if (privacy === 'PRIVATE') {
-                    // TODO: fetch friends to send to
+                    sendList.push(...(await getFriendsAsync(userInfo.id))!.map((friendship) => {return friendship.actor}))
+                } else if (privacy === 'UNLISTED') {
+                    // send to self
+                    sendList.push(userInfo)
                 }
                 const sendRequests = sendList.map(async (author) => {
                     await sendPostAsync(author.id, {

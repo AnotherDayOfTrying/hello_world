@@ -66,18 +66,18 @@ const signup = async (signupDetails: SignUpInterface) => {
 
 const verifySession = async() => {
     try {
-        const response = await axios.get(`${APIURL}/api/session/`, {
+        await axios.get(`${APIURL}/api/session/`, {
             headers: {
                 "Authorization": "Token " + localStorage.getItem('user_token'),
             }
         })
-        if (response.status !== 200) 
-            return false
 
         const author = await getAuthorByAuthorIdAsync(localStorage.getItem('user_id') || '')
         return author!;
     } catch (err) {
         if (err instanceof AxiosError) {
+            localStorage.setItem('user_token', '')
+            localStorage.setItem('user_id', '')
             return false
         } else {
             enqueueSnackbar("Unable to verify session.", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})

@@ -213,7 +213,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.image}`} alt="image" className='postImage'/>}
+            {image && <img src={`${image.image_url}`} alt="image" className='postImage'/>}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}  
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>

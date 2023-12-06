@@ -21,7 +21,8 @@ const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
   }
 
   useEffect(() => {
-    fetchLiked()
+    if (userInfo)
+      fetchLiked()
   }, [Reload]); 
 
   const dataIsEmpty = data ? data.length === 0 : false;

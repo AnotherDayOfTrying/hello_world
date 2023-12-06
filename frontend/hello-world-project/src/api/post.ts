@@ -61,7 +61,7 @@ export interface ImageInput {
 }
 
 export interface ImageOutput {
-    image: string
+    image_url: string
 }
 
 // Do not use directly in react code
@@ -180,6 +180,7 @@ const getPostImageAsync = async (postId: string) => {
                 Authorization: getAuthorizationHeader()
             }
         });
+        console.log(data)
         return data
     } catch (e) {
         if (e instanceof AxiosError && e.response?.status !== 404) {

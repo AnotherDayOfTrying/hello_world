@@ -101,9 +101,11 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const PopupContent: React.FC = () => {
         return(
             <div className='popupContainer'>
-                {friends ? friends.map((friend) => (
-                <FriendCard data={friend} post={data} shareList/>
-                )) : <></>}
+                {friends ? friends
+                .filter((friend) => friend.actor.id !== userInfo.id)
+                .map((friend) => (<FriendCard data={friend} post={data} shareList/>))
+                :
+                <></>}
             </div>
         )
     };
@@ -133,7 +135,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${userInfo.profilePicture}`} alt="" className="postProfileImg" />
+                <img src={`${userInfo.profileImage}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
                     <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
                 </div>

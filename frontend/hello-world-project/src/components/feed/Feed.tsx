@@ -27,7 +27,7 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
         response = await getPublicPostsAsync(userInfo.id)
       }
       // sort by to post being most recent
-      response?.sort((x, y) => x.published > y.published ? -1 : 1)
+      response?.reverse()
       if (response)
         setData(response)
     } catch (err: any) {

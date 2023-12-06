@@ -144,7 +144,7 @@ export default function PostShare() {
     <div className="shareContainer">
         <Leftbar/>
             <div className="postShare">
-                <img src={`${userInfo.profilePicture || ''}`} alt='' />
+                <img src={`${userInfo.profileImage || ''}`} alt='' />
                 <div>
                     <textarea  placeholder="What's on your mind?" value={text} onChange={handleTextChange}/>
                     <div className="postOptions">

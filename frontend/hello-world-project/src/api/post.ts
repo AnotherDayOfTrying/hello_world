@@ -66,6 +66,7 @@ export interface ImageOutput {
 
 // Do not use directly in react code
 const getInbox = async (author: AuthorOutput) => {
+    console.log("author:",author.host)
     const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
         headers: {
             Authorization: getAuthorizationHeader(author.host)

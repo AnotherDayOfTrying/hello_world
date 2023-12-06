@@ -53,7 +53,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         } else {
             setIsLiked(!isliked);
             try {
-            const response = await likeObjectAsync(data.author.id, {
+            const response = await likeObjectAsync(data.author, {
                 type: 'Like',
                 author: userInfo,
                 object: data.id

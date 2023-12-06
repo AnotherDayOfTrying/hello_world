@@ -36,7 +36,6 @@ const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput 
         const { data } = await axios.get<AuthorOutput>(`${APIURL}/authors/${authorId}`, {
             headers: {
                 Authorization: getAuthorizationHeader(),
-                Referer: addReferer()
             }
         });
         return data

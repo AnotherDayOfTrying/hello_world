@@ -44,7 +44,7 @@ export default function ProfileCard({Reload: isReload}: ProfileCardProps) {
   return (
     <div className='profileCard'>
       <div className='profileImages'>
-        <img className='profile' src={author?.profilePicture} alt='' />
+        <img className='profile' src={author?.profileImage} alt='' />
         <img className='background' src='/assets/post/4.jpg' alt='' />
         <EditIcon className='editIcon' style={{alignSelf: 'flex-end', marginTop: '10px', marginRight: '10px', cursor: 'pointer'}} onClick={handleEdit} />
       </div>

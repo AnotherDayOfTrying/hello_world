@@ -11,7 +11,6 @@ import { useSnackbar } from 'notistack';
   };
 
 function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
-  const profilePicture = data.actor.profile_picture 
   const {enqueueSnackbar} = useSnackbar();
 
   const [user, setUser] = useState<any>({})
@@ -87,7 +86,7 @@ function NotificationCard({ data, getFriendRequests }: NotificationCardProps) {
   console.log("data: ",data);
   return (
     <div className="notificationCard">
-      <img src={`${data.actor.profilePicture}`} alt="" className="notificationCardImg" />
+      <img src={`${data.actor.profileImage}`} alt="" className="notificationCardImg" />
       <div className="notificationCardUsername">
           <span >{data.actor.displayName}</span>
       </div>

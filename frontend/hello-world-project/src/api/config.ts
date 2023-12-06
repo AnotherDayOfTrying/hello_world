@@ -12,7 +12,13 @@ const AUTHORIZATION: {[key: string]: string} = {
     'https://distributed-network-37d054f03cf4.herokuapp.com/': `Basic ${btoa("node-hello-world:node-hello-world")}`
 }
 
-export const getAuthorizationHeader = (host: string = '') => {return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`};
+export const getAuthorizationHeader = (host: string = '') => {
+    return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`};
+
+export const addReferer = () => {
+        const referer = 'https://cmput404-project-backend-a299a47993fd.herokuapp.com'
+        return referer
+}
 export const getAuthorId = () => localStorage.getItem('user_id') || '';
 
 export default APIURL[process.env.NODE_ENV || "development"];

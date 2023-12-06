@@ -67,7 +67,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     };
 
     const fetchUserInfo = async () => {
-        setUserInfo(await getAuthorAsync(data.author.id));
+        setUserInfo(await getAuthorAsync(data.author));
     }
     const fetchImageData = async () => {
         setImage(await getPostImageAsync(data.id))
@@ -102,7 +102,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         return(
             <div className='popupContainer'>
                 {friends ? friends
-                .filter((friend) => friend.actor.id !== userInfo.id)
+                .filter((friend) => friend.actor.id !== userInfo?.id)
                 .map((friend) => (<FriendCard data={friend} post={data} shareList/>))
                 :
                 <></>}
@@ -135,9 +135,9 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${userInfo.profileImage}`} alt="" className="postProfileImg" />
+                <img src={`${userInfo?.profileImage}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
-                    <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
+                    <span >{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 

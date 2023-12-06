@@ -18,13 +18,13 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
     try {
       let response;
       if (isPrivate) {
-        response = await getPrivatePostsAsync(userInfo.id)
+        response = await getPrivatePostsAsync(userInfo)
       } else if (isUnlisted) {
-        response = await getUnlistedPostsAsync(userInfo.id)
+        response = await getUnlistedPostsAsync(userInfo)
       } else if (isMyPosts) {
-        response = (await getAuthorsPostsAsync(userInfo.id))?.items
+        response = (await getAuthorsPostsAsync(userInfo))?.items
       } else {
-        response = await getPublicPostsAsync(userInfo.id)
+        response = await getPublicPostsAsync(userInfo)
       }
       // sort by to post being most recent
       response?.reverse()

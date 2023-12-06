@@ -1,5 +1,5 @@
 import axios from 'axios'
-import APIURL, {getAuthorizationHeader} from './config'
+import APIURL, {getAuthorizationHeader, addReferer} from './config'
 import { enqueueSnackbar } from 'notistack';
 
 export interface AuthorInput {
@@ -36,6 +36,7 @@ const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput 
         const { data } = await axios.get<AuthorOutput>(`${APIURL}/authors/${authorId}`, {
             headers: {
                 Authorization: getAuthorizationHeader(),
+                Referer: addReferer()
             }
         });
         return data
@@ -45,11 +46,11 @@ const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput 
     }
 }
 
-const getAuthorAsync = async (url: string): Promise<AuthorOutput | undefined> => {
+const getAuthorAsync = async (author: AuthorOutput): Promise<AuthorOutput | undefined> => {
     try {
-        const { data } = await axios.get<AuthorOutput>(url, {
+        const { data } = await axios.get<AuthorOutput>(author.id, {
             headers:  {
-                Authorization: getAuthorizationHeader(),
+                Authorization: getAuthorizationHeader(author.host),
             }
         })
         return data

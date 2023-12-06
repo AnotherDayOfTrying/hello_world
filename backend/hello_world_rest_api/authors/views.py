@@ -466,8 +466,7 @@ class FriendsView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 class SetupNode(generics.CreateAPIView):
-    authentication_classes = [TokenAuthentication, NodesAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    
     
     def get(self, request):
         name = 'node-hello-world'
@@ -705,7 +704,18 @@ class SetupNode(generics.CreateAPIView):
                                         contentType = comment['contentType'],
                                         published = comment['published']
                                     )
-                        
-                             
-                        
         return Response('Set up complete', status=status.HTTP_200_OK)
+
+class GetPublicPost(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PostSerializer
+    def get(self, request, author_id):
+        author = get_object_or_404(Author, uid=author_id)
+        posts = Post.objects.filter(visibility='PUBLIC', unlisted=False)
+        serializer = PostSerializer(posts, many=True, context={'request': request})
+        response = {
+            "type": "posts",
+            "items": serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)

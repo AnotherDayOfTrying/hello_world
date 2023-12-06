@@ -60,7 +60,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
     return (
         <div className="comment">
             <div className="comment_user">
-                <img src={`${comment.author.profilePicture}`} alt="" />
+                <img src={`${comment.author.profileImage}`} alt="" />
                 <div className="comment_content">
                     <h4>{comment.author.displayName}</h4>
                     <p>{comment.comment}</p>

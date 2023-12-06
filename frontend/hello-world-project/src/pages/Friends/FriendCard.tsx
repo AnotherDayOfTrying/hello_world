@@ -56,7 +56,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
   if (shareList) {
     return(
       <div className="shareListCard" onClick={handleShare}>
-        <img src={`${data.actor.profilePicture}`} alt="" className="shareListImg" />
+        <img src={`${data.actor.profileImage}`} alt="" className="shareListImg" />
         <div className="shareListUsername">
           <span>{data.actor.displayName}</span>
         </div>
@@ -68,7 +68,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
     return (
       
       <div className="FriendCard">
-        <img src={`${data.actor.profilePicture}`} alt="" className="friendCardImg" />
+        <img src={`${data.actor.profileImage}`} alt="" className="friendCardImg" />
         <div className="friendCardUsername">
             <span >{data.actor.displayName}</span>
         </div>

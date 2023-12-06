@@ -15,7 +15,7 @@ export interface AuthorOutput {
     id: string,
     url: string,
     displayName: string,
-    profilePicture: string,
+    profileImage: string,
     github: string | null,
     host: string
 }

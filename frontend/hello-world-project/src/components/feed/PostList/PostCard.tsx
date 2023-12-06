@@ -13,7 +13,7 @@ import Comment from './Comment';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Popover } from '@mui/material';
+import { Popover, Typography } from '@mui/material';
 import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync, likeObjectsAsync } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
 import { likeObjectAsync } from '../../../api/like';
@@ -85,15 +85,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const renderDescription = (description: string) => {
         if (linkify.test(description)) {
             return (
-            <div style={{fontSize : 17, wordWrap: 'break-word'}}>
+            <Typography>
                 <Linkify >{description}</Linkify> 
-            </div>
+            </Typography>
             );
         } else {
             return (
-            <div style={{fontSize : 2}}>
+            <Typography>
                 <ReactMarkdown>{description}</ReactMarkdown>
-            </div>
+            </Typography>
             );
         }
         };
@@ -101,9 +101,11 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const PopupContent: React.FC = () => {
         return(
             <div className='popupContainer'>
-                {friends ? friends.map((friend) => (
-                <FriendCard data={friend} post={data} shareList/>
-                )) : <></>}
+                {friends ? friends
+                .filter((friend) => friend.actor.id !== userInfo.id)
+                .map((friend) => (<FriendCard data={friend} post={data} shareList/>))
+                :
+                <></>}
             </div>
         )
     };
@@ -133,7 +135,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${userInfo.profilePicture}`} alt="" className="postProfileImg" />
+                <img src={`${userInfo.profileImage}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
                     <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
                 </div>

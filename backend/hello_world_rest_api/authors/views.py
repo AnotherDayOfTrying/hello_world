@@ -18,6 +18,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from PIL import Image
 from io import BytesIO
 import base64
+import requests
+from requests.auth import HTTPBasicAuth
+import random
+from django.core.files.base import ContentFile
+import re
 
 
 # Create your views here.
@@ -459,3 +464,248 @@ class FriendsView(generics.CreateAPIView):
         requests = Friendship.objects.filter(object=author, status=3) | Friendship.objects.filter(actor=author, status=3)
         serializer = FriendShipSerializer(requests, many=True, context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SetupNode(generics.CreateAPIView):
+    authentication_classes = [TokenAuthentication, NodesAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        name = 'node-hello-world'
+        password = 'socialpassword'
+        request = requests.get('https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/authors/', auth=HTTPBasicAuth(name, password))
+        authors = request.json()['items']
+        for author in authors:
+            try:
+                curr_author = Author.objects.get(uid=author['id'].split('/')[-1])
+            except:            
+                curr_author = Author.objects.create(
+                    uid = author['id'].split('/')[-1],
+                    username = author['displayName'] + str(random.randint(0, 1000)),
+                    password = author['displayName'],
+                    displayName = author['displayName'],
+                    github = author['github'],
+                    host = author['host'],
+                    id = author['id'],
+                    url = author['url'],
+                    profilePicture = author['profileImage'],
+                    is_approved = author['registered']        
+                )
+            finally:
+                post_request = requests.get(f'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/authors/{curr_author.uid}/posts/', auth=HTTPBasicAuth(name, password))
+                if 'items' in post_request.json():
+                    posts = post_request.json()['items']
+                    for post in posts:
+                        try:
+                            curr_post = Post.objects.get(uid=post['id'].split('/')[-1])
+                        except:            
+                            curr_post = Post.objects.create(
+                                uid = post['id'].split('/')[-1],
+                                title = post['title'],
+                                id = post['id'],
+                                origin = post['origin'],
+                                source = post['source'],
+                                contentType = post['content_type'],
+                                content = post['content'],
+                                author = curr_author, 
+                                categories = str(post['categories']),
+                                published = post['published'],
+                                comments = post['comments'],
+                                count = post['count'],
+                                visibility = post['visibility'],
+                                unlisted = post['unlisted']
+                            )
+                            if post['has_image'] == True:
+                                image_request = requests.get(f'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/authors/{curr_author.uid}/posts/{curr_post.uid}/image', auth=HTTPBasicAuth(name, password))
+                                if image_request.json()['image_type'] == 'url':
+                                    PostImage.objects.create(
+                                    post = curr_post,
+                                    image_url = image_request.json()['image']
+                                )
+                                else:
+                                    image = image_request.json()['image']
+                                    before = len(image)
+                                    cleaned = re.sub(r'[^a-zA-Z0-9/+]','',image)
+                                    after = len(cleaned)
+                                    padding_length = max(0, before - after)
+                                    padded_string = cleaned.ljust(after+padding_length, '=')
+                                    image_type = image_request.json()['image_type'].split(';')[0].split('/')[-1]
+                                    data = ContentFile(base64.b64decode(padded_string), name=str(random.randint(0,1000)) + str(random.randint(0,1000)) + '.' + image_type)
+                                    PostImage.objects.create(
+                                        post = curr_post,
+                                        image = data
+                                    )
+                        finally:
+                            comment_request = requests.get(f'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/authors/{curr_author.uid}/posts/{curr_post.uid}/comments/', auth=HTTPBasicAuth(name, password))
+                            
+                            if 'comments' in comment_request.json():
+                                comments = comment_request.json()['comments']
+                                for comment in comments:
+                                    try:
+                                        curr_comment = Comment.objects.get(uid=comment['id'].split('/')[-1])
+                                    except:
+                                        curr_comment = Comment.objects.create(
+                                            uid = comment['id'].split('/')[-1],
+                                            author = curr_author,
+                                            post = curr_post,
+                                            comment = comment['comment'],
+                                            contentType = comment['contentType'],
+                                            published = comment['published']
+                                        )
+
+
+        name2 = 'node-hello-world'
+        password2 = 'chimpchatapi'
+        request2 = requests.get('https://chimp-chat-1e0cca1cc8ce.herokuapp.com/authors/', auth=HTTPBasicAuth(name2, password2))
+        authors2 = request2.json()['items']
+        for author in authors2:
+            try:
+                curr_author = Author.objects.get(uid=author['id'].split('/')[-1])
+            except:            
+                curr_author = Author.objects.create(
+                    uid = author['id'].split('/')[-1],
+                    username = author['displayName'] + str(random.randint(0, 1000)),
+                    password = author['displayName'],
+                    displayName = author['displayName'],
+                    github = author['github'],
+                    host = author['host'],
+                    id = author['id'],
+                    url = author['url'],
+                    profilePicture = author['profileImage'],
+                    is_approved = True        
+                )
+            finally:
+                post_request2 = requests.get(f'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/authors/{curr_author.uid}/posts/', auth=HTTPBasicAuth(name2, password2))
+                if 'items' in post_request2.json():
+                    posts = post_request2.json()['items']
+                    for post in posts:
+                        try:
+                            curr_post = Post.objects.get(uid=post['id'].split('/')[-1])
+                        except:
+                            curr_content = post['content']
+                            if post['contentType'] == 'image/jpeg;base64' or post['contentType'] == 'image/png;base64':
+                                image = post['content']
+                                before = len(image)
+                                cleaned = re.sub(r'[^a-zA-Z0-9/+]','',image)
+                                after = len(cleaned)
+                                padding_length = max(0, before - after)
+                                padded_string = cleaned.ljust(after+padding_length, '=')
+                                image_type = post['contentType'].split(';')[0].split('/')[-1]
+                                data = ContentFile(base64.b64decode(padded_string), name=str(random.randint(0,1000)) + str(random.randint(0,1000)) + '.' + image_type)
+                                PostImage.objects.create(
+                                    post = curr_post,
+                                    image = data
+                                )
+                                curr_content = ''               
+                            curr_post = Post.objects.create(
+                                uid = post['id'].split('/')[-1],
+                                title = post['title'],
+                                id = post['id'],
+                                origin = post['origin'],
+                                source = post['source'],
+                                description = post['description'],
+                                contentType = post['contentType'],
+                                content = curr_content,
+                                author = curr_author, 
+                                categories = str(post['categories']),
+                                published = post['published'],
+                                comments = post['comments'],
+                                count = post['count'],
+                                visibility = post['visibility'],
+                                unlisted = post['unlisted']
+                            )
+                        finally:
+                            comment_request2 = requests.get(f'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/authors/{curr_author.uid}/posts/{curr_post.uid}/comments/?page=1&size=1000', auth=HTTPBasicAuth(name2, password2))
+                            if 'comments' in comment_request2.json():
+                                comments = comment_request2.json()['comments']
+                                for comment in comments:
+                                    try:
+                                        curr_comment = Comment.objects.get(uid=comment['id'].split('/')[-1])
+                                    except:
+                                        curr_comment = Comment.objects.create(
+                                            uid = comment['id'].split('/')[-1],
+                                            author = curr_author,
+                                            post = curr_post,
+                                            comment = comment['comment'],
+                                            contentType = comment['contentType'],
+                                            published = comment['published']
+                                        )
+                        
+        name3 = 'node-hello-world'
+        password3 = 'node-hello-world'
+        request3 = requests.get('https://distributed-network-37d054f03cf4.herokuapp.com/api/authors/', auth=HTTPBasicAuth(name3, password3), headers={'Referer':'https://cmput404-project-backend-a299a47993fd.herokuapp.com/'})
+        authors3 = request3.json()['items']
+        for author in authors3:
+            try:
+                curr_author =Author.objects.get(uid=author['id'].split('/')[-1])
+            except:            
+                curr_author = Author.objects.create(
+                    uid = author['id'].split('/')[-1],
+                    username = author['displayName'] + str(random.randint(0, 1000)),
+                    password = author['displayName'],
+                    displayName = author['displayName'],
+                    github = author['github'],
+                    host = author['host'],
+                    id = author['id'],
+                    url = author['url'],
+                    profilePicture = author['profileImage'],
+                    is_approved = True        
+                )
+            finally:
+                post_request3 = requests.get(f'https://distributed-network-37d054f03cf4.herokuapp.com/api/authors/{curr_author.uid}/posts/', auth=HTTPBasicAuth(name3, password3), headers={'Referer':'https://cmput404-project-backend-a299a47993fd.herokuapp.com/'})
+                posts = post_request3.json()
+                for post in posts:
+                    try:
+                        curr_post = Post.objects.get(uid=post['id'].split('/')[-1])
+                    except: 
+                        curr_content = post['content']
+                        if post['contentType'] == 'image/jpeg;base64' or post['contentType'] == 'image/png;base64':
+                            image = post['content'].split(',')[-1]
+                            before = len(image)
+                            cleaned = re.sub(r'[^a-zA-Z0-9/+]','',image)
+                            after = len(cleaned)
+                            padding_length = max(0, before - after)
+                            padded_string = cleaned.ljust(after+padding_length, '=')
+                            image_type = post['contentType'].split(';')[0].split('/')[-1]
+                            data = ContentFile(base64.b64decode(padded_string), name=str(random.randint(0,1000)) + str(random.randint(0,1000)) + '.' + image_type)
+                            PostImage.objects.create(
+                                post = curr_post,
+                                image = data
+                            )
+                            curr_content = ''               
+                        curr_post = Post.objects.create(
+                            uid = post['id'].split('/')[-1],
+                            title = post['title'],
+                            id = post['id'],
+                            origin = post['origin'],
+                            source = post['source'],
+                            description = post['description'],
+                            contentType = post['contentType'],
+                            content = curr_content,
+                            author = curr_author, 
+                            categories = str(post['categories']),
+                            published = post['published'],
+                            comments = post['comments'],
+                            count = post['count'],
+                            visibility = post['visibility'],
+                            unlisted = post['unlisted']
+                        )
+                    finally:
+                        comment_request3 = requests.get(f'https://distributed-network-37d054f03cf4.herokuapp.com/api/authors/{curr_author.uid}/posts/{curr_post.uid}/comments/', auth=HTTPBasicAuth(name3, password3), headers={'Referer':'https://cmput404-project-backend-a299a47993fd.herokuapp.com/'})
+                        if 'comments' in comment_request3.json():
+                            comments = comment_request3.json()['comments']
+                            for comment in comments:
+                                try:
+                                    curr_comment = Comment.objects.get(uid=comment['id'].split('/')[-1])
+                                except:
+                                    curr_comment = Comment.objects.create(
+                                        uid = comment['id'].split('/')[-1],
+                                        author = curr_author,
+                                        post = curr_post,
+                                        comment = comment['comment'],
+                                        contentType = comment['contentType'],
+                                        published = comment['published']
+                                    )
+                        
+                             
+                        
+        return Response('Set up complete', status=status.HTTP_200_OK)

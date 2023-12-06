@@ -61,7 +61,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     profilePictureImage = serializers.ImageField(write_only=True, required=False)
     class Meta:
         model = Author
-        fields = ('type', 'id', 'url', 'displayName', 'profilePicture','profilePictureImage', 'github','host')
+        fields = ('type', 'id', 'url', 'displayName', 'profileImage','profilePictureImage', 'github','host')
         
     def update(self, instance, validated_data):
         instance.displayName = validated_data.get('displayName', instance.displayName)
@@ -70,7 +70,7 @@ class AuthorSerializer(serializers.ModelSerializer):
             instance.profilePictureImage = validated_data.get('profilePictureImage', instance.profilePictureImage)
         instance.save()
         return instance
-    def get_profilePicture(self, obj):
+    def get_profileImage(self, obj):
         if obj.profilePicture is None:
             request = self.context.get('request')
             profilePicture_url = obj.profilePictureImage.url

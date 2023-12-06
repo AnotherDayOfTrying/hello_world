@@ -45,7 +45,7 @@ const signup = async (signupDetails: SignUpInterface) => {
     formData.append('displayName', signupDetails.displayName)
     formData.append('github', signupDetails.github)
     if (signupDetails.profilePicture)
-        formData.append('profilePicture', signupDetails.profilePicture)
+        formData.append('profilePictureImage', signupDetails.profilePicture)
 
     try {
         const response = await axios.post(`${APIURL}/signup/`, formData, {

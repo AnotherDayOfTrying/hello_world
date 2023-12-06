@@ -61,7 +61,7 @@ export interface ImageInput {
 }
 
 export interface ImageOutput {
-    image: string
+    image_url: string
 }
 
 // Do not use directly in react code

@@ -36,7 +36,8 @@ const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, m
   };
 
   useEffect(() => {
-    fetchData();
+    if (userInfo)
+      fetchData();
   }, [isPrivate, isUnlisted, isMyPosts]); 
 
   const Reload = () => {

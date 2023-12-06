@@ -21,8 +21,8 @@ export const AuthProvider = ({ children }: any) => {
         setUserId(localStorage.getItem('user_id') || '')
         if (author) {
           setUserInfo(author)
-          setVerifiedSession(true)
         }
+        setVerifiedSession(true)
       })
   },[user]) // only run once on load
 

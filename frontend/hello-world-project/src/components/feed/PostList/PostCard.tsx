@@ -7,36 +7,30 @@ import SendIcon from '@mui/icons-material/Send';
 import 'reactjs-popup/dist/index.css';
 import ReactMarkdown from 'react-markdown';
 import FriendCard from '../../../pages/Friends/FriendCard';
-import { Alert } from '@mui/material';
 import * as linkify  from 'linkifyjs';
 import Linkify from 'react-linkify';
 import Comment from './Comment';
-import Popup from 'reactjs-popup';
-import axios from "axios"
-import APIURL, { getAuthorizationHeader } from "../../../api/config"
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Popover } from '@mui/material';
 import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
-import { useAuth } from '../../../providers/AuthProvider';
 import { likeObjectAsync } from '../../../api/like';
+import { FriendshipOutput } from '../../../api/friend';
 
 
 type PostCardProps = {
     data: PostOutput;
     isLiked: boolean;
-    likeid?: number;
     myposts?: boolean;
+    friends: FriendshipOutput[],
     Reload: () => void;
 };
 
 
-const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCardProps) => {
+const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCardProps) => {
     const [isliked, setIsLiked] = React.useState(isLiked);
-    const [isAlertVisible, setIsAlertVisible] = useState(false);
-    const [friendsList, setFriendsList] = useState<any[]>([]);
     const [userInfo, setUserInfo] = useState<any>({});
     const [image, setImage] = useState<ImageOutput>()
     const [openComments, setOpenComments] = useState<boolean>(false);
@@ -44,36 +38,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
     const commentButton = useRef<any>(null);
     const sendButton = useRef<any>(null);
     const navigate = useNavigate();
-    const {userId} = useAuth();
+
     useEffect(() => {
         setIsLiked(isLiked);
       }, [isLiked]);
 
-    const handleShare = () => {
-        // send api post req
-        setIsAlertVisible(true);
-    };
-
     const handleLike = async () => {
         if (isliked) {
             setIsLiked(!isliked);
-        //     try {
-        //     const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
-        //     {
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         Authorization: getAuthorizationHeader(),
-        //     }
-        //     });
-        //     const responseData: any = response.data;
-        //     console.log('unlike response: ', responseData);
-        //     setIsLiked(false);
-        //     return responseData;
-        // } catch (error: any) {
-        //     console.log(error);
-            
-        // };
-            
+            //unlike
         } else {
             setIsLiked(!isliked);
             try {
@@ -99,7 +72,6 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
 
     useEffect(() => {
         fetchUserInfo()
-        getFriendList()
         fetchImageData()
     }, [data]);
 
@@ -118,72 +90,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
             );
         }
         };
-    
-    useEffect(() => {
-        if (isAlertVisible) {
-            const timer = setTimeout(() => {
-                setIsAlertVisible(false);
-            }, 1000);
-
-            return () => {
-                clearTimeout(timer);
-            };
-        }
-    }, [isAlertVisible]);
-
-    const getFriendList = async () => {
-        try {
-            let response = {data: []}
-            if (!data.author.id) {
-                response = await axios.get(`${APIURL}/authors/friends/`, {
-                    headers: {
-                    "Content-Type": "application/json",
-                    Authorization: getAuthorizationHeader(),
-                    },
-                });
-            }
-            const friends: any[] = response.data;
-            const authorFriends: any[] = []
-            await Promise.all(
-                friends.map(async (request) => {
-                    try {
-                        const authorResponse = await axios.get(`${APIURL}/authors/${request.sender}`, {headers: {Authorization: getAuthorizationHeader(),}});
-                        const authorData = {
-                            sender: authorResponse.data,
-                        };
-                        authorFriends.push(authorData); 
-                    } catch (error) {
-                        console.log("Error fetching author data:", error);
-                    }
-                })
-            );
-            setFriendsList(authorFriends)
-            console.log('Friends:', authorFriends);
-    
-          } catch (error) {
-            console.log(error);
-          }
-    }
-
-    useEffect(() => {
-        getFriendList()
-    }, [])
 
     const PopupContent: React.FC = () => {
-        if (isAlertVisible) {
-            return(
-            <Alert severity="success">Your message was sent successfully!</Alert>)
-        }
-        else{
-            return(
-                <div className='popupContainer'>
-                    {friendsList.map((friend: any, id: number) => (
-                    <FriendCard key={id} data={friend} shareList onClick={handleShare}
-                    />))}
-                </div>
-            )
-        }
-        
+        return(
+            <div className='popupContainer'>
+                {friends ? friends.map((friend) => (
+                <FriendCard data={friend} post={data} shareList/>
+                )) : <></>}
+            </div>
+        )
     };
 
     const handleDelete = async () => {
@@ -213,7 +128,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, likeid }: PostCar
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.image}`} alt="image" className='postImage'/>}
+            {image && <img src={`${image.image_url}`} alt="image" className='postImage'/>}
             <div className="reactions">
                 {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>}  
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>

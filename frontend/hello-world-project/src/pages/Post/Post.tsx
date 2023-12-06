@@ -42,13 +42,13 @@ export default function PostShare() {
             if (data.post.content) {
                 setText(data.post.content);
             }
-            if (data.image && data.image.image) {
-                const response = await axios.get(`${data.image.image}`, {
+            if (data.image && data.image.image_url) {
+                const response = await axios.get(`${data.image.image_url}`, {
                     responseType: 'blob'
                 });
                 const blob = await response.data;
                 const file = new File([blob], "image.jpg", {type: "image/jpeg"});
-                setImage({image: data.image.image, data: file})
+                setImage({image: data.image.image_url, data: file})
             }
         }
     } 
@@ -100,7 +100,7 @@ export default function PostShare() {
             } catch (error: any) {
                 console.log(error);
             };
-        } else{
+        } else {
             try {
                 const response = await createPostAsync(userInfo.id, {
                     title: 'Post Title',

@@ -356,7 +356,7 @@ class CommentView(generics.CreateAPIView):
     
     def post(self, request, author_id, post_id):
         post = get_object_or_404(Post, uid=post_id)
-        author = get_object_or_404(Author, uid=author_id)
+        author = get_object_or_404(Author, uid=request.data['author']['id'].split('/')[-1])
         serializer = CommentSerializer(data=request.data, context={'post': post, 'author': author, 'request': request})
         if serializer.is_valid():
             serializer.save()

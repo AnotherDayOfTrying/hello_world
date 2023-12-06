@@ -49,7 +49,7 @@ export interface InboxOutput {
 export interface SendPostInput {
     type: 'post',
     author: AuthorInput,
-    object: string,
+    id: string,
 }
 
 export interface SendPostOutput {
@@ -66,13 +66,11 @@ export interface ImageOutput {
 
 // Do not use directly in react code
 const getInbox = async (author: AuthorOutput) => {
-    console.log("author:",author.host)
     const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
         headers: {
             Authorization: getAuthorizationHeader(author.host)
         }
     })
-    console.log("inbox:",data)
     return data;
 }
 
@@ -106,9 +104,9 @@ const getUnlistedPostsAsync = async (author: AuthorOutput) => {
     }
 }
 
-const getAuthorsPostsAsync = async (authorId: string): Promise<PostListOutput | undefined> => {
+const getAuthorsPostsAsync = async (author: AuthorOutput): Promise<PostListOutput | undefined> => {
     try {
-        const { data } = await axios.get<PostListOutput>(`${authorId}/posts/`, {
+        const { data } = await axios.get<PostListOutput>(`${author.id}/posts/`, {
             headers: {
                 Authorization: getAuthorizationHeader(),
             }
@@ -175,11 +173,11 @@ const sendPostAsync = async (authorId: string, sendPostInput: SendPostInput): Pr
     }
 }
 
-const getPostImageAsync = async (postId: string) => {
+const getPostImageAsync = async (post: PostOutput) => {
     try {
-        const { data } = await axios.get<ImageOutput>(`${postId}/image`, {
+        const { data } = await axios.get<ImageOutput>(`${post.id}/image/`, {
             headers: {
-                Authorization: getAuthorizationHeader()
+                Authorization: getAuthorizationHeader(post.author.host)
             }
         });
         return data
@@ -190,11 +188,11 @@ const getPostImageAsync = async (postId: string) => {
     }
 }
 
-const likeObjectsAsync = async (postId: string) => {
+const likeObjectsAsync = async (post: PostOutput) => {
     try {
-        const { data } = await axios.get(`${postId}/likes`,{
+        const { data } = await axios.get(`${post.id}/likes`,{
             headers: {
-                Authorization: getAuthorizationHeader(),
+                Authorization: getAuthorizationHeader(post.author.host),
             }
         })
         const formattedData = data.map((like: any) => ({ actor: like.author }));

@@ -21,7 +21,7 @@ const Comment: React.FC<CommentProps> = ({ data, Reload }) => {
   const {userInfo} = useAuth()
 
   const fetchLiked = async() => {
-    setLikedComments(await getAuthorsLikedAsync(userInfo.id))
+    setLikedComments(await getAuthorsLikedAsync(userInfo))
   }
 
   useEffect(() => {

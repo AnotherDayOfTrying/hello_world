@@ -70,10 +70,10 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         setUserInfo(await getAuthorAsync(data.author));
     }
     const fetchImageData = async () => {
-        setImage(await getPostImageAsync(data.id))
+        setImage(await getPostImageAsync(data))
     }
     const fetchLikes = async () => {
-        setLikeAuthors(await likeObjectsAsync(data.id)) 
+        setLikeAuthors(await likeObjectsAsync(data)) 
     }
 
     useEffect(() => {
@@ -83,6 +83,10 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     }, [data]);
 
     const renderDescription = (description: string) => {
+        if (description.includes('data:image/')) {
+            return (<></>)
+        }
+        
         if (linkify.test(description)) {
             return (
             <Typography>
@@ -132,10 +136,11 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const handleEdit = () => {
         navigate('/post/edit', { state: { post: data, image: image } });
     }
+
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${userInfo?.profileImage}`} alt="" className="postProfileImg" />
+                <img src={`${data.author.profileImage}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
                     <span >{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
                 </div>
@@ -147,7 +152,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.image_url}`} alt="image" className='postImage'/>}
+            {image && <img src={`${image.image_url || image}`} alt="" className='postImage'/>}
             <div className="reactions">
                 <div className="likes">
                     {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 

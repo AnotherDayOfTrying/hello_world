@@ -46,7 +46,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
     await sendPostAsync(data.actor.id, {
       'type': 'post',
       'author': userInfo,
-      'object': post!.id,
+      'id': post!.id,
     })
 
     await editPostAsync(post!.id, {...post!, visibility: 'FRIENDS', unlisted: false })

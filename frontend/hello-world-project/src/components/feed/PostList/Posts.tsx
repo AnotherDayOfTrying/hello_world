@@ -19,7 +19,7 @@ const Posts: React.FC<PostsProps> = ({ data, myposts: isMyPosts, Reload }) => {
   const {userInfo} = useAuth();
 
   const fetchLiked = async() => {
-    setLikedPosts(await getAuthorsLikedAsync(userInfo.id))
+    setLikedPosts(await getAuthorsLikedAsync(userInfo))
   }
 
   const fetchFriends = async () => {

@@ -128,7 +128,7 @@ export default function PostShare() {
                     await sendPostAsync(author.id, {
                         type: 'post',
                         author: userInfo,
-                        object: response!.id,
+                        id: response!.id,
                     })
                 })
                 await Promise.all(sendRequests)

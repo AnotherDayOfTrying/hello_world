@@ -22,30 +22,31 @@ export interface LikeListOutput {
     items: LikeOutput[],
 }
 
-const likeObjectAsync = async (authorId: string, likeInput: LikeInput): Promise<LikeOutput | undefined> => {
+const likeObjectAsync = async (author: AuthorOutput, likeInput: LikeInput): Promise<LikeOutput | undefined> => {
+
     try {
-        const { data } = await axios.post<LikeOutput>(`${authorId}/inbox`, likeInput, {
+        const { data } = await axios.post<LikeOutput>(`${author.id}/inbox`, likeInput, {
             headers: {
-                Authorization: getAuthorizationHeader(),
+                Authorization: getAuthorizationHeader(author.host),
             }
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to Like Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Like Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
 
-const getAuthorsLikedAsync = async (authorId: string): Promise<LikeListOutput | undefined> => {
+const getAuthorsLikedAsync = async (author: AuthorOutput): Promise<LikeListOutput | undefined> => {
     try {
-        const { data } = await axios.get<LikeListOutput>(`${authorId}/liked`, {
+        const { data } = await axios.get<LikeListOutput>(`${author.id}/liked`, {
             headers: {
-                Authorization: getAuthorizationHeader(),
+                Authorization: getAuthorizationHeader(author.host),
             }
         })
         return data;
     } catch {
-        enqueueSnackbar('Unable to Fetch Liked Objects', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to Fetch Liked Objects', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }

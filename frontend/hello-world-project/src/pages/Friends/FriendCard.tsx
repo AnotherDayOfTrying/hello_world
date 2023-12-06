@@ -37,7 +37,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
         getFriends();
       }
     } catch (err) {
-      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+      // enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(err);
     }
   };
@@ -46,7 +46,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
     await sendPostAsync(data.actor.id, {
       'type': 'post',
       'author': userInfo,
-      'object': post!.id,
+      'id': post!.id,
     })
 
     await editPostAsync(post!.id, {...post!, visibility: 'FRIENDS', unlisted: false })

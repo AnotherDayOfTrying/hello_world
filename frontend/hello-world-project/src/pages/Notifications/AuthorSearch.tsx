@@ -22,7 +22,7 @@ function AuthorSearch() {
       })
       setUser(response.data)
     } catch (e) {
-      enqueueSnackbar('Unable to fetch your details', {variant: "error", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+      // enqueueSnackbar('Unable to fetch your details', {variant: "error", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.error(e)
     }
   }
@@ -58,7 +58,7 @@ function AuthorSearch() {
           const authorId = filteredAuthor[0].id.split('/').pop();
           sendFriendRequest(filteredAuthor[0], authorId);
         } else {
-          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+          // enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
       }
       return responseData;

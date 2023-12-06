@@ -53,7 +53,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         } else {
             setIsLiked(!isliked);
             try {
-            const response = await likeObjectAsync(data.author.id, {
+            const response = await likeObjectAsync(data.author, {
                 type: 'Like',
                 author: userInfo,
                 object: data.id
@@ -67,13 +67,13 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     };
 
     const fetchUserInfo = async () => {
-        setUserInfo(await getAuthorAsync(data.author.id));
+        setUserInfo(await getAuthorAsync(data.author));
     }
     const fetchImageData = async () => {
-        setImage(await getPostImageAsync(data.id))
+        setImage(await getPostImageAsync(data))
     }
     const fetchLikes = async () => {
-        setLikeAuthors(await likeObjectsAsync(data.id)) 
+        setLikeAuthors(await likeObjectsAsync(data)) 
     }
 
     useEffect(() => {
@@ -83,6 +83,10 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     }, [data]);
 
     const renderDescription = (description: string) => {
+        if (description.includes('data:image/')) {
+            return (<></>)
+        }
+        
         if (linkify.test(description)) {
             return (
             <Typography>
@@ -102,7 +106,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         return(
             <div className='popupContainer'>
                 {friends ? friends
-                .filter((friend) => friend.actor.id !== userInfo.id)
+                .filter((friend) => friend.actor.id !== userInfo?.id)
                 .map((friend) => (<FriendCard data={friend} post={data} shareList/>))
                 :
                 <></>}
@@ -132,12 +136,13 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const handleEdit = () => {
         navigate('/post/edit', { state: { post: data, image: image } });
     }
+
     return (
         <div className="PostCard">
             <div className="postTop">
-                <img src={`${userInfo.profileImage}`} alt="" className="postProfileImg" />
+                <img src={`${data.author.profileImage}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
-                    <span >{data.author.id ? data.author.displayName : userInfo.displayName}</span>
+                    <span >{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
                 </div>
                 {isMyPosts && 
                 <div className="postOptions"> 
@@ -147,7 +152,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.image_url}`} alt="image" className='postImage'/>}
+            {image && <img src={`${image.image_url || image}`} alt="" className='postImage'/>}
             <div className="reactions">
                 <div className="likes">
                     {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 

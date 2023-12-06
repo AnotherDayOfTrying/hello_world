@@ -24,7 +24,7 @@ const getFriendsAsync = async (authorId: string): Promise<FriendshipOutput[] | u
         })
         return data
     } catch {
-        enqueueSnackbar('Could not Fetch Friends', {variant: 'error'})
+        // enqueueSnackbar('Could not Fetch Friends', {variant: 'error'})
     }
 }
 

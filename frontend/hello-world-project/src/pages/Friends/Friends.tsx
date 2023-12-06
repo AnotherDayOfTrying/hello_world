@@ -29,7 +29,7 @@ export default function Friends() {
         setData(friends);
 
       } catch (error) {
-        enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         console.log(error);
       }
     }, []);

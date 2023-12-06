@@ -42,7 +42,7 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
         } else {
             setIsLiked(!isliked);
             try {
-                const response = await likeObjectAsync(comment.author.id, {
+                const response = await likeObjectAsync(comment.author, {
                     type: 'Like',
                     author: userInfo,
                     object: comment.id,

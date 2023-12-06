@@ -1,5 +1,5 @@
 import axios from 'axios'
-import APIURL, {getAuthorizationHeader} from './config'
+import APIURL, {getAuthorizationHeader, addReferer} from './config'
 import { enqueueSnackbar } from 'notistack';
 
 export interface AuthorInput {
@@ -40,21 +40,21 @@ const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput 
         });
         return data
     } catch {
-        enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
 
-const getAuthorAsync = async (url: string): Promise<AuthorOutput | undefined> => {
+const getAuthorAsync = async (author: AuthorOutput): Promise<AuthorOutput | undefined> => {
     try {
-        const { data } = await axios.get<AuthorOutput>(url, {
+        const { data } = await axios.get<AuthorOutput>(author.id, {
             headers:  {
-                Authorization: getAuthorizationHeader(),
+                Authorization: getAuthorizationHeader(author.host),
             }
         })
         return data
     } catch {
-        enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar("Could not find current author", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         return undefined
     }
 }
@@ -68,7 +68,7 @@ const getAllLocalAuthorsAsync = async (): Promise<AuthorListOutput | undefined> 
         })
         return data
     } catch {
-        enqueueSnackbar('Unable to Fetch All Authors', {variant: 'error'})
+        // enqueueSnackbar('Unable to Fetch All Authors', {variant: 'error'})
         return undefined
     }
 }

@@ -13,7 +13,9 @@ const AUTHORIZATION: {[key: string]: string} = {
 }
 
 export const getAuthorizationHeader = (host: string = '') => {
-    return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`};
+    console.log(host)
+    return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`
+};
 
 export const addReferer = () => {
         const referer = 'https://cmput404-project-backend-a299a47993fd.herokuapp.com'

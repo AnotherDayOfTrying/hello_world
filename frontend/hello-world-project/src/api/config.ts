@@ -1,5 +1,3 @@
-import { useAuth } from "../providers/AuthProvider";
-
 const APIURL: {[key: string]: string} = {
     "development": "http://127.0.0.1:8000",
     "production": "https://cmput404-project-backend-a299a47993fd.herokuapp.com",
@@ -14,15 +12,6 @@ const AUTHORIZATION: {[key: string]: string} = {
 }
 
 export const getAuthorizationHeader = (host: string = '') => {
-    const {user,
-        userId,
-        userInfo,
-        verifiedSession,} = useAuth()
-    console.log("USER", user)
-    console.log("USERID", userId)
-    console.log("USERINFO", userInfo)
-    console.log("VERIFIEDSESSION", verifiedSession)
-    console.log(host)
     console.log(AUTHORIZATION[host])
     return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`
 };

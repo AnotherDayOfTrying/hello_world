@@ -1,5 +1,3 @@
-import { useAuth } from "../providers/AuthProvider";
-
 const APIURL: {[key: string]: string} = {
     "development": "http://127.0.0.1:8000",
     "production": "https://cmput404-project-backend-a299a47993fd.herokuapp.com",
@@ -21,8 +19,7 @@ const HOSTS = [
 ]
 
 export const getAuthorizationHeader = (host: string = '') => {
-    // console.log(host)
-    // console.log(localStorage.getItem('user_token'))
+    console.log(AUTHORIZATION[host])
     return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`
 };
 

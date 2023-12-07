@@ -1,4 +1,4 @@
 **/__pycache__/**
 *.py[cod]
-runserver.bat
+*.bat
 db.sqlite3

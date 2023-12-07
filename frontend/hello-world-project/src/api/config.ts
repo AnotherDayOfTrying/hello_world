@@ -12,8 +12,16 @@ const AUTHORIZATION: {[key: string]: string} = {
     'https://distributed-network-37d054f03cf4.herokuapp.com/': `Basic ${btoa("node-hello-world:node-hello-world")}`
 }
 
+const HOSTS = [
+    'https://cmput404-project-backend-a299a47993fd.herokuapp.com/',
+    'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/',
+    'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/',
+    'https://distributed-network-37d054f03cf4.herokuapp.com/'
+]
+
 export const getAuthorizationHeader = (host: string = '') => {
-    console.log(host)
+    // console.log(host)
+    // console.log(localStorage.getItem('user_token'))
     return host ? AUTHORIZATION[host] : `Token ${localStorage.getItem('user_token') || ''}`
 };
 

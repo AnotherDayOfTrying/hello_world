@@ -1,77 +1,46 @@
 import React, { useEffect, useState } from 'react'
 import './feed.css'
 import Posts from './PostList/Posts'
-import { getAuthorsPostsAsync, getPosts, getPrivatePostsAsync, getPublicPostsAsync, getUnlistedPostsAsync } from '../../api/post'
+import { PostOutput, useGetAuthorsPosts, useGetPrivatePosts, useGetPublicPosts, useGetUnlistedPosts } from '../../api/post'
 import { useAuth } from '../../providers/AuthProvider'
+import { UseQueryResult } from '@tanstack/react-query'
+import { CircularProgress } from '@mui/material'
+import { PAGE_TYPE } from '../../App'
+import { enqueueSnackbar } from 'notistack'
 
 interface FeedProps {
-  private?: boolean;
-  unlisted?: boolean;
-  myposts?: boolean;
+  type: PAGE_TYPE
 }
-const Feed: React.FC<FeedProps> = ({ private: isPrivate, unlisted: isUnlisted, myposts: isMyPosts}: FeedProps) => {
-  const [data, setData] = useState<any>(null);
+
+const Feed: React.FC<FeedProps> = ({type}: FeedProps) => {
   const {userInfo} = useAuth();
+  const publicResponse = useGetPublicPosts(userInfo)
+  const privateResponse = useGetPrivatePosts(userInfo)
+  const unlistedResponse = useGetUnlistedPosts(userInfo)
+  const myResponse = useGetAuthorsPosts(userInfo)
 
-  
-  const fetchData = async () => {
-    try {
-      let response;
-      
-      if (isPrivate) {
-        response = await getPrivatePostsAsync(userInfo)
-      } else if (isUnlisted) {
-        response = await getUnlistedPostsAsync(userInfo)
-      } else if (isMyPosts) {
-        response = (await getAuthorsPostsAsync(userInfo))?.items
-      } else {
-        response = await getPublicPostsAsync(userInfo)
-        const posts = (await getPosts(userInfo)).items
-        response!.push(...posts)
+  const response = {
+    [PAGE_TYPE.PUBLIC]: publicResponse,
+    [PAGE_TYPE.PRIVATE]: privateResponse,
+    [PAGE_TYPE.UNLISTED]: unlistedResponse,
+    [PAGE_TYPE.MY_POST]: myResponse,
+  }[type]
+
+
+  if (response.isError) {
+    enqueueSnackbar('Unable to Fetch Posts', {variant: 'error'})
+  }
+
+  return (
+    <div className='feed'>
+      {
+        publicResponse.isLoading ? 
+          <CircularProgress/>
+          :
+          <Posts type={type} data={response.data} />
       }
-      // sort by to post being most recent
-      response?.reverse()
-      if (response)
-        setData(response)
-    } catch (err: any) {
-      console.error('Unknown Error:', err);
-    }
-  };
-
-  useEffect(() => {
-    if (userInfo)
-      fetchData();
-  }, [isPrivate, isUnlisted, isMyPosts]); 
-
-  const Reload = () => {
-    fetchData();    
-  }
-
-  if (isMyPosts){
-    return (
-      <div className='feed'>
-        <Posts Reload={Reload} myposts data={data}/>
-        </div>
-      
-    )
-  }
-  else if (isPrivate){ 
-    let transformedData = data ? data.flat() : []
-    return (
-      <div className='feed'>
-        <Posts Reload={Reload}  data={transformedData}/>
-      </div>
-      
-    )
-  }
-  else{
-    return (
-      <div className='feed'>
-        <Posts Reload={Reload} data={data}/>
-      </div>
-      
-    )
-  }
+    </div>
+  )
 }
 
 export default Feed

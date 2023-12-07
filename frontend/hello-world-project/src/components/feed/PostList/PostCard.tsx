@@ -13,23 +13,23 @@ import Comment from './Comment';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Popover, Typography } from '@mui/material';
-import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync, likeObjectsAsync } from '../../../api/post';
+import { CircularProgress, Popover, Typography } from '@mui/material';
+import { ImageOutput, PostOutput, getPostImageAsync, likeObjectsAsync, useDeletePost } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
 import { likeObjectAsync } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
+import { PAGE_TYPE } from '../../../App';
 
 
 type PostCardProps = {
     data: PostOutput;
     isLiked: boolean;
-    myposts?: boolean;
+    type: PAGE_TYPE;
     friends: FriendshipOutput[],
-    Reload: () => void;
 };
 
 
-const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCardProps) => {
+const PostCard = ({ data, type, isLiked, friends }: PostCardProps) => {
     const [isliked, setIsLiked] = React.useState(isLiked);
     const [userInfo, setUserInfo] = useState<any>({});
     const [image, setImage] = useState<ImageOutput>()
@@ -40,6 +40,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const commentButton = useRef<any>(null);
     const sendButton = useRef<any>(null);
     const likes = useRef<any>(null);
+    const handleDelete = useDeletePost();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -124,17 +125,12 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         )
     };
 
-    const handleDelete = async () => {
-        try {
-            await deletePostAsync(data.id)
-            Reload();
-        } catch (error: any) {
-            console.log(error);
-        };
-    }
-
     const handleEdit = () => {
         navigate('/post/edit', { state: { post: data, image: image } });
+    }
+
+    if (handleDelete.isSuccess) {
+        return <></>
     }
 
     return (
@@ -144,9 +140,13 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
                 <div className="postUsername">
                     <span >{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
                 </div>
-                {isMyPosts && 
+                {type === PAGE_TYPE.MY_POST && 
                 <div className="postOptions"> 
-                    <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleDelete}/>
+                    {handleDelete.isPending ?
+                        <CircularProgress/>
+                    :
+                        <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={() => handleDelete.mutateAsync(data.id)}/>
+                    }
                     <EditIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleEdit}>
                     </EditIcon>
                 </div>}
@@ -161,7 +161,7 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
                 <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
                 <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
-                    <Comment data={data} Reload={Reload}/>
+                    <Comment Reload={() => {}} data={data}/>
                 </Popover> 
                 <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupContent />

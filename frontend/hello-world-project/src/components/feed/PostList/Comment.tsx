@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import './comment.css';
 import CommentCard from './CommentCard';
 import SendIcon from '@mui/icons-material/Send';
-import { LikeListOutput, getAuthorsLikedAsync } from '../../../api/like';
+import { LikeListOutput } from '../../../api/like';
 import { useAuth } from '../../../providers/AuthProvider';
 import { CommentListOutput, createCommentAsync, getCommentsAsync } from '../../../api/comment';
 import { PostOutput } from '../../../api/post';
@@ -20,13 +20,13 @@ const Comment: React.FC<CommentProps> = ({ data, Reload }) => {
   const [likedComments, setLikedComments] = useState<LikeListOutput>();
   const {userInfo} = useAuth()
 
-  const fetchLiked = async() => {
-    setLikedComments(await getAuthorsLikedAsync(userInfo))
-  }
+  // const fetchLiked = async() => {
+  //   setLikedComments(await getAuthorsLikedAsync(userInfo))
+  // }
 
-  useEffect(() => {
-    fetchLiked()
-  }, [data]); 
+  // useEffect(() => {
+  //   fetchLiked()
+  // }, [data]); 
 
     
   const getComments = async () => {

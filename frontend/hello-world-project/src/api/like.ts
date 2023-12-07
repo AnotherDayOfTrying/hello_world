@@ -2,6 +2,7 @@ import axios from 'axios'
 import APIURL, {getAuthorizationHeader} from './config'
 import { enqueueSnackbar } from 'notistack';
 import { AuthorInput, AuthorOutput } from './author';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 export interface LikeInput {
@@ -37,18 +38,28 @@ const likeObjectAsync = async (author: AuthorOutput, likeInput: LikeInput): Prom
     }
 }
 
-const getAuthorsLikedAsync = async (author: AuthorOutput): Promise<LikeListOutput | undefined> => {
-    try {
-        const { data } = await axios.get<LikeListOutput>(`${author.id}/liked`, {
-            headers: {
-                Authorization: getAuthorizationHeader(author.host),
-            }
-        })
-        return data;
-    } catch {
-        // enqueueSnackbar('Unable to Fetch Liked Objects', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        return undefined
-    }
+const useLikeObject = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (args: {author: AuthorOutput, likeInput: LikeInput}) => {
+            const {author, likeInput}
+        }
+    })
 }
 
-export {likeObjectAsync, getAuthorsLikedAsync}
+const useGetAuthorsLiked = (author: AuthorOutput) => (
+    useQuery({
+        queryKey: ['liked', author.id],
+        queryFn: async () => {
+            const { data } = await axios.get<LikeListOutput>(`${author.id}/liked`, {
+                headers: {
+                    Authorization: getAuthorizationHeader(author.host),
+                }
+            })
+            return data;
+        }
+    })
+)
+
+export {likeObjectAsync, useGetAuthorsLiked}

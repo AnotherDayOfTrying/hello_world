@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import APIURL, {getAuthorizationHeader} from './config'
 import { enqueueSnackbar } from 'notistack';
 import { AuthorInput, AuthorOutput } from './author';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 type VISIBILITY = 'PUBLIC' | 'FRIENDS'
 type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
@@ -74,74 +75,141 @@ const getInbox = async (author: AuthorOutput) => {
     return data;
 }
 
-const getPosts = async (author: AuthorOutput) => {
-    const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
-        headers: {
-            Authorization: getAuthorizationHeader(author.host)
+
+// const getPosts = (author: AuthorOutput) => (
+//     useQuery({
+//         queryKey: ['posts', author.id],
+//         queryFn: async () => {
+//             const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
+//                 headers: {
+//                     Authorization: getAuthorizationHeader(author.host)
+//                 }
+//             })
+//             return data;
+//         }
+//     })
+// )
+
+// const getPosts = async (author: AuthorOutput) => {
+//     const { data } = await axios.get<InboxOutput>(`${APIURL}/posts/`, {
+//         headers: {
+//             Authorization: getAuthorizationHeader(author.host)
+//         }
+//     })
+//     return data;
+// }
+
+const useGetPublicPosts = (author: AuthorOutput) => (
+    useQuery({
+        queryKey: ['public-posts', author.id],
+        queryFn: async () => await getInbox(author),
+        select: (data) => data.items.filter(({visibility, unlisted}) => visibility == 'PUBLIC' && !unlisted),
+        refetchInterval: 3000
+    })
+)
+    // try {
+    //     const { items: posts } = await getInbox(author)
+    //     return posts.filter(({visibility, unlisted}) => visibility == 'PUBLIC' && !unlisted)
+    // } catch {
+    //     // enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+    //     return undefined
+    // }
+
+const useGetPrivatePosts = (author: AuthorOutput) => (
+    useQuery({
+        queryKey: ['private-posts', author.id],
+        queryFn: async () => await getInbox(author),
+        select: (data) => data.items.filter(({visibility, unlisted}) => visibility == 'FRIENDS' && !unlisted),
+        refetchInterval: 3000
+    })
+)
+    // try {
+    //     const { items: posts } = await getInbox(author)
+    //     return posts.filter(({visibility, unlisted}) => visibility == 'FRIENDS' && !unlisted)
+    // } catch {
+    //     // enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' } })
+    //     return undefined
+    // }
+
+const useGetUnlistedPosts = (author: AuthorOutput) => (
+    useQuery({
+        queryKey: ['unlisted-posts', author.id],
+        queryFn: async () => await getInbox(author),
+        select: (data) => data.items.filter(({unlisted}) => unlisted),
+        refetchInterval: 3000,
+    })
+)
+    // try {
+    //     const { items: posts } = await getInbox(author)
+    //     return posts.filter(({unlisted}) => unlisted)
+    // } catch {
+    //     // enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+    //     return undefined
+    // }
+
+
+const useGetAuthorsPosts = (author: AuthorOutput) => (
+    useQuery({
+        queryKey: ['my-own-posts', author.id],
+        queryFn: async () => {
+            const { data } = await axios.get<PostListOutput>(`${author.id}/posts/`, {
+                headers: {
+                    Authorization: getAuthorizationHeader(author.host),
+                }
+            })
+            return data
+        },
+        select: (data) => {return data.items},
+        refetchInterval: 3000
+    })
+)
+    // try {
+    //     const { data } = await axios.get<PostListOutput>(`${author.id}/posts/`, {
+    //         headers: {
+    //             Authorization: getAuthorizationHeader(),
+    //         }
+    //     })
+    //     return data
+    // } catch {
+    //     // enqueueSnackbar('Unable to Fetch Author\'s Posts', {variant: 'error'})
+    //     return undefined
+    // }
+
+
+
+const useCreatePost = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (args: {author: AuthorOutput, postInput: PostInput}) => {
+            const {author, postInput} = args;
+            const { data } = await axios.post<PostOutput>(`${author.id}/posts/`, postInput, {
+                headers: {
+                    Authorization: getAuthorizationHeader(author.host),
+                }
+            })
+            return data
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['my-own-posts', 'public-posts', 'private-posts', 'unlisted-posts'] })
         }
     })
-    return data;
 }
 
-const getPublicPostsAsync = async (author: AuthorOutput) => {
-    try {
-        const { items: posts } = await getInbox(author)
-        return posts.filter(({visibility, unlisted}) => visibility == 'PUBLIC' && !unlisted)
-    } catch {
-        // enqueueSnackbar('Unable to Fetch PUBLIC Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        return undefined
-    }
-}
-
-const getPrivatePostsAsync = async (author: AuthorOutput) => {
-    try {
-        const { items: posts } = await getInbox(author)
-        return posts.filter(({visibility, unlisted}) => visibility == 'FRIENDS' && !unlisted)
-    } catch {
-        // enqueueSnackbar('Unable to Fetch PRIVATE Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' } })
-        return undefined
-    }
-}
-
-const getUnlistedPostsAsync = async (author: AuthorOutput) => {
-    try {
-        const { items: posts } = await getInbox(author)
-        return posts.filter(({unlisted}) => unlisted)
-    } catch {
-        // enqueueSnackbar('Unable to Fetch UNLISTED Posts', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        return undefined
-    }
-}
-
-const getAuthorsPostsAsync = async (author: AuthorOutput): Promise<PostListOutput | undefined> => {
-    try {
-        const { data } = await axios.get<PostListOutput>(`${author.id}/posts/`, {
-            headers: {
-                Authorization: getAuthorizationHeader(),
-            }
-        })
-        return data
-    } catch {
-        // enqueueSnackbar('Unable to Fetch Author\'s Posts', {variant: 'error'})
-        return undefined
-    }
-}
-
-
-const createPostAsync = async (authorId: string, postInput: PostInput): Promise<PostOutput | undefined> => {
-    try {
-        const { data } = await axios.post<PostOutput>(`${authorId}/posts/`, postInput, {
-            headers: {
-                Authorization: getAuthorizationHeader(),
-            }
-        })
-        enqueueSnackbar('Post Uploaded Successfully', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
-        return data
-    } catch {
-        // enqueueSnackbar('Unable to Create Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
-        return undefined
-    }
-}
+// const createPostAsync = async (authorId: string, postInput: PostInput): Promise<PostOutput | undefined> => {
+//     try {
+//         const { data } = await axios.post<PostOutput>(`${authorId}/posts/`, postInput, {
+//             headers: {
+//                 Authorization: getAuthorizationHeader(),
+//             }
+//         })
+//         enqueueSnackbar('Post Uploaded Successfully', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
+//         return data
+//     } catch {
+//         // enqueueSnackbar('Unable to Create Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }});
+//         return undefined
+//     }
+// }
 
 const editPostAsync = async (postId: string, postInput: PostInput) => {
     try {
@@ -156,17 +224,30 @@ const editPostAsync = async (postId: string, postInput: PostInput) => {
     }
 }
 
-const deletePostAsync = async (postId: string) => {
-    try {
-        await axios.delete(`${postId}/`, { //trailing slash is required
-            headers: {
-                Authorization: getAuthorizationHeader(),
-            },
-        });
-    } catch {
-        // enqueueSnackbar('Unable to Delete Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-    }
+const useDeletePost = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (postId: string) => {
+            await axios.delete(`${postId}/`, { //trailing slash is required
+                headers: {
+                    Authorization: getAuthorizationHeader(),
+                },
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['my-own-posts', 'public-posts', 'private-posts', 'unlisted-posts'] })
+        }
+    })
 }
+
+// const deletePostAsync = async (postId: string) => {
+//     try {
+        
+//     } catch {
+//         // enqueueSnackbar('Unable to Delete Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+//     }
+// }
 
 const sendPostAsync = async (authorId: string, sendPostInput: SendPostInput): Promise<SendPostOutput | undefined> => {
     try {
@@ -245,17 +326,17 @@ const deletePostImageAsync = async (postId: string) => {
 }
 
 export {
-    createPostAsync,
-    getAuthorsPostsAsync,
-    getPublicPostsAsync,
-    getPrivatePostsAsync,
-    getUnlistedPostsAsync,
-    deletePostAsync,
+    useCreatePost,
+    useGetAuthorsPosts,
+    useGetPublicPosts,
+    useGetPrivatePosts,
+    useGetUnlistedPosts,
+    useDeletePost,
     sendPostAsync,
     editPostAsync,
     createPostImageAsync,
     deletePostImageAsync,
     getPostImageAsync,
     likeObjectsAsync,
-    getPosts
+    // getPosts
 }

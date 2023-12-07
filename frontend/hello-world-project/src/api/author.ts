@@ -1,5 +1,5 @@
 import axios from 'axios'
-import APIURL, {getAuthorizationHeader, addReferer} from './config'
+import APIURL, {getAuthorizationHeader} from './config'
 import { enqueueSnackbar } from 'notistack';
 
 export interface AuthorInput {

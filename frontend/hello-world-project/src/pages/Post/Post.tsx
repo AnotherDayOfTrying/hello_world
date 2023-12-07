@@ -5,10 +5,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import Leftbar from '../../components/leftbar/Leftbar';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider';
-import { ImageOutput, PostOutput, createPostAsync, createPostImageAsync, deletePostImageAsync, editPostAsync, sendPostAsync } from '../../api/post';
+import { ImageOutput, PostOutput, useCreatePost, createPostImageAsync, deletePostImageAsync, editPostAsync, sendPostAsync } from '../../api/post';
 import axios from 'axios';
 import { AuthorOutput, getAllLocalAuthorsAsync } from '../../api/author';
-import { getFriendsAsync } from '../../api/friend';
+// import { getFriendsAsync } from '../../api/friend';
 
 
 
@@ -22,6 +22,7 @@ export default function PostShare() {
     if (state)
         data = state;
     const location = useLocation();
+    const createPostHandler = useCreatePost()
 
     useEffect(() => {
       // Fetch or update data based on the route change
@@ -102,7 +103,7 @@ export default function PostShare() {
             };
         } else {
             try {
-                const response = await createPostAsync(userInfo.id, {
+                const response = await createPostHandler.mutateAsync({author: userInfo, postInput: {
                     title: 'Post Title',
                     author: userInfo,
                     description: text,
@@ -111,7 +112,7 @@ export default function PostShare() {
                     visibility: privacy === 'PUBLIC' ? 'PUBLIC' : 'FRIENDS',
                     unlisted: privacy === 'UNLISTED',
                     categories: '',
-                }); 
+                }})
                 if (image)
                     await createPostImageAsync(response!.id!, {image: image.data || ''})
                 const sendList: AuthorOutput[] = []
@@ -119,7 +120,7 @@ export default function PostShare() {
                    sendList.push(...(await getAllLocalAuthorsAsync())!.items)
                    // TODO: send to other apps
                 } else if (privacy === 'PRIVATE') {
-                    sendList.push(...(await getFriendsAsync(userInfo.id))!.map((friendship) => {return friendship.actor}))
+                    // sendList.push(...(await getFriendsAsync(userInfo.id))!.map((friendship) => {return friendship.actor}))
                 } else if (privacy === 'UNLISTED') {
                     // send to self
                     sendList.push(userInfo)

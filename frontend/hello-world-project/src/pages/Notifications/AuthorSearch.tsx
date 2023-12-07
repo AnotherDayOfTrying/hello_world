@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import SearchIcon from '@mui/icons-material/Search';
 import './authorSearch.css'
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
+import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 

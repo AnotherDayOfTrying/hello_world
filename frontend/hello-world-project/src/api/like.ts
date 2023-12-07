@@ -1,6 +1,5 @@
 import axios from 'axios'
-import APIURL, {getAuthorizationHeader} from './config'
-import { enqueueSnackbar } from 'notistack';
+import {getAuthorizationHeader} from './config'
 import { AuthorInput, AuthorOutput } from './author';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -23,28 +22,21 @@ export interface LikeListOutput {
     items: LikeOutput[],
 }
 
-const likeObjectAsync = async (author: AuthorOutput, likeInput: LikeInput): Promise<LikeOutput | undefined> => {
-
-    try {
-        const { data } = await axios.post<LikeOutput>(`${author.id}/inbox`, likeInput, {
-            headers: {
-                Authorization: getAuthorizationHeader(author.host),
-            }
-        })
-        return data
-    } catch {
-        // enqueueSnackbar('Unable to Like Post', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        return undefined
-    }
-}
-
 const useLikeObject = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
         mutationFn: async (args: {author: AuthorOutput, likeInput: LikeInput}) => {
-            const {author, likeInput}
-        }
+            const {author, likeInput} = args
+
+            const { data } = await axios.post<LikeOutput>(`${author.id}/inbox`, likeInput, {
+                headers: {
+                    Authorization: getAuthorizationHeader(author.host),
+                }
+            })
+            return data
+        },
+        onSuccess: () => {queryClient.invalidateQueries({queryKey: ['liked']})}
     })
 }
 
@@ -62,4 +54,4 @@ const useGetAuthorsLiked = (author: AuthorOutput) => (
     })
 )
 
-export {likeObjectAsync, useGetAuthorsLiked}
+export {useLikeObject, useGetAuthorsLiked}

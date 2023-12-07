@@ -33,39 +33,13 @@ const Posts: React.FC<PostsProps> = ({ data, type}) => {
       {
         data && data.length > 0 ?
           data.map((post) => {
-            const isLiked = !!liked.data!.items.find((likedPost) => likedPost.object === post.id);
-            return <PostCard key={post.id} type={type} data={post} isLiked={isLiked} friends={[]} />
+            return <PostCard key={post.id} type={type} data={post} liked={liked.data!} friends={friends.data!} />
           })
         :
           <EmptyPostCard />
       }
     </div>
   )
-
-  // useEffect(() => {
-  //   if (userInfo) {
-  //     fetchLiked()
-  //     fetchFriends()
-  //   }
-  // }, [Reload]); 
-
-  // const dataIsEmpty = data ? data.length === 0 : false;
-  // return (
-  //   <div className="posts">
-  //     {data && !dataIsEmpty && likedPosts ? (
-  //       isMyPosts ? (
-  //         data.map((post) => {
-  //           const isLiked = !!likedPosts.items.find((likedPost) => likedPost.object === post.id);
-  //           return <PostCard Reload={Reload} myposts data={post} isLiked={isLiked} friends={friends!} />;
-  //         })
-  //       ) : (
-  //         data.map((post) => {
-  //           const isLiked = !!likedPosts.items.find((likedPost) => likedPost.object === post.id);
-  //           return <PostCard Reload={Reload} data={post} isLiked={isLiked} friends={friends!} />;
-  //         })
-  //     )) : <EmptyPostCard />}
-  //   </div>
-  // );
 };
 
 export default Posts

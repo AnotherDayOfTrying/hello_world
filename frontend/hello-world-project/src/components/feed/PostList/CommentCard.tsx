@@ -3,7 +3,7 @@ import './comment.css';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import { CommentOutput } from '../../../api/comment';
-import { likeObjectAsync } from '../../../api/like';
+import { useLikeObject } from '../../../api/like';
 import { useAuth } from '../../../providers/AuthProvider';
 
 
@@ -16,6 +16,7 @@ type CommentCardProps = {
 const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
     const [isliked, setIsLiked] = React.useState(isLiked);
     const {userInfo} = useAuth()
+    const likeObjectHandler = useLikeObject()
 
     useEffect(() => {
         setIsLiked(isLiked);
@@ -42,10 +43,13 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
         } else {
             setIsLiked(!isliked);
             try {
-                const response = await likeObjectAsync(comment.author, {
-                    type: 'Like',
-                    author: userInfo,
-                    object: comment.id,
+                const response = likeObjectHandler.mutateAsync({
+                    author: comment.author,
+                    likeInput: {
+                        type: 'Like',
+                        author: userInfo,
+                        object: comment.id,
+                    }
                 })
                 setIsLiked(true);
                 return response;

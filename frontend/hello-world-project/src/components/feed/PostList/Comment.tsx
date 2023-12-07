@@ -4,57 +4,46 @@ import CommentCard from './CommentCard';
 import SendIcon from '@mui/icons-material/Send';
 import { LikeListOutput } from '../../../api/like';
 import { useAuth } from '../../../providers/AuthProvider';
-import { CommentListOutput, createCommentAsync, getCommentsAsync } from '../../../api/comment';
+import { useCreateComment, useGetComments } from '../../../api/comment';
 import { PostOutput } from '../../../api/post';
 
 
 
 interface CommentProps {
   data: PostOutput;
-  Reload: () => void;
+  liked: LikeListOutput
 }
 
-const Comment: React.FC<CommentProps> = ({ data, Reload }) => {
-  const [comments, setComments] = useState<CommentListOutput>()
+const Comment: React.FC<CommentProps> = ({ data, liked }) => {
   const [text, setText] = useState<string>('')
-  const [likedComments, setLikedComments] = useState<LikeListOutput>();
   const {userInfo} = useAuth()
+  const comments = useGetComments(data)
+  const createCommentHandler = useCreateComment();
 
-  // const fetchLiked = async() => {
-  //   setLikedComments(await getAuthorsLikedAsync(userInfo))
-  // }
-
-  // useEffect(() => {
-  //   fetchLiked()
-  // }, [data]); 
-
-    
-  const getComments = async () => {
-    setComments(await getCommentsAsync(data.comments))
-  }
-
-  useEffect(() => {
-    getComments();
-  }, [data]);
 
   const sendComment = async () => {
-    createCommentAsync(data.comments, {
-      author: userInfo,
-      comment: text,
-      contentType: 'text/plain',
+    await createCommentHandler.mutateAsync({
+      post: data,
+      commentInput: {
+        author: userInfo,
+        comment: text,
+        contentType: 'text/plain',
+      }
     })
-    .then(() => {Reload()})
+    setText('')
   }
+
+
   const handleTextChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setText(event.target.value);
-};
+  };
     return (
         <div className="comments">
           {
-          comments && comments.comments.length > 0 && likedComments ? 
+          comments.isSuccess && comments.data.comments.length > 0 ? 
             (
-              comments.comments.map((comment) => {
-              const isLiked = !!likedComments.items.find((likedComment) => likedComment.object === comment.id);
+              comments.data!.comments.map((comment) => {
+              const isLiked = !!liked.items.find((likedComment) => likedComment.object === comment.id);
               return <CommentCard comment={comment} isLiked={isLiked} />})
             )
             :

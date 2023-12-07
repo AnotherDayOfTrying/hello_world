@@ -3,7 +3,6 @@ import './feed.css'
 import Posts from './PostList/Posts'
 import { PostOutput, useGetAuthorsPosts, useGetPrivatePosts, useGetPublicPosts, useGetUnlistedPosts } from '../../api/post'
 import { useAuth } from '../../providers/AuthProvider'
-import { UseQueryResult } from '@tanstack/react-query'
 import { CircularProgress } from '@mui/material'
 import { PAGE_TYPE } from '../../App'
 import { enqueueSnackbar } from 'notistack'
@@ -14,10 +13,10 @@ interface FeedProps {
 
 const Feed: React.FC<FeedProps> = ({type}: FeedProps) => {
   const {userInfo} = useAuth();
-  const publicResponse = useGetPublicPosts(userInfo)
-  const privateResponse = useGetPrivatePosts(userInfo)
-  const unlistedResponse = useGetUnlistedPosts(userInfo)
-  const myResponse = useGetAuthorsPosts(userInfo)
+  const publicResponse = useGetPublicPosts(userInfo, type === PAGE_TYPE.PUBLIC)
+  const privateResponse = useGetPrivatePosts(userInfo, type === PAGE_TYPE.PRIVATE)
+  const unlistedResponse = useGetUnlistedPosts(userInfo, type === PAGE_TYPE.UNLISTED)
+  const myResponse = useGetAuthorsPosts(userInfo, type === PAGE_TYPE.MY_POST)
 
   const response = {
     [PAGE_TYPE.PUBLIC]: publicResponse,

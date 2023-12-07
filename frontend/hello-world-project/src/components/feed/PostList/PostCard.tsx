@@ -14,38 +14,42 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { CircularProgress, Popover, Typography } from '@mui/material';
-import { ImageOutput, PostOutput, getPostImageAsync, likeObjectsAsync, useDeletePost } from '../../../api/post';
+import { ImageOutput, PostOutput, useDeletePost, useGetLikeObjects, useGetPostImage } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
-import { likeObjectAsync } from '../../../api/like';
+import { LikeListOutput, useLikeObject } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
 import { PAGE_TYPE } from '../../../App';
+import { useAuth } from '../../../providers/AuthProvider';
 
 
 type PostCardProps = {
     data: PostOutput;
-    isLiked: boolean;
+    liked: LikeListOutput;
     type: PAGE_TYPE;
     friends: FriendshipOutput[],
 };
 
 
-const PostCard = ({ data, type, isLiked, friends }: PostCardProps) => {
-    const [isliked, setIsLiked] = React.useState(isLiked);
-    const [userInfo, setUserInfo] = useState<any>({});
-    const [image, setImage] = useState<ImageOutput>()
+const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
+    const {userInfo} = useAuth();
+    const [isliked, setIsLiked] = React.useState(false);
     const [openComments, setOpenComments] = useState<boolean>(false);
     const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
     const [openLikes, setOpenLikes] = useState<boolean>(false);
-    const [likeAuthors, setLikeAuthors] = useState<any>(null);
     const commentButton = useRef<any>(null);
     const sendButton = useRef<any>(null);
     const likes = useRef<any>(null);
     const handleDelete = useDeletePost();
     const navigate = useNavigate();
+    const likeObjectHandler = useLikeObject()
+    const likeAuthors = useGetLikeObjects(data)
+    const image = useGetPostImage(data)
+    
 
     useEffect(() => {
+        const isLiked = !!liked.items.find((likedPost)=> likedPost.object === data.id);
         setIsLiked(isLiked);
-      }, [isLiked]);
+      }, [liked]);
 
     const handleLike = async () => {
         if (isliked) {
@@ -54,34 +58,21 @@ const PostCard = ({ data, type, isLiked, friends }: PostCardProps) => {
         } else {
             setIsLiked(!isliked);
             try {
-            const response = await likeObjectAsync(data.author, {
-                type: 'Like',
-                author: userInfo,
-                object: data.id
-            })
-            setIsLiked(true);
-            return response;
-        } catch (error: any) {
-            console.log(error);
-        };
+                const response = await likeObjectHandler.mutateAsync({
+                    author: data.author,
+                    likeInput: {
+                        type: 'Like',
+                        author: userInfo,
+                        object: data.id
+                    }
+                })
+                setIsLiked(true);
+                return response;
+            } catch (error: any) {
+                console.log(error);
+            };
         }
-    };
-
-    const fetchUserInfo = async () => {
-        setUserInfo(await getAuthorAsync(data.author));
     }
-    const fetchImageData = async () => {
-        setImage(await getPostImageAsync(data))
-    }
-    const fetchLikes = async () => {
-        setLikeAuthors(await likeObjectsAsync(data)) 
-    }
-
-    useEffect(() => {
-        fetchUserInfo()
-        fetchImageData()
-        fetchLikes()
-    }, [data]);
 
     const renderDescription = (description: string) => {
         if (description.includes('data:image/')) {
@@ -91,13 +82,15 @@ const PostCard = ({ data, type, isLiked, friends }: PostCardProps) => {
         if (linkify.test(description)) {
             return (
             <Typography>
-                <Linkify >{description}</Linkify> 
+                <Linkify>{description}</Linkify> 
             </Typography>
             );
         } else {
             return (
             <Typography>
-                <ReactMarkdown>{description}</ReactMarkdown>
+                <div>
+                    <ReactMarkdown>{description}</ReactMarkdown>
+                </div>
             </Typography>
             );
         }
@@ -118,15 +111,19 @@ const PostCard = ({ data, type, isLiked, friends }: PostCardProps) => {
     const PopupLikes: React.FC = () => {
         return(
             <div className='popupContainer'>
-                {likeAuthors ? likeAuthors.map((friend: any) => (
-                <FriendCard data={friend} post={data} shareList/>
-                )) : <></>}
+                {likeAuthors ? likeAuthors.data!.map((friend: any) => {
+                    friend = {
+                        ...friend,
+                        actor: friend.author
+                    }
+                    return <FriendCard data={friend} post={data} shareList/>
+                }) : <></>}
             </div>
         )
     };
 
     const handleEdit = () => {
-        navigate('/post/edit', { state: { post: data, image: image } });
+        navigate('/post/edit', { state: { post: data, image: image.data } });
     }
 
     if (handleDelete.isSuccess) {
@@ -152,16 +149,16 @@ const PostCard = ({ data, type, isLiked, friends }: PostCardProps) => {
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.image_url || image}`} alt="" className='postImage'/>}
+            {image && <img src={`${image.data?.image_url || image.data}`} alt="" className='postImage'/>}
             <div className="reactions">
                 <div className="likes">
                     {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 
-                    {data.visibility === 'FRIENDS'? <div ref={likes} onClick = {() => {setOpenLikes(!openLikes)}}>likes</div>: <></>}
+                    {type === PAGE_TYPE.MY_POST ? <div ref={likes} onClick = {() => {setOpenLikes(!openLikes)}}>likes</div> : <></>}
                 </div> 
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
                 <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
                 <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
-                    <Comment Reload={() => {}} data={data}/>
+                    <Comment data={data} liked={liked}/>
                 </Popover> 
                 <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupContent />

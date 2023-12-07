@@ -86,10 +86,10 @@ WSGI_APPLICATION = 'hello_world_rest_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db8eijoeknfsvv',
-        'USER': 'ixrzzsdfaomeug',
-        'PASSWORD': 'aa34467caf011e49e3708f2c0ea4975d2b6eecb6407c1209630a81f396a95602',
-        'HOST': 'ec2-3-210-173-88.compute-1.amazonaws.com',
+        'NAME': 'd4ke7fdbs27cus',
+        'USER': 'gkappzrnyxgolm',
+        'PASSWORD': 'fa8a0c7d1abb41368d50edfd37340740dcced0ff23d19e7edd710f7b86d5a189',
+        'HOST': 'ec2-3-95-121-6.compute-1.amazonaws.com',
         'PORT': '5432',
     }
 }

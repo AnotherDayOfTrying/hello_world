@@ -83,11 +83,14 @@ WSGI_APPLICATION = 'hello_world_rest_api.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db8eijoeknfsvv',
+        'USER': 'ixrzzsdfaomeug',
+        'PASSWORD': 'aa34467caf011e49e3708f2c0ea4975d2b6eecb6407c1209630a81f396a95602',
+        'HOST': 'ec2-3-210-173-88.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 

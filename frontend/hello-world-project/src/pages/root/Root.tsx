@@ -28,7 +28,7 @@ const Root = () => {
     const {enqueueSnackbar} = useSnackbar();
 
     useEffect(() => {
-        getNode()
+        // getNode()
         timeline
             .to(button.current, { scale: 1.2})
             .to(root.current, {background: "linear-gradient(30deg, #ef5757 0%, #e1ae4a 100%)"}, 0)
@@ -59,13 +59,13 @@ const Root = () => {
       gsap.to(backdrop.current, {top: "0", onComplete: () => {navigate('/login')}})
     }
 
-    const getNode = async () => {
-      try {
-        await axios.get(`${APIURL}/authors/node`)
-      } catch {
-        enqueueSnackbar("Unable to fetch authors", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-      }
-    }
+    // const getNode = async () => {
+    //   try {
+    //     await axios.get(`${APIURL}/authors/node`)
+    //   } catch {
+    //     enqueueSnackbar("Unable to fetch authors", {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+    //   }
+    // }
 
 
     return (

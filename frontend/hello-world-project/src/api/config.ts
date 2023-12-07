@@ -1,3 +1,4 @@
+import { useAuth } from "../providers/AuthProvider";
 
 const APIURL: {[key: string]: string} = {
     "development": "http://127.0.0.1:8000",

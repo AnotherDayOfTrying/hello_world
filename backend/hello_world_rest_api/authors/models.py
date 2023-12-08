@@ -160,13 +160,7 @@ class Inbox_Item(models.Model):
     object_id = models.UUIDField()
     contentObject = GenericForeignKey('content_type', 'object_id')
 
-class PostImage(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='postimages/', blank=True, null=True)
-    image_url = models.URLField(max_length=255, null = True, blank = True)
-    @property
-    def type(self):
-        return 'image'
+
         
 
     

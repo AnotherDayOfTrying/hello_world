@@ -19,7 +19,5 @@ urlpatterns = [
     path('authors/<uuid:author_id>/liked/', views.LikedView.as_view(), name='getliked'),
     path('authors/<uuid:author_id>/requests/', views.FollowRequestView.as_view(), name='getfollowrequests'),
     path('authors/<uuid:author_id>/friends/', views.FriendsView.as_view(), name='getfriends'),
-    path('authors/node/', views.SetupNode.as_view(), name='getnodeauthors'),
     path('nodes/', views.GetNodesView.as_view(), name='getnodes'),
-    path('posts/', views.GetPublicPost.as_view(), name = 'getallposts'),
 ]

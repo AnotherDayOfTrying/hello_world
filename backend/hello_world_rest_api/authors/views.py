@@ -48,15 +48,23 @@ def getFollowers(request, author_id):
 @authentication_classes([TokenAuthentication, NodesAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def getOneAuthor(request, author_id):
-    author = get_object_or_404(Author,pk=author_id)
+    
     if request.method == 'GET':
+        author = get_object_or_404(Author,pk=author_id)
         serializer = AuthorSerializer(author, context={'request': request})       
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'POST':
-        serializer = AuthorSerializer(instance=author, data=request.data,partial=True,context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        author = Author.objects.filter(uid=author_id).first()
+        if author:
+            serializer = AuthorSerializer(instance=author, data=request.data,partial=True,context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            serializer = AuthorSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FriendshipView(generics.CreateAPIView):

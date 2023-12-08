@@ -1,7 +1,7 @@
 import { FriendshipInput } from "./friend";
 
 
-export interface WebWiazrdsFriendshipInput {
+export interface WebWizardsFriendshipInput {
     actor: {
         type: 'author' | 'server_admin' | 'node',
         displayName: string,
@@ -18,13 +18,38 @@ export interface WebWiazrdsFriendshipInput {
     }
 }
 
+export interface WebWizardsLikeInput {
+    context?: string,
+    summary: string,
+    author: {
+        type: 'author' | 'server_admin' | 'node',
+        displayName: string,
+        server_host: string,
+        url: string,
+        github_link: string,
+    },
+    object: string,
+    '@context'?: string,
+}
+
+export interface WebWizardsSendPostInput {
+    type: 'post',
+    title: string,
+    source: string,
+    origin: string,
+    contentType: 'text/markdown' | 'text/plain' | 'Image' | 'HTML' | 'URL/Link',
+    content: string,
+    visibility: 'FRIENDS' | 'PUBLIC',
+    unlisted: boolean,
+}
+
 enum HOST {
     WEB_WIZARDS = 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/'
 }
 
 export const friendRequestAdapter = (host: string, friendRequestInput: FriendshipInput) => {
     if (host === HOST.WEB_WIZARDS) {
-        const adaptedRequest: WebWiazrdsFriendshipInput = {
+        const adaptedRequest: WebWizardsFriendshipInput = {
             actor: {
                 type: 'author',
                 displayName: friendRequestInput.actor.displayName,

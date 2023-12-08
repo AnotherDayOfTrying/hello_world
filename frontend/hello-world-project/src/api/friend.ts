@@ -25,7 +25,9 @@ const useSendFriendRequest = () => {
     return useMutation({
         mutationFn: async (args: {author: AuthorOutput, sendFriendRequestInput: FriendshipInput}) => {
             const {author, sendFriendRequestInput} = args;
-            await axios.post(`${author.id}/inbox/`, friendRequestAdapter(author.host, sendFriendRequestInput), {
+            const isBackslash = author.host !== 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/'
+
+            await axios.post(`${author.id}/inbox${isBackslash ? '/': ''}`, friendRequestAdapter(author.host, sendFriendRequestInput), {
                 headers: {
                     Authorization: getAuthorizationHeader(author.host),
                 }

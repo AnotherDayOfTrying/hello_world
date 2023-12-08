@@ -72,16 +72,16 @@ class FriendshipView(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request,author_id,foreign_author_id):
-        author = get_object_or_404(Author,uid=author_id)
-        foreign_author = get_object_or_404(Author,uid=foreign_author_id)
+        author = json.dumps({'uid': str(author_id)})
+        foreign_author = json.dumps({'uid': str(foreign_author_id)})
         friendship = Friendship.objects.filter(actor=foreign_author,object=author,status__in = [2,3])
         if friendship:
             return Response({'is_follower': True}, status=status.HTTP_200_OK)
         else:
             return Response({'is_follower': False}, status=status.HTTP_200_OK)
     def delete(self, request,author_id,foreign_author_id):
-        author = get_object_or_404(Author,uid=author_id)
-        foreign_author = get_object_or_404(Author,uid=foreign_author_id)
+        author = json.dumps({'uid': str(author_id)})
+        foreign_author = json.dumps({'uid': str(foreign_author_id)})
         friendship = get_object_or_404(Friendship,actor=foreign_author,object=author)
         reverse = Friendship.objects.filter(actor=author,object=foreign_author,status__in = [2,3]).first()
         if reverse and reverse.status == 3:
@@ -90,8 +90,8 @@ class FriendshipView(generics.CreateAPIView):
         friendship.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
     def put(self,request,author_id,foreign_author_id):
-        author = get_object_or_404(Author,uid=author_id)
-        foreign_author = get_object_or_404(Author,uid=foreign_author_id)
+        author = json.dumps({'uid': str(author_id)})
+        foreign_author = json.dumps({'uid': str(foreign_author_id)})
         friendship = Friendship.objects.filter(actor=foreign_author,object=author).first()
         reverse = Friendship.objects.filter(actor=author,object=foreign_author,status__in = [2,3]).first()
         

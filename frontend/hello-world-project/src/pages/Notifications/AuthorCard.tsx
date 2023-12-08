@@ -2,6 +2,8 @@ import './authorCard.css'
 import { AuthorOutput } from '../../api/author'
 import { useAuth } from '../../providers/AuthProvider'
 import { useSendFriendRequest } from '../../api/friend'
+import { Chip } from '@mui/material'
+import { getGroupName } from '../../api/config'
 
 interface AuthorCardProps {
     data: AuthorOutput
@@ -25,10 +27,10 @@ export const AuthorCard = ({ data }: AuthorCardProps) => {
 
     return (
         <div className="authorCard">
+            <Chip label={getGroupName(data.host)} variant="outlined" />
             <img src={`${data.profileImage}`} alt="" className="authorCardImg" />
             <div className="authorCardUsername">
                 <span >{data.displayName}</span>
-                <span>{data.host}</span>
             </div>
             <button onClick={handleFriendRequest} className='requestButton'>Send Friend Request</button>
         </div>

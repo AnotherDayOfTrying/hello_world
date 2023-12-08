@@ -13,13 +13,14 @@ import Comment from './Comment';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { CircularProgress, Popover, Typography } from '@mui/material';
+import { Chip, CircularProgress, Popover, Typography } from '@mui/material';
 import { ImageOutput, PostOutput, useDeletePost, useGetLikeObjects, useGetPostImage } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
 import { LikeListOutput, useLikeObject } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
 import { PAGE_TYPE } from '../../../App';
 import { useAuth } from '../../../providers/AuthProvider';
+import { getGroupName } from '../../../api/config';
 
 
 type PostCardProps = {
@@ -135,7 +136,8 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
             <div className="postTop">
                 <img src={`${data.author.profileImage}`} alt="" className="postProfileImg" />
                 <div className="postUsername">
-                    <span >{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
+                    <span>{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
+                    <span><Chip label={getGroupName(data.author.host)} variant="outlined" /></span>
                 </div>
                 {type === PAGE_TYPE.MY_POST && 
                 <div className="postOptions"> 

@@ -42,6 +42,8 @@
 .postUsername{
     display: flex;
     font-weight: bold;
+    align-items: center;
+    gap: 1em;
 }
 .popupContainer{
     background-color: white;

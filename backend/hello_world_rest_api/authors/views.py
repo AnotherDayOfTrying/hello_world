@@ -114,7 +114,7 @@ class AllAuthorsView(generics.CreateAPIView):
         except ValueError:
             return Response({'error': 'Invalid page or page_size parameter'}, status=400)
         
-        queryset = Author.objects.filter(is_approved=True, displayName__isnull=False).order_by('uid')
+        queryset = Author.objects.filter(is_approved=True, is_a_node = False, is_superuser = False).order_by('uid')
         paginator = PageNumberPagination()
         paginator.page_size = page_size
         page = paginator.paginate_queryset(queryset,request)
@@ -464,7 +464,12 @@ class FriendsView(generics.CreateAPIView):
         requests = Friendship.objects.filter(object=author, status=3) | Friendship.objects.filter(actor=author, status=3)
         serializer = FriendShipSerializer(requests, many=True, context={'request':request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+class GetNodesView(generics.CreateAPIView):
+    def get(self, request):
+        nodes = Author.objects.filter(is_a_node=True)
+        serializer = AuthorSerializer(nodes, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 class SetupNode(generics.CreateAPIView):
     authentication_classes = [TokenAuthentication, NodesAuthentication]
     permission_classes = [permissions.IsAuthenticated]

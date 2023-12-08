@@ -28,6 +28,7 @@ export const AuthorCard = ({ data }: AuthorCardProps) => {
             <img src={`${data.profileImage}`} alt="" className="authorCardImg" />
             <div className="authorCardUsername">
                 <span >{data.displayName}</span>
+                <span>{data.host}</span>
             </div>
             <button onClick={handleFriendRequest} className='requestButton'>Send Friend Request</button>
         </div>

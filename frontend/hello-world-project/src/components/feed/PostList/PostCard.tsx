@@ -45,10 +45,6 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
     const likeObjectHandler = useLikeObject()
     const likeAuthors = useGetLikeObjects(data)
 
-    const isImagePost = data.contentType === 'image/jpeg' || data.contentType === 'image/png' || data.contentType  === 'application/base64'
-
-    const image = useGetPostImage(data, isImagePost)
-
     useEffect(() => {
         const isLiked = !!liked.items.find((likedPost)=> likedPost.object === data.id);
         setIsLiked(isLiked);
@@ -78,22 +74,20 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
     }
 
     const renderContent = (content: string, contentType: CONTENT_TYPE) => {
-        // if (description.includes('data:image/')) {
-        //     return (<></>)
-        // }
-        
-        if (contentType === 'image/png' || contentType === 'image/jpeg') {
-            return <></>
-        } else if (contentType === 'application/base64') {
-            return <img src={content} />
+        if (contentType === 'image/png' || contentType === 'image/jpeg' || contentType === 'application/base64') {
+            return <img className='postImage' src={content} />
         } else if (contentType === 'text/plain') {
             return (
                 <Typography>
                     <Linkify>{content}</Linkify> 
                 </Typography>
-            )   
+            )
         } else {
-            return <ReactMarkdown>{content}</ReactMarkdown>
+            return (
+                <div className='markdown'>
+                    <ReactMarkdown urlTransform={(value: string) => value}>{content}</ReactMarkdown>
+                </div>
+            )
         }
     };
 
@@ -124,7 +118,7 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
     };
 
     const handleEdit = () => {
-        navigate('/post/edit', { state: { post: data, image: image.data } });
+        navigate('/post/edit', { state: { post: data } });
     }
 
     if (handleDelete.isSuccess) {
@@ -153,7 +147,6 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
             <h1>{data.title}</h1>
             <h3>{data.description}</h3>
             {data.content && renderContent(data.content, data.contentType)}
-            {image && isImagePost && <img src={`${image.data?.image_url || image.data}`} alt="" className='postImage'/>}
             <div className="reactions">
                 <div className="likes">
                     {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 
@@ -170,6 +163,9 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
                 <Popover open={openLikes} anchorEl={likes.current} onClose={() => {setOpenLikes(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupLikes />
                 </Popover>
+            </div>
+            <div className='categories'>
+                {JSON.parse(data.categories || '[]').join(' | ')}
             </div>
         </div>
     );

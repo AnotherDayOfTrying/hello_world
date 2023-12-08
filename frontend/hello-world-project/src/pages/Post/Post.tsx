@@ -10,17 +10,18 @@ import axios from 'axios';
 import { AuthorOutput, getAllLocalAuthorsAsync } from '../../api/author';
 import { useGetFriends } from '../../api/friend';
 import { Button, Chip, Stack, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { enqueueSnackbar } from 'notistack';
 
 
 
 export default function PostShare() {
     const { state } = useLocation();
-    let data: {post: PostOutput, image: ImageOutput} | undefined = undefined;
+    let data: {post: PostOutput} | undefined = undefined;
     if (state)
         data = state;
     const [title, setTitle] = useState<string>('')
     const [description, setDescription] = useState<string>('')
-    const [contentType, setContentType] = useState<CONTENT_TYPE>('text/markdown')
+    const [contentType, setContentType] = useState<CONTENT_TYPE>('text/plain')
     const [categories, setCategories] = useState<string[]>([])
     const [category, setCategory] = useState<string>('')
     const [image, setImage] = useState<any | null>(null);
@@ -50,23 +51,24 @@ export default function PostShare() {
     }
     , [data]);
 
+    const isImagePost = (contentType: string) => contentType === 'image/jpeg' || contentType === 'image/png' || contentType  === 'application/base64'
+
     const setData = async () => {
         if (data) {
-            console.log(data.post)
             if (data.post.content) {
                 setTitle(data.post.title)
                 setDescription(data.post.description)
                 setText(data.post.content)
                 setContentType(data.post.contentType)
-                setCategories(JSON.parse(data.post.categories))
+                setCategories(JSON.parse(data.post.categories || '[]'))
             }
-            if (data.image && data.image.image_url) {
-                const response = await axios.get(`${data.image.image_url}`, {
-                    responseType: 'blob'
-                });
-                const blob = await response.data;
-                const file = new File([blob], "image.jpg", {type: "image/jpeg"});
-                setImage({image: data.image.image_url, data: file})
+            if (data.post.content && isImagePost(data.post.contentType)) {
+                // const response = await axios.get(`${data.image.image_url}`, {
+                //     responseType: 'blob'
+                // });
+                // const blob = await response.data;
+                // const file = new File([blob], "image.jpg", {type: "image/jpeg"});
+                setImage(data.post.content)
             }
         }
     }
@@ -75,10 +77,7 @@ export default function PostShare() {
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         if (event.target.files && event.target.files[0]) {
           let img: File = event.target.files[0];
-          setImage({
-            image: URL.createObjectURL(img),
-            data: img
-          });
+          setImage(URL.createObjectURL(img));
         }
       }
 
@@ -87,6 +86,8 @@ export default function PostShare() {
     };
 
     const handlePostSubmit = async (privacy: string)  => {
+        // "text/plain" | "text/markdown" | "application/base64" | "image/png" | "image/jpeg"
+        const isImagePost = contentType.toLowerCase() === 'image/png' || contentType.toLocaleLowerCase() === 'image/jpeg' || contentType.toLocaleLowerCase() === 'application/base64'
 
         if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
             setImage({
@@ -97,6 +98,25 @@ export default function PostShare() {
             setImage(null)
         }
 
+        let content: any = '';
+        if (isImagePost) {
+            if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
+                let file = ImageRef.current.files[0];
+                content = await new Promise((resolve) => {
+                    let fileReader = new FileReader();
+                    fileReader.onload = (e) => resolve(fileReader.result);
+                    fileReader.readAsDataURL(file);
+                });
+            }
+        } else {
+            content = text
+        }
+
+        if (!content) {
+            enqueueSnackbar('Error encoding content', {variant: 'error'})
+            return
+        }
+
         if (privacy === 'Edit' && data) {
             try {
                 const response = await editPostHandler.mutateAsync({
@@ -105,7 +125,7 @@ export default function PostShare() {
                         title: title,
                         author: userInfo,
                         description: description,
-                        content: text,
+                        content: content,
                         contentType: contentType,
                         visibility: data.post.visibility,
                         unlisted: data.post.unlisted,
@@ -113,14 +133,14 @@ export default function PostShare() {
                     }
                 })
 
-                if (image && contentType.toLowerCase() === 'image/png') {
-                    createPostImageHandler.mutate({
-                        post: data.post,
-                        imageInput: {image: image.data || ''}
-                    })
-                } else if (data.image) {
-                    deletePostImageHandler.mutate(data.post)
-                }
+                // if (image && contentType.toLowerCase() === 'image/png') {
+                //     createPostImageHandler.mutate({
+                //         post: data.post,
+                //         imageInput: {image: image.data || ''}
+                //     })
+                // } else if (data.image) {
+                //     deletePostImageHandler.mutate(data.post)
+                // }
                 return response;
             } catch (error: any) {
                 console.log(error);
@@ -131,7 +151,7 @@ export default function PostShare() {
                     title: title,
                     author: userInfo,
                     description: description,
-                    content: text,
+                    content: content,
                     contentType: contentType,
                     visibility: privacy === 'PUBLIC' ? 'PUBLIC' : 'FRIENDS',
                     unlisted: privacy === 'UNLISTED',
@@ -181,13 +201,13 @@ export default function PostShare() {
                     <TextField label="Description" value={description} onChange={(event) => setDescription(event.target.value)} />
                     <div className="contentType">
                         <span>
-                            <Chip label='Text' color='primary' onClick={() => {setContentType('text/plain')}}/>
+                            <Chip label='Text' variant={contentType === 'text/plain' ? 'filled' : 'outlined'} color='primary' onClick={() => {setContentType('text/plain')}}/>
                         </span>
                         <span>
-                            <Chip label='Markdown' color='secondary' onClick={() => {setContentType('text/markdown')}}/>
+                            <Chip label='Markdown' variant={contentType === 'text/markdown' ? 'filled' : 'outlined'} color='secondary' onClick={() => {setContentType('text/markdown')}}/>
                         </span>
                         <span>
-                            <Chip label='Image' color='error' onClick={() => {setContentType('image/png')}}/>
+                            <Chip label='Image' variant={contentType === 'image/jpeg' || contentType === 'image/png' || contentType === 'application/base64' ? 'filled' : 'outlined'} color='error' onClick={() => {setContentType('image/png')}}/>
                         </span>
                     </div>
                     {
@@ -256,10 +276,10 @@ export default function PostShare() {
                                 />
                         </div>
                     </div>
-                    {image && contentType.toLocaleLowerCase() !== 'text/markdown' && (
+                    {image && isImagePost(contentType) && (
                         <div className="imagePreview">
                             <ClearIcon onClick={() => setImage(null)}/>
-                            <img src={image.image} alt="" />
+                            <img src={image} alt="" />
                         </div>
                     )}
                 </div>

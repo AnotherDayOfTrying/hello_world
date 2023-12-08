@@ -19,7 +19,7 @@ export default function Friends() {
 
     const getFriends = useCallback(async () => { 
         try {
-            const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/friends`, {
+            const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/friends/`, {
             headers: {
             "Content-Type": "application/json",
             Authorization: getAuthorizationHeader(),

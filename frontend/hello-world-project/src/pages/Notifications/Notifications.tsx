@@ -4,7 +4,7 @@ import AuthorSearch from './AuthorSearch';
 import NotificationCard from './NotificationCard';
 import './notifications.css';
 import axios from "axios";
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config";
+import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config";
 import { useSnackbar } from 'notistack';
 
 export default function Notifications() {

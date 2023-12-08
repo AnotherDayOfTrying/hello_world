@@ -3,7 +3,7 @@ import { gsap } from "gsap"
 import { useEffect, useRef, useState } from "react";
 import {SnackbarProvider} from 'notistack'
 import axios from "axios";
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config";
+import { getAuthorizationHeader, getAuthorId, APIURL } from "../../api/config";
 import { useSnackbar } from 'notistack';
 
 

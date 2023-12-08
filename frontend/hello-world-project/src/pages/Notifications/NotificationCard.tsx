@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import './notificationCard.css'
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
+import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 

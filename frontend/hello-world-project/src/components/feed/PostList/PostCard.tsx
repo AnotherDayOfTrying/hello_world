@@ -13,38 +13,43 @@ import Comment from './Comment';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Popover, Typography } from '@mui/material';
-import { ImageOutput, PostOutput, deletePostAsync, getPostImageAsync, likeObjectsAsync } from '../../../api/post';
+import { CircularProgress, Popover, Typography } from '@mui/material';
+import { ImageOutput, PostOutput, useDeletePost, useGetLikeObjects, useGetPostImage } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
-import { likeObjectAsync } from '../../../api/like';
+import { LikeListOutput, useLikeObject } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
+import { PAGE_TYPE } from '../../../App';
+import { useAuth } from '../../../providers/AuthProvider';
 
 
 type PostCardProps = {
     data: PostOutput;
-    isLiked: boolean;
-    myposts?: boolean;
+    liked: LikeListOutput;
+    type: PAGE_TYPE;
     friends: FriendshipOutput[],
-    Reload: () => void;
 };
 
 
-const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCardProps) => {
-    const [isliked, setIsLiked] = React.useState(isLiked);
-    const [userInfo, setUserInfo] = useState<any>({});
-    const [image, setImage] = useState<ImageOutput>()
+const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
+    const {userInfo} = useAuth();
+    const [isliked, setIsLiked] = React.useState(false);
     const [openComments, setOpenComments] = useState<boolean>(false);
     const [openSendFriends, setOpenSendFriends] = useState<boolean>(false);
     const [openLikes, setOpenLikes] = useState<boolean>(false);
-    const [likeAuthors, setLikeAuthors] = useState<any>(null);
     const commentButton = useRef<any>(null);
     const sendButton = useRef<any>(null);
     const likes = useRef<any>(null);
+    const handleDelete = useDeletePost();
     const navigate = useNavigate();
+    const likeObjectHandler = useLikeObject()
+    const likeAuthors = useGetLikeObjects(data)
+    const image = useGetPostImage(data)
+    
 
     useEffect(() => {
+        const isLiked = !!liked.items.find((likedPost)=> likedPost.object === data.id);
         setIsLiked(isLiked);
-      }, [isLiked]);
+      }, [liked]);
 
     const handleLike = async () => {
         if (isliked) {
@@ -53,34 +58,21 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         } else {
             setIsLiked(!isliked);
             try {
-            const response = await likeObjectAsync(data.author, {
-                type: 'Like',
-                author: userInfo,
-                object: data.id
-            })
-            setIsLiked(true);
-            return response;
-        } catch (error: any) {
-            console.log(error);
-        };
+                const response = await likeObjectHandler.mutateAsync({
+                    author: data.author,
+                    likeInput: {
+                        type: 'Like',
+                        author: userInfo,
+                        object: data.id
+                    }
+                })
+                setIsLiked(true);
+                return response;
+            } catch (error: any) {
+                console.log(error);
+            };
         }
-    };
-
-    const fetchUserInfo = async () => {
-        setUserInfo(await getAuthorAsync(data.author));
     }
-    const fetchImageData = async () => {
-        setImage(await getPostImageAsync(data))
-    }
-    const fetchLikes = async () => {
-        setLikeAuthors(await likeObjectsAsync(data)) 
-    }
-
-    useEffect(() => {
-        fetchUserInfo()
-        fetchImageData()
-        fetchLikes()
-    }, [data]);
 
     const renderDescription = (description: string) => {
         if (description.includes('data:image/')) {
@@ -90,13 +82,15 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
         if (linkify.test(description)) {
             return (
             <Typography>
-                <Linkify >{description}</Linkify> 
+                <Linkify>{description}</Linkify> 
             </Typography>
             );
         } else {
             return (
             <Typography>
-                <ReactMarkdown>{description}</ReactMarkdown>
+                <div>
+                    <ReactMarkdown>{description}</ReactMarkdown>
+                </div>
             </Typography>
             );
         }
@@ -117,24 +111,23 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
     const PopupLikes: React.FC = () => {
         return(
             <div className='popupContainer'>
-                {likeAuthors ? likeAuthors.map((friend: any) => (
-                <FriendCard data={friend} post={data} shareList/>
-                )) : <></>}
+                {likeAuthors ? likeAuthors.data!.map((friend: any) => {
+                    friend = {
+                        ...friend,
+                        actor: friend.author
+                    }
+                    return <FriendCard data={friend} post={data} shareList/>
+                }) : <></>}
             </div>
         )
     };
 
-    const handleDelete = async () => {
-        try {
-            await deletePostAsync(data.id)
-            Reload();
-        } catch (error: any) {
-            console.log(error);
-        };
+    const handleEdit = () => {
+        navigate('/post/edit', { state: { post: data, image: image.data } });
     }
 
-    const handleEdit = () => {
-        navigate('/post/edit', { state: { post: data, image: image } });
+    if (handleDelete.isSuccess) {
+        return <></>
     }
 
     return (
@@ -144,24 +137,28 @@ const PostCard = ({ data, myposts: isMyPosts, Reload, isLiked, friends }: PostCa
                 <div className="postUsername">
                     <span >{data.author.id ? data.author.displayName : userInfo?.displayName}</span>
                 </div>
-                {isMyPosts && 
+                {type === PAGE_TYPE.MY_POST && 
                 <div className="postOptions"> 
-                    <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleDelete}/>
+                    {handleDelete.isPending ?
+                        <CircularProgress/>
+                    :
+                        <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={() => handleDelete.mutateAsync(data.id)}/>
+                    }
                     <EditIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleEdit}>
                     </EditIcon>
                 </div>}
             </div>
             {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.image_url || image}`} alt="" className='postImage'/>}
+            {image && <img src={`${image.data?.image_url || image.data}`} alt="" className='postImage'/>}
             <div className="reactions">
                 <div className="likes">
                     {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 
-                    {data.visibility === 'FRIENDS'? <div ref={likes} onClick = {() => {setOpenLikes(!openLikes)}}>likes</div>: <></>}
+                    {type === PAGE_TYPE.MY_POST ? <div ref={likes} onClick = {() => {setOpenLikes(!openLikes)}}>likes</div> : <></>}
                 </div> 
                 <CommentIcon onClick = {()=> {setOpenComments(!openComments)}} ref={commentButton}/>
                 <SendIcon onClick = {() => {setOpenSendFriends(!openSendFriends)}} ref={sendButton}/>
                 <Popover open={openComments} anchorEl={commentButton.current} onClose={() => {setOpenComments(false)}} anchorOrigin={{vertical: 'bottom', horizontal: 'left',}}>
-                    <Comment data={data} Reload={Reload}/>
+                    <Comment data={data} liked={liked}/>
                 </Popover> 
                 <Popover open={openSendFriends} anchorEl={sendButton.current} onClose={() => {setOpenSendFriends(false)}} anchorOrigin={{vertical: 'bottom',horizontal: 'left',}}>
                     <PopupContent />

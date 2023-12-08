@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import './profileCard.css'
 import axios from "axios"
-import APIURL, { getAuthorizationHeader, getAuthorId} from "../../api/config"
+import { APIURL, getAuthorizationHeader, getAuthorId} from "../../api/config"
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';

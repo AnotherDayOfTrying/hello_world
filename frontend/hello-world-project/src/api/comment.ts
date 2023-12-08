@@ -1,7 +1,8 @@
 import axios from 'axios'
-import APIURL, {getAuthorizationHeader} from './config'
-import { enqueueSnackbar } from 'notistack';
+import { REFRESH_INTERVAL, getAuthorizationHeader } from './config'
 import { AuthorInput, AuthorOutput } from './author';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { PostOutput } from './post';
 
 type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
 
@@ -25,31 +26,36 @@ export interface CommentListOutput {
     comments: CommentOutput[],
 }
 
-const getCommentsAsync = async(url: string): Promise<CommentListOutput | undefined> => {
-    try {
-        const { data } = await axios.get<CommentListOutput>(url, {
-            headers: {
-                Authorization: getAuthorizationHeader()
-            }
-        })
-        return data
-    } catch {
-        // enqueueSnackbar(`Unable to Fetch Comments`, {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-    }
+const useGetComments = (post: PostOutput) => (
+    useQuery({
+        queryKey: ['comments', post.id],
+        queryFn: async () => {
+            const { data } = await axios.get<CommentListOutput>(post.comments, {
+                headers: {
+                    Authorization: getAuthorizationHeader(post.author.host)
+                }
+            })
+            return data
+        },
+        refetchInterval: REFRESH_INTERVAL
+    })
+)
+
+const useCreateComment = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (args: {post: PostOutput, commentInput: CommentInput}) => {
+            const {post, commentInput} = args;
+            const { data } = await axios.post<CommentOutput>(`${post.comments}`, commentInput, {
+                headers: {
+                    Authorization: getAuthorizationHeader(post.author.host)
+                }
+            });
+            return data
+        },
+        onSuccess: () => {queryClient.invalidateQueries({queryKey: ['comments']})}
+    })
 }
 
-const createCommentAsync = async (commentURL: string, commentInput: CommentInput) => {
-    try {
-        const { data } = await axios.post<CommentOutput>(`${commentURL}`, commentInput, {
-            headers: {
-                Authorization: getAuthorizationHeader()
-            }
-        });
-        enqueueSnackbar('Created Comment', {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        return data
-    } catch {
-        enqueueSnackbar('Unable to Create Comment', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-    }
-}
-
-export { createCommentAsync, getCommentsAsync }
+export { useCreateComment, useGetComments }

@@ -138,7 +138,11 @@ const useCreatePost = () => {
             return data
         },
         onSuccess: () => {
+            enqueueSnackbar('Post Created', {variant: 'success'})
             queryClient.invalidateQueries({ queryKey: ['my-own-posts', 'public-posts', 'private-posts', 'unlisted-posts'] })
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Create Post', {variant: 'error'})
         }
     })
 }
@@ -155,7 +159,13 @@ const useEditPost = (post?: PostOutput) => {
                 }
             })
         },
-        onSuccess: () => {queryClient.invalidateQueries({queryKey: [post?.id]})}
+        onSuccess: () => {
+            enqueueSnackbar('Post Edited', {variant: 'success'})
+            queryClient.invalidateQueries({queryKey: [post?.id]})
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Edit Post', {variant: 'error'})
+        }
     })
 }
 
@@ -171,7 +181,11 @@ const useDeletePost = () => {
             });
         },
         onSuccess: () => {
+            enqueueSnackbar('Post Deleted', {variant: 'success'})
             queryClient.invalidateQueries({ queryKey: ['my-own-posts', 'public-posts', 'private-posts', 'unlisted-posts'] })
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Delete Post', {variant: 'error'})
         }
     })
 }
@@ -253,7 +267,9 @@ const useDeletePostImage = (post?: PostOutput) => {
                 }
             })
         },
-        onSuccess: () => queryClient.invalidateQueries({queryKey: ['post-image', post?.id]})
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['post-image', post?.id]})
+        }
     })
 }
 

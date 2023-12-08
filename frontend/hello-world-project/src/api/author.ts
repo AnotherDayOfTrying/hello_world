@@ -1,6 +1,7 @@
 import axios from 'axios'
-import { APIURL, getAuthorizationHeader} from './config'
+import { APIURL, HOSTS, getAuthorizationHeader} from './config'
 import { enqueueSnackbar } from 'notistack';
+import { useQuery } from '@tanstack/react-query';
 
 export interface AuthorInput {
     id: string,
@@ -30,6 +31,28 @@ export interface AuthorListOutput {
     },
     type: 'authors'
 }
+
+
+const useGetAuthors = () => (
+    useQuery({
+        queryKey: ['authors'],
+        queryFn: async () => {
+            const authors = []
+            for (let host of HOSTS) {
+                const { data } = await axios.get<AuthorListOutput>(`${host}authors/`, {
+                    headers: {
+                        Authorization: getAuthorizationHeader(host)
+                    }
+                })
+                authors.push(...data.items)
+            }
+            const result = await getAllLocalAuthorsAsync()
+            if (result)
+                authors.push(...result.items)
+            return authors
+        }
+    })
+)
 
 const getAuthorByAuthorIdAsync = async (authorId: string): Promise<AuthorOutput | undefined> => {
     try {
@@ -73,4 +96,4 @@ const getAllLocalAuthorsAsync = async (): Promise<AuthorListOutput | undefined> 
     }
 }
 
-export {getAuthorAsync, getAuthorByAuthorIdAsync, getAllLocalAuthorsAsync}
+export {useGetAuthors, getAuthorAsync, getAuthorByAuthorIdAsync, getAllLocalAuthorsAsync}

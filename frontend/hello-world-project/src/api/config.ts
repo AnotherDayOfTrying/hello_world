@@ -3,11 +3,11 @@ const APIURLS: {[key: string]: string} = {
     "production": "https://cmput404-project-backend-a299a47993fd.herokuapp.com",
 }
 
-const HOSTS = [
-    'https://cmput404-project-backend-a299a47993fd.herokuapp.com/',
+export const HOSTS = [
+    // 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/',
     'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/',
     'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/',
-    'https://distributed-network-37d054f03cf4.herokuapp.com/'
+    // 'https://distributed-network-37d054f03cf4.herokuapp.com/api/'
 ]
 
 export const getAuthorizationHeader = (host?: string) => {

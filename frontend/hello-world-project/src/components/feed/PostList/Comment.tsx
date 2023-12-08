@@ -22,7 +22,7 @@ const Comment: React.FC<CommentProps> = ({ data, liked }) => {
 
 
   const sendComment = async () => {
-    await createCommentHandler.mutateAsync({
+    createCommentHandler.mutate({
       post: data,
       commentInput: {
         author: userInfo,
@@ -42,9 +42,9 @@ const Comment: React.FC<CommentProps> = ({ data, liked }) => {
           {
           comments.isSuccess && comments.data.comments.length > 0 ? 
             (
-              comments.data!.comments.map((comment) => {
+              comments.data!.comments.map((comment, index) => {
               const isLiked = !!liked.items.find((likedComment) => likedComment.object === comment.id);
-              return <CommentCard comment={comment} isLiked={isLiked} />})
+              return <CommentCard comment={comment} isLiked={isLiked} key={index}/>})
             )
             :
             (

@@ -43,8 +43,17 @@
     box-sizing: content-box;
 }
 
-p {
-    font-size: 10em;
+blockquote {
+    background-color: #eeeeee;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+code {
+    background-color: #eeeeee;
+    padding: 5px;
+    border-radius: 5px;
+    font-family:'Courier New', Courier, monospace;
 }
 
 form {

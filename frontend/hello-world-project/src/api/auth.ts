@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios"
 import { enqueueSnackbar } from 'notistack'
-import APIURL from "./config"
+import {APIURL} from "./config"
 import { AuthorOutput, getAuthorByAuthorIdAsync } from "./author";
 
 export interface LoginInterface {

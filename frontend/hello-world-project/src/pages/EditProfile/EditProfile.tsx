@@ -3,7 +3,7 @@ import './editProfile.css';
 import Leftbar from '../../components/leftbar/Leftbar';
 import { TextField, Typography } from '@mui/material';
 import axios from 'axios';
-import APIURL, { getAuthorizationHeader, getAuthorId} from '../../api/config';
+import { APIURL, getAuthorizationHeader, getAuthorId} from '../../api/config';
 import gsap from 'gsap';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useSnackbar } from 'notistack';

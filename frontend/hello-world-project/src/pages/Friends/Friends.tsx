@@ -3,7 +3,7 @@ import FriendsCard from './FriendCard'
 import Leftbar from '../../components/leftbar/Leftbar';
 import './friends.css'
 import FriendSearch from './FriendSearch';
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
+import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 
@@ -29,7 +29,7 @@ export default function Friends() {
         setData(friends);
 
       } catch (error) {
-        enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+        // enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         console.log(error);
       }
     }, []);

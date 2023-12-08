@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import SearchIcon from '@mui/icons-material/Search';
 import './authorSearch.css'
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
+import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 
@@ -22,7 +22,7 @@ function AuthorSearch() {
       })
       setUser(response.data)
     } catch (e) {
-      enqueueSnackbar('Unable to fetch your details', {variant: "error", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+      // enqueueSnackbar('Unable to fetch your details', {variant: "error", anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.error(e)
     }
   }
@@ -58,7 +58,7 @@ function AuthorSearch() {
           const authorId = filteredAuthor[0].id.split('/').pop();
           sendFriendRequest(filteredAuthor[0], authorId);
         } else {
-          enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+          // enqueueSnackbar(`Unable to find author '${displayName}'`, {variant: 'warning', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
         }
       }
       return responseData;

@@ -1,11 +1,11 @@
 import React, {useState} from 'react'
 import './friendCard.css'
 import { NavLink } from 'react-router-dom';
-import APIURL, { getAuthorizationHeader, getAuthorId } from "../../api/config"
+import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
 import { FriendshipOutput } from '../../api/friend';
-import { PostOutput, SendPostInput, editPostAsync, sendPostAsync } from '../../api/post';
+import { PostOutput, useSendPost, useEditPost } from '../../api/post';
 import { useAuth } from '../../providers/AuthProvider';
 
 
@@ -20,6 +20,8 @@ type FriendsCardProps = {
 function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
   const {enqueueSnackbar} = useSnackbar();
   const {userInfo} = useAuth()
+  const editPostHandler = useEditPost(post!)
+  const sendPostHandler = useSendPost()
 
   const handleUnfriend = async () => {
     const actorId = data.actor.id.split('/').pop();
@@ -37,26 +39,35 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
         getFriends();
       }
     } catch (err) {
-      enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
+      // enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(err);
     }
   };
 
   const handleShare = async () => {
-    await sendPostAsync(data.actor.id, {
-      'type': 'post',
-      'author': userInfo,
-      'object': post!.id,
+    await sendPostHandler.mutateAsync({
+      author: data.actor,
+      sendPostInput: {
+        'type': 'post',
+        'author': userInfo,
+        'id': post!.id,
+      }
     })
-
-    await editPostAsync(post!.id, {...post!, visibility: 'FRIENDS', unlisted: false })
+    await editPostHandler.mutateAsync({
+      post: post!,
+      postInput: {
+        ...post!,
+        visibility: 'FRIENDS',
+        unlisted: false
+      }
+    })
     enqueueSnackbar(`Successfully sent to ${data.actor.displayName}`, {variant: 'success'})
   }
 
   if (shareList) {
     return(
       <div className="shareListCard" onClick={handleShare}>
-        <img src={`${data.actor.profilePicture}`} alt="" className="shareListImg" />
+        <img src={`${data.actor.profileImage}`} alt="" className="shareListImg" />
         <div className="shareListUsername">
           <span>{data.actor.displayName}</span>
         </div>
@@ -68,7 +79,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
     return (
       
       <div className="FriendCard">
-        <img src={`${data.actor.profilePicture}`} alt="" className="friendCardImg" />
+        <img src={`${data.actor.profileImage}`} alt="" className="friendCardImg" />
         <div className="friendCardUsername">
             <span >{data.actor.displayName}</span>
         </div>

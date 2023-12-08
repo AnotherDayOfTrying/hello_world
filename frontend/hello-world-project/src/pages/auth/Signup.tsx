@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useAuth } from "../../providers/AuthProvider"
 import { SignUpInterface } from "../../api/auth"
-import APIURL from "../../api/config"
+import { APIURL } from "../../api/config"
 import gsap from "gsap"
 import "./auth.css"
 

@@ -3,61 +3,23 @@ import Leftbar from '../../components/leftbar/Leftbar';
 import Feed from '../../components/feed/Feed';
 import Rightbar from '../../components/rightbar/Rightbar';
 import './home.css';
-
+import { PAGE_TYPE } from '../../App';
+import { useAuth } from '../../providers/AuthProvider';
 
 interface HomeProps {
-  private?: boolean;
-  unlisted?: boolean;
-  myposts?: boolean;
+  type: PAGE_TYPE
 }
 
-const Home: React.FC<HomeProps> = ({ private: isPrivate, unlisted: isUnlisted,  myposts: isMyPosts }: HomeProps) => {
-  if (isPrivate) {
-    return(
+const Home: React.FC<HomeProps> = ({type}: HomeProps) => {
+  return(
     <>
-    <div className="homeContainer">
-      <Leftbar/>
-      <Feed private/>
-      <Rightbar/>
-    </div>
+      <div className="homeContainer">
+        <Leftbar/>
+        <Feed type={type}/>
+        <Rightbar/>
+      </div>
     </>
-    )
-  }
-
-  else if (isUnlisted) {
-    return (
-    <>
-    <div className="homeContainer">
-      <Leftbar/>
-      <Feed unlisted/>
-      <Rightbar/>
-    </div>
-    </>
-    )
-  }
-  else if (isMyPosts) {
-    return (
-    <>
-    <div className="homeContainer">
-      <Leftbar/>
-      <Feed myposts/>
-      <Rightbar/>
-    </div>
-    </>
-    )
-  }
-  else {
-  return (
-    <>
-    <div className="homeContainer">
-      <Leftbar/>
-      <Feed/>
-      <Rightbar/>
-    </div>
-    </>
-    
-  );
-  }
+  )
 }
 
 export default Home;

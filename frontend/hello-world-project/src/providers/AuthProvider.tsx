@@ -47,9 +47,9 @@ export const AuthProvider = ({ children }: any) => {
       setUser(response.token)
       localStorage.setItem('user_token', response.token || '')
       localStorage.setItem('user_id', response.data || '')
-      if (await verifySession()) {
+      if (await verifySession() && userInfo) {
         enqueueSnackbar("Logged in!", {variant: 'success', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        navigate("/home") 
+        navigate("/home")
       }
   
       return response

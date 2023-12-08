@@ -93,7 +93,7 @@ User Stories:
 - [x] As an author, I want to befriend local authors
 - [x] As an author, I want to befriend remote authors
 - [x] As an author, I want to feel safe about sharing images and posts with my friends – images shared to friends should only be visible to friends. [public images are public]
-- [ ] As an author, when someone sends me a friends only-post I want to see the likes.
+- [x] As an author, when someone sends me a friends only-post I want to see the likes.
 - [x] As an author, comments on friend posts are private only to me the original author.
 - [x] As an author, I want un-befriend local and remote authors
 - [x] As an author, I want to be able to use my web-browser to manage my profile

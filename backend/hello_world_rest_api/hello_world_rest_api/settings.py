@@ -83,11 +83,14 @@ WSGI_APPLICATION = 'hello_world_rest_api.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'd4ke7fdbs27cus',
+        'USER': 'gkappzrnyxgolm',
+        'PASSWORD': 'fa8a0c7d1abb41368d50edfd37340740dcced0ff23d19e7edd710f7b86d5a189',
+        'HOST': 'ec2-3-95-121-6.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
@@ -140,7 +143,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 1000,
 }
 
 # Required for setting cookie on client

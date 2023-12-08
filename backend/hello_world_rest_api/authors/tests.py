@@ -251,7 +251,7 @@ class GetAllAuthorsTest(TestCase):
         self.assertIn('page_size', response.data['pagination'])
 
         # Check if the response has the default number of items based on the default page_size
-        self.assertEqual(len(response.data['items']), 10)
+        self.assertEqual(len(response.data['items']), 15)
     def test_node_access(self):
         userpass = f"{self.node.username}:{self.node.password}".encode("utf-8")
         userpass = base64.b64encode(userpass).decode("utf-8")
@@ -933,7 +933,6 @@ class CommentTest(TestCase):
         self.assertEqual(response.status_code, 200)
         url = reverse('authors:inbox', args=[self.author.uid])
         response3 = self.client.post(url, json.dumps(response2.data), content_type='application/json')
-        print(response3.data)
         self.assertEqual(response3.status_code, 201)
         self.assertEqual(Comment.objects.count(), 1)
         self.assertEqual(Inbox_Item.objects.count(), 1)
@@ -1026,7 +1025,6 @@ class PostImageTest(TestCase):
                 'image': f,
             }
             response = self.c.post(url, payload)
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(PostImage.objects.count(), 1)
         
@@ -1142,7 +1140,6 @@ class LikeTest(TestCase):
 
         url4 = reverse('authors:getliked', args=[self.author.uid])
         response = self.client.get(url4)
-        print(response.data)
         self.assertEqual(response.status_code, 200)
         self.client.credentials()
         
@@ -1163,9 +1160,6 @@ class NodeTest(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token1[0].key)
         url = reverse('authors:getnodeauthors')
         response = self.client.get(url)
-        #print(response.data)
         self.assertEqual(response.status_code, 200)
-        print(Post.objects.count())
-        print(PostImage.objects.count())
         self.client.credentials()
         

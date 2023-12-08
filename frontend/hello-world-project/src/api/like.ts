@@ -29,7 +29,7 @@ const useLikeObject = () => {
         mutationFn: async (args: {author: AuthorOutput, likeInput: LikeInput}) => {
             const {author, likeInput} = args
 
-            const { data } = await axios.post<LikeOutput>(`${author.id}/inbox`, likeInput, {
+            const { data } = await axios.post<LikeOutput>(`${author.id}/inbox/`, likeInput, {
                 headers: {
                     Authorization: getAuthorizationHeader(author.host),
                 }
@@ -44,7 +44,7 @@ const useGetAuthorsLiked = (author: AuthorOutput) => (
     useQuery({
         queryKey: ['liked', author.id],
         queryFn: async () => {
-            const { data } = await axios.get<LikeListOutput>(`${author.id}/liked`, {
+            const { data } = await axios.get<LikeListOutput>(`${author.id}/liked/`, {
                 headers: {
                     Authorization: getAuthorizationHeader(author.host),
                 }

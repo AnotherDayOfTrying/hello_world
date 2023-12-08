@@ -5,10 +5,11 @@ import ClearIcon from '@mui/icons-material/Clear';
 import Leftbar from '../../components/leftbar/Leftbar';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider';
-import { ImageOutput, PostOutput, useCreatePost, useSendPost, useEditPost, useCreatePostImage, useDeletePostImage } from '../../api/post';
+import { ImageOutput, PostOutput, useCreatePost, useSendPost, useEditPost, useCreatePostImage, useDeletePostImage, CONTENT_TYPE } from '../../api/post';
 import axios from 'axios';
 import { AuthorOutput, getAllLocalAuthorsAsync } from '../../api/author';
 import { useGetFriends } from '../../api/friend';
+import { Button, Chip, Stack, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 
 
@@ -17,7 +18,11 @@ export default function PostShare() {
     let data: {post: PostOutput, image: ImageOutput} | undefined = undefined;
     if (state)
         data = state;
-
+    const [title, setTitle] = useState<string>('')
+    const [description, setDescription] = useState<string>('')
+    const [contentType, setContentType] = useState<CONTENT_TYPE>('text/markdown')
+    const [categories, setCategories] = useState<string[]>([])
+    const [category, setCategory] = useState<string>('')
     const [image, setImage] = useState<any | null>(null);
     const [text, setText] = useState<string>('');
     const ImageRef = React.createRef<HTMLInputElement>()
@@ -47,8 +52,13 @@ export default function PostShare() {
 
     const setData = async () => {
         if (data) {
+            console.log(data.post)
             if (data.post.content) {
-                setText(data.post.content);
+                setTitle(data.post.title)
+                setDescription(data.post.description)
+                setText(data.post.content)
+                setContentType(data.post.contentType)
+                setCategories(JSON.parse(data.post.categories))
             }
             if (data.image && data.image.image_url) {
                 const response = await axios.get(`${data.image.image_url}`, {
@@ -59,7 +69,7 @@ export default function PostShare() {
                 setImage({image: data.image.image_url, data: file})
             }
         }
-    } 
+    }
 
 
     const onImageChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -92,24 +102,24 @@ export default function PostShare() {
                 const response = await editPostHandler.mutateAsync({
                     post: data.post,
                     postInput: {
-                        title: 'Post Title',
+                        title: title,
                         author: userInfo,
-                        description: text,
+                        description: description,
                         content: text,
-                        contentType: 'text/plain',
+                        contentType: contentType,
                         visibility: data.post.visibility,
                         unlisted: data.post.unlisted,
-                        categories: '',
+                        categories: JSON.stringify(categories),
                     }
                 })
 
-                if (image) {
-                    await createPostImageHandler.mutate({
+                if (image && contentType.toLowerCase() === 'image/png') {
+                    createPostImageHandler.mutate({
                         post: data.post,
                         imageInput: {image: image.data || ''}
                     })
                 } else if (data.image) {
-                    await deletePostImageHandler.mutate(data.post)
+                    deletePostImageHandler.mutate(data.post)
                 }
                 return response;
             } catch (error: any) {
@@ -118,16 +128,16 @@ export default function PostShare() {
         } else {
             try {
                 const response = await createPostHandler.mutateAsync({author: userInfo, postInput: {
-                    title: 'Post Title',
+                    title: title,
                     author: userInfo,
-                    description: text,
+                    description: description,
                     content: text,
-                    contentType: 'text/plain',
+                    contentType: contentType,
                     visibility: privacy === 'PUBLIC' ? 'PUBLIC' : 'FRIENDS',
                     unlisted: privacy === 'UNLISTED',
-                    categories: '',
+                    categories: JSON.stringify(categories),
                 }})
-                if (image)
+                if (image && contentType.toLowerCase() === 'image')
                     await createPostImageHandler.mutateAsync({
                         post: response,
                         imageInput: {image: image.data || ''}
@@ -167,7 +177,57 @@ export default function PostShare() {
             <div className="postShare">
                 <img src={`${userInfo.profileImage || ''}`} alt='' />
                 <div>
-                    <textarea  placeholder="What's on your mind?" value={text} onChange={handleTextChange}/>
+                    <TextField label="Title" value={title} onChange={(event) => setTitle(event.target.value)} />
+                    <TextField label="Description" value={description} onChange={(event) => setDescription(event.target.value)} />
+                    <div className="contentType">
+                        <span>
+                            <Chip label='Text' color='primary' onClick={() => {setContentType('text/plain')}}/>
+                        </span>
+                        <span>
+                            <Chip label='Markdown' color='secondary' onClick={() => {setContentType('text/markdown')}}/>
+                        </span>
+                        <span>
+                            <Chip label='Image' color='error' onClick={() => {setContentType('image/png')}}/>
+                        </span>
+                    </div>
+                    {
+                        contentType.toLowerCase() === 'text/markdown' || contentType.toLocaleLowerCase() === 'text/plain' ?
+                            <textarea placeholder="What's on your mind?" value={text} onChange={handleTextChange}/>
+                        :
+                            <div className="option" style={{color: "#ef5757"}} onClick={() => 
+                                {
+                                    if (ImageRef.current !== null){
+                                        ImageRef.current.click()
+                                    }
+                                }}>
+                                <ImageIcon/>
+                                Photo
+                            </div>  
+                    }
+                    <TextField label='Category' onChange={(event) => {
+                            setCategory(event.target.value)
+                        }} />
+                    <button
+                        className="postButton"
+                        onClick={() => {
+                            let categoriesCopy = categories.slice()
+                            if (category && !!!categories.find((value) => value === category))
+                                categoriesCopy.push(category)
+                            setCategories(categoriesCopy)
+                        }}>
+                            Set Category
+                        </button>
+                    <Stack direction={'row'}>
+                        {
+                            categories.map((category) => {
+                                return <Chip label={category} key={category} onDelete={(event) => {
+                                    let categoriesCopy = categories.slice()
+                                    setCategories(categoriesCopy.filter((value) => value !== category))
+                                }} />
+                            })
+                        }
+                    </Stack>
+                    
                     <div className="postOptions">
                         <div className="option" style={{color: "#ef5757"}} onClick={() => 
                         {
@@ -175,8 +235,7 @@ export default function PostShare() {
                                 ImageRef.current.click()
                             }
                         }}>
-                            <ImageIcon/>
-                            Photo
+                            
                         </div>
                         {data? (
                             <button className="postButton" onClick={() => handlePostSubmit('Edit')}>Edit Post</button>
@@ -197,7 +256,7 @@ export default function PostShare() {
                                 />
                         </div>
                     </div>
-                    {image && (
+                    {image && contentType.toLocaleLowerCase() !== 'text/markdown' && (
                         <div className="imagePreview">
                             <ClearIcon onClick={() => setImage(null)}/>
                             <img src={image.image} alt="" />

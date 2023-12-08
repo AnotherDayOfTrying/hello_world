@@ -12,7 +12,7 @@ export const AuthorCard = ({ data }: AuthorCardProps) => {
     const sendRequestHandler = useSendFriendRequest()
 
     const handleFriendRequest = async () => {
-        await sendRequestHandler.mutateAsync({
+        sendRequestHandler.mutate({
             author: userInfo,
             sendFriendRequestInput: {
                 type: 'follow',

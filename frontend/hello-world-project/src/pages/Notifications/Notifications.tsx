@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Leftbar from '../../components/leftbar/Leftbar';
 import AuthorSearch from './AuthorSearch';
 import NotificationCard from './NotificationCard';
 import './notifications.css';
-import axios from "axios";
-import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config";
-import { useSnackbar } from 'notistack';
-import { getAllLocalAuthorsAsync, useGetAuthors } from '../../api/author';
+import { useGetAuthors } from '../../api/author';
 import { AuthorCard } from './AuthorCard';
 import { useAuth } from '../../providers/AuthProvider';
 import { useGetFriendRequests, useGetFriends } from '../../api/friend';

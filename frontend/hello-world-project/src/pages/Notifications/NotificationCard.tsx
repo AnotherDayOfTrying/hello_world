@@ -18,8 +18,8 @@ function NotificationCard({ data }: NotificationCardProps) {
       <div className="notificationCardUsername">
           <span >{data.actor.displayName}</span>
       </div>
-      <button onClick={async () => await handleAccept.mutateAsync({author: userInfo, actor: data.actor})} className='acceptButton'>Accept</button>
-      <button onClick={async () => await handleReject.mutateAsync({author: userInfo, actor: data.actor})} className='rejectButton'>Reject</button>
+      <button onClick={async () => handleAccept.mutate({author: userInfo, actor: data.actor})} className='acceptButton'>Accept</button>
+      <button onClick={async () => handleReject.mutate({author: userInfo, actor: data.actor})} className='rejectButton'>Reject</button>
     </div>
   )
 }

@@ -30,7 +30,13 @@ const useSendFriendRequest = () => {
                 }
             })
         },
-        onSuccess: () => queryClient.invalidateQueries({queryKey: ['friend-requests']})
+        onSuccess: () => {
+            enqueueSnackbar('Sent Friend Request', {variant: 'success'})
+            queryClient.invalidateQueries({queryKey: ['friend-requests']})
+        },
+        onError: () => {
+            enqueueSnackbar('Failed to Send Friend Request', {variant: 'error'})
+        }
     })
 }
 
@@ -52,7 +58,14 @@ const useAcceptFriendRequest = () => {
                 }
             })
         },
-        onSuccess: () => queryClient.invalidateQueries({queryKey: ['friend-requests', 'friends']})
+        onSuccess: () => {
+            enqueueSnackbar('Accepted Friend Request', {variant: 'success'})
+            queryClient.invalidateQueries({queryKey: ['friend-requests', 'friends']})
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Accept Friend Request', {variant: 'error'})
+        },
+        throwOnError: false,
     })
 }
 
@@ -63,13 +76,20 @@ const useRejectFriendRequest = () => {
         mutationFn: async (args: {author: AuthorOutput, actor: AuthorOutput}) => {
             const {author, actor} = args
             const actorId = actor.id.split('/').pop()
-            await axios.delete(`${author.id}/followers/${actorId}`, {
+            const {data} = await axios.delete(`${author.id}/followers/${actorId}`, {
                 headers: {
                     Authorization: getAuthorizationHeader(author.host)
                 }
             })
+            return data
         },
-        onSuccess: () => queryClient.invalidateQueries({queryKey: ['friend-requests', 'friends']})
+        onSuccess: () => {
+            enqueueSnackbar('Rejected Friend Request', {variant: 'success'})
+            queryClient.invalidateQueries({queryKey: ['friend-requests', 'friends']})
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Reject Friend Request', {variant: 'error'})
+        },
     })
 }
 

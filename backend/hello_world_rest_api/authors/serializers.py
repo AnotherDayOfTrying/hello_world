@@ -88,9 +88,8 @@ class AuthorSerializer(serializers.ModelSerializer):
         else:
             return obj.profilePicture
 class FriendShipSerializer(serializers.ModelSerializer):
-    actor = serializers.JSONField()
-    object = serializers.JSONField()
-    
+    actor = AuthorSerializer()
+    object = AuthorSerializer()
     class Meta:
         model = Friendship
         fields = ('type','summary','actor', 'object')
@@ -98,8 +97,8 @@ class FriendShipSerializer(serializers.ModelSerializer):
         
         actor_data = validated_data.pop('actor')
         object_data = validated_data.pop('object')
-        actor = json.dumps(actor_data) if isinstance(actor_data, dict) else actor_data
-        object = json.dumps(object_data) if isinstance(object_data, dict) else object_data
+        actor = Author.objects.get(uid=actor_data['id'].split("/")[-1])
+        object = Author.objects.get(uid=object_data['id'].split("/")[-1])
         friendship = Friendship.objects.create(summary = validated_data['summary'],actor=actor, object=object, status=1)
         return friendship    
 class PostSerializer(serializers.ModelSerializer):

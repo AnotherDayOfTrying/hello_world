@@ -62,7 +62,17 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = ('type', 'id', 'url', 'displayName', 'profileImage','profilePictureImage', 'github','host')
-        
+    def create(self, validated_data):
+        author = Author.objects.create(
+            uid = validated_data['id'].split("/")[-1],
+            id = validated_data['id'],
+            url = validated_data['id'],
+            host = validated_data['host'],
+            displayName = validated_data['displayName'],
+            github = validated_data['github'],
+            profilePictureImage = validated_data['profilePictureImage'],
+        )
+        return author
     def update(self, instance, validated_data):
         instance.displayName = validated_data.get('displayName', instance.displayName)
         instance.github = validated_data.get('github', instance.github)

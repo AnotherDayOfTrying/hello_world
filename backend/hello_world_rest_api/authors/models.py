@@ -74,7 +74,7 @@ class Post(models.Model):
     # For now content is text, but set up options for content 
     content_choices = [('text/plain', 'text/plain'), ('text/markdown', 'text/markdown'), ('application/base64','application/base64'),('image/png','image/png'),('image/jpeg','image/jpeg')]
     contentType = models.CharField(max_length=20, choices=content_choices, default='text/plain')
-    content = models.CharField(max_length=200, blank=True, null=True)
+    content = models.TextField(default='')
     #categories = models.CharField(max_length=200, blank=True, null=True)
     published = models.DateTimeField(auto_now_add=True)
     comments = models.URLField(max_length=255, null = True, blank = True)

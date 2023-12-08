@@ -40,11 +40,11 @@ export default function Notifications() {
               .data
               .sort((a, b) => a.displayName.localeCompare(b.displayName))
               .filter((author) => {
-                if (userInfo.displayName === author.displayName) { // filter out self
+                if (userInfo.id === author.id) { // filter out self
                   return false
                 }
                 if (friends.data && friends.data.length > 0) { //filter out friends
-                  if(!!friends.data.find((friendship) => friendship.actor.displayName === author.displayName)) {
+                  if(!!friends.data.find((friendship) => friendship.actor.id === author.id)) {
                     return false
                   }
                 }

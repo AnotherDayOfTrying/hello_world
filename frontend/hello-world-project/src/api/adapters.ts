@@ -8,14 +8,14 @@ export interface WebWizardsFriendshipInput {
         displayName: string,
         server_host: string,
         url: string,
-        github_link: string,
+        github: string,
     },
     object: {
         type: 'author' | 'server_admin' | 'node',
         displayName: string,
         server_host: string,
         url: string,
-        github_link: string,
+        github: string,
     }
 }
 
@@ -27,7 +27,7 @@ export interface WebWizardsLikeInput {
         displayName: string,
         server_host: string,
         url: string,
-        github_link: string,
+        github: string,
     },
     object: string,
     '@context'?: string,
@@ -81,14 +81,14 @@ export const friendRequestAdapter = (host: string, input: FriendshipInput) => {
                 displayName: input.actor.displayName,
                 server_host: input.actor.host,
                 url: input.actor.url,
-                github_link: input.actor.github || 'https://github.com/AnotherDayOfTrying'
+                github: input.actor.github || 'https://github.com/AnotherDayOfTrying'
             },
             object: {
                 type: 'author',
                 displayName: input.object.displayName,
                 server_host: input.object.host,
                 url: input.object.url,
-                github_link: input.object.github || 'https://github.com/AnotherDayOfTrying'
+                github: input.object.github || 'https://github.com/AnotherDayOfTrying'
             }
         }
         return adaptedRequest

@@ -14,7 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Chip, CircularProgress, Popover, Typography } from '@mui/material';
-import { ImageOutput, PostOutput, useDeletePost, useGetLikeObjects, useGetPostImage } from '../../../api/post';
+import { CONTENT_TYPE, ImageOutput, PostOutput, useDeletePost, useGetLikeObjects, useGetPostImage } from '../../../api/post';
 import { getAuthorAsync } from '../../../api/author';
 import { LikeListOutput, useLikeObject } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
@@ -44,8 +44,10 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
     const navigate = useNavigate();
     const likeObjectHandler = useLikeObject()
     const likeAuthors = useGetLikeObjects(data)
-    const image = useGetPostImage(data)
-    
+
+    const isImagePost = data.contentType === 'image/jpeg' || data.contentType === 'image/png' || data.contentType  === 'application/base64'
+
+    const image = useGetPostImage(data, isImagePost)
 
     useEffect(() => {
         const isLiked = !!liked.items.find((likedPost)=> likedPost.object === data.id);
@@ -75,27 +77,25 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
         }
     }
 
-    const renderDescription = (description: string) => {
-        if (description.includes('data:image/')) {
-            return (<></>)
-        }
+    const renderContent = (content: string, contentType: CONTENT_TYPE) => {
+        // if (description.includes('data:image/')) {
+        //     return (<></>)
+        // }
         
-        if (linkify.test(description)) {
+        if (contentType === 'image/png' || contentType === 'image/jpeg') {
+            return <></>
+        } else if (contentType === 'application/base64') {
+            return <img src={content} />
+        } else if (contentType === 'text/plain') {
             return (
-            <Typography>
-                <Linkify>{description}</Linkify> 
-            </Typography>
-            );
+                <Typography>
+                    <Linkify>{content}</Linkify> 
+                </Typography>
+            )   
         } else {
-            return (
-            <Typography>
-                <div>
-                    <ReactMarkdown>{description}</ReactMarkdown>
-                </div>
-            </Typography>
-            );
+            return <ReactMarkdown>{content}</ReactMarkdown>
         }
-        };
+    };
 
     const PopupContent: React.FC = () => {
         return(
@@ -150,8 +150,10 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
                     </EditIcon>
                 </div>}
             </div>
-            {data.content && renderDescription(data.content)}
-            {image && <img src={`${image.data?.image_url || image.data}`} alt="" className='postImage'/>}
+            <h1>{data.title}</h1>
+            <h3>{data.description}</h3>
+            {data.content && renderContent(data.content, data.contentType)}
+            {image && isImagePost && <img src={`${image.data?.image_url || image.data}`} alt="" className='postImage'/>}
             <div className="reactions">
                 <div className="likes">
                     {isliked ? <FavoriteIcon className='like' onClick={handleLike}/>: <FavoriteBorderIcon onClick={handleLike}/>} 

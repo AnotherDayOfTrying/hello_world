@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LikeOutput } from './like';
 
 type VISIBILITY = 'PUBLIC' | 'FRIENDS'
-type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
+export type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
 
 export interface PostInput {
     title: string,
@@ -222,7 +222,7 @@ const useGetLikeObjects = (post: PostOutput) => (
     })
 )
 
-const useGetPostImage = (post: PostOutput) => (
+const useGetPostImage = (post: PostOutput, enabled: boolean = true) => (
     useQuery({
         queryKey: ['post-image', post.id],
         queryFn: async () => {
@@ -233,6 +233,7 @@ const useGetPostImage = (post: PostOutput) => (
             });
             return data
         },
+        enabled: enabled
     })
 )
 

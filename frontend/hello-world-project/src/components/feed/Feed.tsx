@@ -36,7 +36,7 @@ const Feed: React.FC<FeedProps> = ({type}: FeedProps) => {
         publicResponse.isLoading ? 
           <CircularProgress/>
           :
-          <Posts type={type} data={response.data} />
+          <Posts type={type} data={response.data?.reverse()} />
       }
     </div>
   )

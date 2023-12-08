@@ -31,7 +31,7 @@ const useGetComments = (post: PostOutput) => (
     useQuery({
         queryKey: ['comments', post.id],
         queryFn: async () => {
-            const { data } = await axios.get<CommentListOutput>(post.comments, {
+            const { data } = await axios.get<CommentListOutput>(post.comments + '/', {
                 headers: {
                     Authorization: getAuthorizationHeader(post.author.host)
                 }
@@ -48,7 +48,7 @@ const useCreateComment = () => {
     return useMutation({
         mutationFn: async (args: {post: PostOutput, commentInput: CommentInput}) => {
             const {post, commentInput} = args;
-            const { data } = await axios.post<CommentOutput>(`${post.comments}`, commentInput, {
+            const { data } = await axios.post<CommentOutput>(`${post.comments}/`, commentInput, {
                 headers: {
                     Authorization: getAuthorizationHeader(post.author.host)
                 }

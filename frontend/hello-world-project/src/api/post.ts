@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { LikeOutput } from './like';
 
 type VISIBILITY = 'PUBLIC' | 'FRIENDS'
-type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
+export type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
 
 export interface PostInput {
     title: string,
@@ -68,7 +68,7 @@ export interface ImageOutput {
 
 // Do not use directly in react code
 const getInbox = async (author: AuthorOutput) => {
-    const { data } = await axios.get<InboxOutput>(`${author.id}/inbox`, {
+    const { data } = await axios.get<InboxOutput>(`${author.id}/inbox/`, {
         headers: {
             Authorization: getAuthorizationHeader(author.host)
         }
@@ -196,7 +196,7 @@ const useSendPost = () => {
     return useMutation({
         mutationFn: async (args: {author: AuthorOutput, sendPostInput: SendPostInput}) => {
             const {author, sendPostInput} = args;
-            const { data } = await axios.post<SendPostOutput>(`${author.id}/inbox`, sendPostInput, {
+            const { data } = await axios.post<SendPostOutput>(`${author.id}/inbox/`, sendPostInput, {
                 headers: {
                     Authorization: getAuthorizationHeader(author.host),
                 }
@@ -211,7 +211,7 @@ const useGetLikeObjects = (post: PostOutput) => (
     useQuery({
         queryKey: ['likes', post.id],
         queryFn: async () => {
-            const { data } = await axios.get<LikeOutput[]>(`${post.id}/likes`,{
+            const { data } = await axios.get<LikeOutput[]>(`${post.id}/likes/`,{
                 headers: {
                     Authorization: getAuthorizationHeader(post.author.host),
                 }
@@ -222,17 +222,18 @@ const useGetLikeObjects = (post: PostOutput) => (
     })
 )
 
-const useGetPostImage = (post: PostOutput) => (
+const useGetPostImage = (post: PostOutput, enabled: boolean = true) => (
     useQuery({
         queryKey: ['post-image', post.id],
         queryFn: async () => {
-            const { data } = await axios.get<ImageOutput>(`${post.id}/image${post.author.host === 'https://distributed-network-37d054f03cf4.herokuapp.com/' ? '/': ''}`, {
+            const { data } = await axios.get<ImageOutput>(`${post.id}/image/`, {
                 headers: {
                     Authorization: getAuthorizationHeader(post.author.host)
                 }
             });
             return data
         },
+        enabled: enabled
     })
 )
 
@@ -244,7 +245,7 @@ const useCreatePostImage = (post?: PostOutput) => {
             const {post, imageInput} = args
             const formData = new FormData()
             formData.append('image', imageInput.image)
-            const { data } = await axios.post<ImageOutput>(`${post.id}/image`, formData, {
+            const { data } = await axios.post<ImageOutput>(`${post.id}/image/`, formData, {
                 headers: {
                     Authorization: getAuthorizationHeader(post.author.host),
                     "Content-Type": 'multipart/form-data'
@@ -261,7 +262,7 @@ const useDeletePostImage = (post?: PostOutput) => {
 
     return useMutation({
         mutationFn: async (post: PostOutput) => {
-            const { data } = await axios.delete(`${post.id}/image`, {
+            const { data } = await axios.delete(`${post.id}/image/`, {
                 headers: {
                     Authorization: getAuthorizationHeader(post.author.host),
                 }

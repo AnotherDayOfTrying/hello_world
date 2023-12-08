@@ -58,7 +58,7 @@
 }
 
 .postButton{
-    padding: 5px;
+    padding: 10px;
     padding-left: 20px;
     padding-right: 20px;
     font-size: 12px;
@@ -80,4 +80,9 @@
     max-height: 20rem;
     object-fit: cover;
     border-radius: 0.5rem;
+}
+
+.contentType {
+    gap: 0.5em;
+    display: flex;
 }

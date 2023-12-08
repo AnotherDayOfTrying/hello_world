@@ -96,4 +96,14 @@ const logout = async() => {
     }
 }
 
-export {login, signup, verifySession, logout}
+
+const fetchNodes = async () => {
+    try {
+        const { data } = await axios.get<AuthorOutput[]>(`${APIURL}/nodes/`)
+        return data.map<string>((node) => (node.host))
+    } catch {
+
+    }
+}
+
+export {login, signup, verifySession, logout, fetchNodes}

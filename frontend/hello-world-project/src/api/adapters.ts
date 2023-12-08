@@ -2,6 +2,7 @@ import { FriendshipInput } from "./friend";
 
 
 export interface WebWizardsFriendshipInput {
+    type: 'follow',
     actor: {
         type: 'author' | 'server_admin' | 'node',
         displayName: string,
@@ -43,29 +44,79 @@ export interface WebWizardsSendPostInput {
     unlisted: boolean,
 }
 
-enum HOST {
-    WEB_WIZARDS = 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/'
+export interface MonkeyFriendshipInput {
+    type: 'Follow',
+    summary: string,
+    actor: {
+        type: 'author',
+        id: string,
+        host: string,
+        displayName: string,
+        url: string,
+        github: string,
+        profileImage: string,
+    },
+    object: {
+        type: 'author',
+        id: string,
+        host: string,
+        displayName: string,
+        url: string,
+        github: string,
+        profileImage: string,
+    }
 }
 
-export const friendRequestAdapter = (host: string, friendRequestInput: FriendshipInput) => {
+enum HOST {
+    WEB_WIZARDS = 'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/',
+    CODE_MONKEYS = 'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/'
+}
+
+export const friendRequestAdapter = (host: string, input: FriendshipInput) => {
     if (host === HOST.WEB_WIZARDS) {
         const adaptedRequest: WebWizardsFriendshipInput = {
+            type: 'follow',
             actor: {
                 type: 'author',
-                displayName: friendRequestInput.actor.displayName,
-                server_host: friendRequestInput.actor.host,
-                url: friendRequestInput.actor.url,
-                github_link: friendRequestInput.actor.github || 'https://github.com/AnotherDayOfTrying'
+                displayName: input.actor.displayName,
+                server_host: input.actor.host,
+                url: input.actor.url,
+                github_link: input.actor.github || 'https://github.com/AnotherDayOfTrying'
             },
             object: {
                 type: 'author',
-                displayName: friendRequestInput.object.displayName,
-                server_host: friendRequestInput.object.host,
-                url: friendRequestInput.object.url,
-                github_link: friendRequestInput.object.github || 'https://github.com/AnotherDayOfTrying'
+                displayName: input.object.displayName,
+                server_host: input.object.host,
+                url: input.object.url,
+                github_link: input.object.github || 'https://github.com/AnotherDayOfTrying'
             }
         }
+        return adaptedRequest
+    } else if (host === HOST.CODE_MONKEYS) {
+        const adaptedRequest: MonkeyFriendshipInput = {
+            type: 'Follow',
+            summary: input.summary,
+            actor: {
+                type: 'author',
+                id: input.actor.id,
+                host: input.actor.host,
+                displayName: input.actor.displayName,
+                url: input.actor.url,
+                github: input.actor.github || 'https://github.com/AnotherDayOfTrying',
+                profileImage: input.actor.profileImage
+            },
+            object: {
+                type: 'author',
+                id: input.object.id,
+                host: input.object.host,
+                displayName: input.object.displayName,
+                url: input.object.url,
+                github: input.object.github || 'https://github.com/AnotherDayOfTrying',
+                profileImage: input.object.profileImage
+            }
+        }
+        return adaptedRequest
     } else {
-        return friendRequestInput
+        return input
     }
 }

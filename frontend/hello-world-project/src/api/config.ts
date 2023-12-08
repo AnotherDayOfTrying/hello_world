@@ -4,13 +4,6 @@ const APIURLS: {[key: string]: string} = {
 }
 
 
-// export const HOSTS = [
-//     // 'https://cmput404-project-backend-a299a47993fd.herokuapp.com/',
-//     'https://chimp-chat-1e0cca1cc8ce.herokuapp.com/',
-//     'https://webwizards-backend-952a98ea6ec2.herokuapp.com/service/',
-//     // 'https://distributed-network-37d054f03cf4.herokuapp.com/api/'
-// ]
-
 export const getAuthorizationHeader = (host?: string) => {
     const AUTHORIZATION: {[key: string]: string} = {
         ['https://cmput404-project-backend-a299a47993fd.herokuapp.com/']: `Token ${localStorage.getItem('user_token') || ''}`,

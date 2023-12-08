@@ -142,7 +142,7 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
                     {handleDelete.isPending ?
                         <CircularProgress/>
                     :
-                        <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={() => handleDelete.mutateAsync(data.id)}/>
+                        <DeleteIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={() => handleDelete.mutate(data.id)}/>
                     }
                     <EditIcon style={{color: "#ff6b6b", cursor: 'pointer'}} onClick={handleEdit}>
                     </EditIcon>

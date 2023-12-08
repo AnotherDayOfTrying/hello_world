@@ -13,15 +13,17 @@ import { useGetFriends } from '../../api/friend';
 
 
 export default function PostShare() {
-    const [image, setImage] = useState<any | null>(null);
-    const ImageRef = React.createRef<HTMLInputElement>()
-    const [text, setText] = useState<string>('');
     const { state } = useLocation();
-    const {userInfo} = useAuth()
     let data: {post: PostOutput, image: ImageOutput} | undefined = undefined;
     if (state)
         data = state;
+
+    const [image, setImage] = useState<any | null>(null);
+    const [text, setText] = useState<string>('');
+    const ImageRef = React.createRef<HTMLInputElement>()
+    const {userInfo} = useAuth()
     const location = useLocation();
+
     const createPostHandler = useCreatePost()
     const editPostHandler = useEditPost(data?.post)
     const sendPostHandler = useSendPost()
@@ -102,12 +104,12 @@ export default function PostShare() {
                 })
 
                 if (image) {
-                    await createPostImageHandler.mutateAsync({
+                    await createPostImageHandler.mutate({
                         post: data.post,
                         imageInput: {image: image.data || ''}
                     })
                 } else if (data.image) {
-                    await deletePostImageHandler.mutateAsync(data.post)
+                    await deletePostImageHandler.mutate(data.post)
                 }
                 return response;
             } catch (error: any) {
@@ -141,7 +143,7 @@ export default function PostShare() {
                     sendList.push(userInfo)
                 }
                 const sendRequests = sendList.map(async (author) => {
-                    await sendPostHandler.mutateAsync({
+                    sendPostHandler.mutate({
                         author: author,
                         sendPostInput: {
                             type: 'post',
@@ -151,7 +153,6 @@ export default function PostShare() {
                     })
                 })
                 await Promise.all(sendRequests)
-                console.log("SENT")
                 return response;
             } catch (error: any) {
                 console.log(error);

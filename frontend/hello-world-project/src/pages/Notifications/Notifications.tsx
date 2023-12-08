@@ -1,66 +1,63 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Leftbar from '../../components/leftbar/Leftbar';
 import AuthorSearch from './AuthorSearch';
 import NotificationCard from './NotificationCard';
 import './notifications.css';
-import axios from "axios";
-import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config";
-import { useSnackbar } from 'notistack';
+import { useGetAuthors } from '../../api/author';
+import { AuthorCard } from './AuthorCard';
+import { useAuth } from '../../providers/AuthProvider';
+import { useGetFriendRequests, useGetFriends } from '../../api/friend';
+import { CircularProgress } from '@mui/material';
 
 export default function Notifications() {
-  const [data, setData] = useState<any>(null);
-  const {enqueueSnackbar} = useSnackbar();
-  
+  const [authorSearch, setAuthorSearch] = useState<string>('')
+  const {userInfo} = useAuth()
+  const friends = useGetFriends(userInfo)
+  const authors = useGetAuthors()
+  const friendRequests = useGetFriendRequests(userInfo)
 
-    const getFriendRequests = useCallback(async () => {
-      try {
-        const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/requests`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: getAuthorizationHeader(),
-          },
-        });
-        const friendRequests: any[] = response.data;
-        console.log('Friend Requests:', friendRequests);
 
-        const requestsWithAuthors = await Promise.all(
-          friendRequests.map(async (request) => {
-            // split the url to get the actor id
-            const actorId = request.actor.id.split('/').pop();
-            const authorResponse = await axios.get(`${APIURL}/authors/${actorId}`, {headers: {Authorization: getAuthorizationHeader(),}});
-            const authorData = {
-              ...request,
-              actor: authorResponse.data,
-            };
-            console.log('Author Data:', authorData);
-            return authorData;
-          })
-        );
-        console.log('Friend Requests:', requestsWithAuthors);
-        setData(friendRequests);
-
-      } catch (error) {
-        enqueueSnackbar('Unable to fetch notifications.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        console.log(error);
-      }
-    }, []);
-
-    useEffect(() => {
-      getFriendRequests();
-    }, [getFriendRequests]);
+  const filterAuthorSearch = (author: string) => {
+    setAuthorSearch(author)
+  }
 
   return (
     <>
       <div className='notificationContainer'>
         <Leftbar />
         <div className="notificationsList">
-          <AuthorSearch />
+          <AuthorSearch authorSearch={authorSearch} setAuthorSearch={filterAuthorSearch} />
           <h3 style={{ marginTop: "1rem", marginLeft: "1rem" }}>Your Notifications</h3>
-          {data && data.length > 0 ? (
-            data.map((item: any, id: number) => {
-              return <NotificationCard data={item} getFriendRequests={getFriendRequests} key={id} />;
+          {friendRequests.data && friendRequests.data.length > 0 ? (
+            friendRequests.data.map((friendRequest, index) => {
+              return <NotificationCard data={friendRequest} key={index} />;
             })
           ) : ( <h4 style={{alignSelf: 'center' }}>No Friend Requests</h4>)}
+          <h3 style={{ marginTop: "1rem", marginLeft: "1rem" }}>Authors</h3>
+          {authors.isLoading && <div style={{textAlign: 'center'}}><CircularProgress /></div>}
+          {authors.data && authors.data.length > 0 ? (
+            authors
+              .data
+              .sort((a, b) => a.displayName.localeCompare(b.displayName))
+              .filter((author) => {
+                if (userInfo.displayName === author.displayName) { // filter out self
+                  return false
+                }
+                if (friends.data && friends.data.length > 0) { //filter out friends
+                  if(!!friends.data.find((friendship) => friendship.actor.displayName === author.displayName)) {
+                    return false
+                  }
+                }
+                if (authorSearch) {
+                  return RegExp(`^${authorSearch}.*`).test(author.displayName)
+                } else {
+                  return true
+                }
+              })
+              .map((author) => {
+                return <AuthorCard data={author} key={author.id} />;
+              })
+          ) : ( <h4 style={{alignSelf: 'center' }}>No Authors</h4>)}
         </div>
       </div>
     </>

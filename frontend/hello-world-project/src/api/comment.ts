@@ -1,8 +1,9 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { REFRESH_INTERVAL, getAuthorizationHeader } from './config'
 import { AuthorInput, AuthorOutput } from './author';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PostOutput } from './post';
+import { enqueueSnackbar } from 'notistack';
 
 type CONTENT_TYPE = 'text/plain' | 'text/markdown' | 'application/base64' | 'image/png' | 'image/jpeg'
 
@@ -54,7 +55,14 @@ const useCreateComment = () => {
             });
             return data
         },
-        onSuccess: () => {queryClient.invalidateQueries({queryKey: ['comments']})}
+        onSuccess: () => {
+            enqueueSnackbar('Created Comment', {variant: 'success'})
+            queryClient.invalidateQueries({queryKey: ['comments']})
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Create Comment', {variant: 'error'})
+        },
+        throwOnError: false
     })
 }
 

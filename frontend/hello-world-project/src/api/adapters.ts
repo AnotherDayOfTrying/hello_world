@@ -2,7 +2,7 @@ import { FriendshipInput } from "./friend";
 
 
 export interface WebWizardsFriendshipInput {
-    type: 'follow',
+    type: 'Follow',
     actor: {
         type: 'author' | 'server_admin' | 'node',
         displayName: string,
@@ -75,7 +75,7 @@ enum HOST {
 export const friendRequestAdapter = (host: string, input: FriendshipInput) => {
     if (host === HOST.WEB_WIZARDS) {
         const adaptedRequest: WebWizardsFriendshipInput = {
-            type: 'follow',
+            type: 'Follow',
             actor: {
                 type: 'author',
                 displayName: input.actor.displayName,

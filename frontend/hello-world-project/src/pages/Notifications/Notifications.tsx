@@ -35,29 +35,31 @@ export default function Notifications() {
           ) : ( <h4 style={{alignSelf: 'center' }}>No Friend Requests</h4>)}
           <h3 style={{ marginTop: "1rem", marginLeft: "1rem" }}>Authors</h3>
           {authors.isLoading && <div style={{textAlign: 'center'}}><CircularProgress /></div>}
-          {authors.data && authors.data.length > 0 ? (
-            authors
-              .data
-              .sort((a, b) => a.displayName.localeCompare(b.displayName))
-              .filter((author) => {
-                if (userInfo.id === author.id) { // filter out self
-                  return false
-                }
-                if (friends.data && friends.data.length > 0) { //filter out friends
-                  if(!!friends.data.find((friendship) => friendship.actor.id === author.id)) {
+          <div className='feed'>
+            {authors.data && authors.data.length > 0 ? (
+              authors
+                .data
+                .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                .filter((author) => {
+                  if (userInfo.id === author.id) { // filter out self
                     return false
                   }
-                }
-                if (authorSearch) {
-                  return RegExp(`^${authorSearch}.*`).test(author.displayName)
-                } else {
-                  return true
-                }
-              })
-              .map((author) => {
-                return <AuthorCard data={author} key={author.id} />;
-              })
-          ) : ( <h4 style={{alignSelf: 'center' }}>No Authors</h4>)}
+                  if (friends.data && friends.data.length > 0) { //filter out friends
+                    if(!!friends.data.find((friendship) => friendship.actor.id === author.id)) {
+                      return false
+                    }
+                  }
+                  if (authorSearch) {
+                    return RegExp(`^${authorSearch}.*`).test(author.displayName)
+                  } else {
+                    return true
+                  }
+                })
+                .map((author) => {
+                  return <AuthorCard data={author} key={author.id} />;
+                })
+            ) : ( <h4 style={{alignSelf: 'center' }}>No Authors</h4>)}
+          </div>
         </div>
       </div>
     </>

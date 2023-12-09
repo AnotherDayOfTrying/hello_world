@@ -60,7 +60,7 @@ const Github: React.FC = () => {
 
   return (
     <div className="container">
-      <Leftbar  />
+      <Leftbar  />z
         <div className="activityList">
         {data.length > 0 ? (
           data.map((activity) => <Activity key={activity.id} activity={activity} />)

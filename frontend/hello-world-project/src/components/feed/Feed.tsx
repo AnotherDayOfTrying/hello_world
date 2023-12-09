@@ -9,9 +9,10 @@ import { enqueueSnackbar } from 'notistack'
 
 interface FeedProps {
   type: PAGE_TYPE
+  filter: string[]
 }
 
-const Feed: React.FC<FeedProps> = ({type}: FeedProps) => {
+const Feed: React.FC<FeedProps> = ({filter, type}: FeedProps) => {
   const {userInfo} = useAuth();
   const publicResponse = useGetPublicPosts(userInfo, type === PAGE_TYPE.PUBLIC)
   const privateResponse = useGetPrivatePosts(userInfo, type === PAGE_TYPE.PRIVATE)
@@ -36,7 +37,14 @@ const Feed: React.FC<FeedProps> = ({type}: FeedProps) => {
         publicResponse.isLoading ? 
           <CircularProgress/>
           :
-          <Posts type={type} data={response.data?.reverse()} />
+          <Posts type={type} data={response.data?.reverse().filter((post) => {
+            const categories: string[] = JSON.parse(post.categories || '[]')
+            if (filter && filter.length > 0) {
+              return categories.filter(value => filter.includes(value)).length > 0;
+            } else {
+              return true
+            }
+          })} />
       }
     </div>
   )

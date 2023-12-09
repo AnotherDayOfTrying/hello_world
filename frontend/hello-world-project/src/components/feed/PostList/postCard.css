@@ -11,7 +11,6 @@
     max-height: 25rem;
     object-fit: fill;
     border-radius: 0.5rem;
-
 }
 
 .reactions{
@@ -80,4 +79,19 @@
     display: none!important;
 }
 
+.categories {
+    font-weight: 700;
+    font-size: small;
+    text-align: right;
+}
 
+.markdown img {
+    width: 100%;
+    max-height: 25rem;
+    object-fit: fill;
+    border-radius: 0.5rem;
+}
+
+.markdown {
+    height: 100%
+}

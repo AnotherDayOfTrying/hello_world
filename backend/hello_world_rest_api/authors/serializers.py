@@ -96,7 +96,9 @@ class FriendShipSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         
         actor_data = validated_data.pop('actor')
+        print(actor_data)
         object_data = validated_data.pop('object')
+        print(object_data)
         actor = Author.objects.get(uid=actor_data['id'].split("/")[-1])
         object = Author.objects.get(uid=object_data['id'].split("/")[-1])
         friendship = Friendship.objects.create(summary = validated_data['summary'],actor=actor, object=object, status=1)

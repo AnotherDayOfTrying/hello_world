@@ -23,7 +23,7 @@ const Github: React.FC = () => {
 
   const getAuthor = async () => {
     try {
-      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/`, {
         headers: {
           Authorization: getAuthorizationHeader(),
         },

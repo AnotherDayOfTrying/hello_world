@@ -45,11 +45,7 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
   const handleShare = async () => {
     sendPostHandler.mutate({
       author: data.actor,
-      sendPostInput: {
-        'type': 'post',
-        'author': userInfo,
-        'id': post!.id,
-      }
+      sendPostInput: post!,
     })
     editPostHandler.mutate({
       post: post!,

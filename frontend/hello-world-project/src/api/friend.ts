@@ -19,6 +19,11 @@ export interface FriendshipOutput {
     type: 'follow'
 }
 
+export interface FollowerOutput {
+    type: 'followers',
+    items: AuthorOutput[]
+}
+
 const useSendFriendRequest = () => {
     const queryClient = useQueryClient()
 
@@ -96,6 +101,32 @@ const useRejectFriendRequest = () => {
     })
 }
 
+const useUnfriend = () => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (args: {author: AuthorOutput, actor: AuthorOutput}) => {
+            const {author, actor} = args
+            const actorId = actor.id.split('/').pop();
+            const { data } = await axios.delete(`${author.id}/followers/${actorId}/`,
+            {
+                headers: {
+                'Content-Type': 'application/json',
+                Authorization: getAuthorizationHeader(author.host),
+                }
+            });
+            return data
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['friends']})
+            enqueueSnackbar('Unfriended Successful', {variant: 'success'})
+        },
+        onError: () => {
+            enqueueSnackbar('Unable to Unfriend', {variant: 'error'})
+        }
+    })
+}
+
 const useGetFriendRequests = (author: AuthorOutput) => (
     useQuery({
         queryKey: ['friend-requests'],
@@ -117,7 +148,7 @@ const useGetFriends = (author: AuthorOutput) => (
     useQuery({
         queryKey: ['friends', author.id],
         queryFn: async () => {
-            const { data } = await axios.get<FriendshipOutput[]>(`${author.id}/friends/`, {
+            const { data } = await axios.get<FollowerOutput>(`${author.id}/followers/`, {
                 headers: {
                     Authorization: getAuthorizationHeader(author.host),
                 },
@@ -132,5 +163,6 @@ export {
     useSendFriendRequest,
     useGetFriendRequests,
     useRejectFriendRequest,
-    useAcceptFriendRequest
+    useAcceptFriendRequest,
+    useUnfriend,
 }

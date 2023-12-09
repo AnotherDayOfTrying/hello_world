@@ -6,11 +6,10 @@ import SearchIcon from '@mui/icons-material/Search';
 
 type FriendSearchProps = {
   onSearch: (filteredFriends: any) => void;
-  getFriends: () => void;
   data: any[];
 }
 
- function FriendSearch({ onSearch, getFriends, data }: FriendSearchProps) {
+ function FriendSearch({ onSearch, data }: FriendSearchProps) {
   const [displayName, setdisplayName] = useState<string>('');
 
   const handleSearch = async () => {
@@ -18,9 +17,6 @@ type FriendSearchProps = {
     item.actor.displayName.toLowerCase() === displayName.toLowerCase());
     if (filteredFriend.length > 0) {
       onSearch(filteredFriend);
-    }
-    else {  
-      getFriends();
     }
   };
   

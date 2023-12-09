@@ -15,7 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { Chip, CircularProgress, Popover, Typography } from '@mui/material';
 import { CONTENT_TYPE, ImageOutput, PostOutput, useDeletePost, useGetLikeObjects, useGetPostImage } from '../../../api/post';
-import { getAuthorAsync } from '../../../api/author';
+import { AuthorOutput, getAuthorAsync } from '../../../api/author';
 import { LikeListOutput, useLikeObject } from '../../../api/like';
 import { FriendshipOutput } from '../../../api/friend';
 import { PAGE_TYPE } from '../../../App';
@@ -27,7 +27,7 @@ type PostCardProps = {
     data: PostOutput;
     liked: LikeListOutput;
     type: PAGE_TYPE;
-    friends: FriendshipOutput[],
+    friends: AuthorOutput[],
 };
 
 
@@ -94,7 +94,7 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
         return(
             <div className='popupContainer'>
                 {friends ? friends
-                .filter((friend) => friend.actor.id !== userInfo?.id)
+                .filter((friend) => friend.id !== userInfo?.id)
                 .map((friend) => (<FriendCard data={friend} post={data} shareList/>))
                 :
                 <></>}

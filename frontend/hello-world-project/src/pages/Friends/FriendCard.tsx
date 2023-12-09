@@ -4,47 +4,29 @@ import { NavLink } from 'react-router-dom';
 import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
-import { FriendshipOutput } from '../../api/friend';
+import { FriendshipOutput, useUnfriend } from '../../api/friend';
 import { PostOutput, useSendPost, useEditPost } from '../../api/post';
 import { useAuth } from '../../providers/AuthProvider';
+import { AuthorOutput } from '../../api/author';
 
 
 type FriendsCardProps = {
-  data: FriendshipOutput;
+  data: AuthorOutput;
   post?: PostOutput;
   shareList?: boolean;
-  getFriends?: () => Promise<void>;
 };
 
 
-function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
+function FriendsCard({data, shareList, post}: FriendsCardProps) {
   const {enqueueSnackbar} = useSnackbar();
   const {userInfo} = useAuth()
   const editPostHandler = useEditPost(post!)
   const sendPostHandler = useSendPost()
-
-  const handleUnfriend = async () => {
-    const actorId = data.actor.id.split('/').pop();
-    try {
-      const response = await axios.delete(`${APIURL}/authors/${getAuthorId()}/followers/${actorId}`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: getAuthorizationHeader(),
-        }
-      });
-      const responseData: any = response.data;
-      if (getFriends) {
-        getFriends();
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const unfriendHanlder = useUnfriend()
 
   const handleShare = async () => {
     sendPostHandler.mutate({
-      author: data.actor,
+      author: data,
       sendPostInput: post!,
     })
     editPostHandler.mutate({
@@ -55,15 +37,22 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
         unlisted: false
       }
     })
-    enqueueSnackbar(`Successfully sent to ${data.actor.displayName}`, {variant: 'success'})
+    enqueueSnackbar(`Successfully sent to ${data.displayName}`, {variant: 'success'})
+  }
+
+  const handleUnfriend = async () => {
+    unfriendHanlder.mutate({
+      author: userInfo,
+      actor: data
+    })
   }
 
   if (shareList) {
     return(
       <div className="shareListCard" onClick={handleShare}>
-        <img src={`${data.actor.profileImage}`} alt="" className="shareListImg" />
+        <img src={`${data.profileImage}`} alt="" className="shareListImg" />
         <div className="shareListUsername">
-          <span>{data.actor.displayName}</span>
+          <span>{data.displayName}</span>
         </div>
     </div>
     )
@@ -73,9 +62,9 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
     return (
       
       <div className="FriendCard">
-        <img src={`${data.actor.profileImage}`} alt="" className="friendCardImg" />
+        <img src={`${data.profileImage}`} alt="" className="friendCardImg" />
         <div className="friendCardUsername">
-            <span >{data.actor.displayName}</span>
+            <span >{data.displayName}</span>
         </div>
         <button onClick={handleUnfriend} className='Unfriend'>Unfriend</button>
       </div>

@@ -33,7 +33,7 @@ const Posts: React.FC<PostsProps> = ({ data, type}) => {
       {
         data && data.length > 0 ?
           data.map((post) => {
-            return <PostCard key={post.id} type={type} data={post} liked={liked.data!} friends={friends.data!} />
+            return <PostCard key={post.id} type={type} data={post} liked={liked.data!} friends={friends.data?.items!} />
           })
         :
           <EmptyPostCard />

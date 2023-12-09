@@ -34,12 +34,10 @@ function FriendsCard({data, shareList, getFriends, post}: FriendsCardProps) {
         }
       });
       const responseData: any = response.data;
-      console.log('rejecting request: ', responseData);
       if (getFriends) {
         getFriends();
       }
     } catch (err) {
-      // enqueueSnackbar('Unable to delete friend. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
       console.log(err);
     }
   };

@@ -17,11 +17,9 @@ type FriendSearchProps = {
     const filteredFriend = data.filter((item) =>
     item.actor.displayName.toLowerCase() === displayName.toLowerCase());
     if (filteredFriend.length > 0) {
-      console.log('Filtered Friend:', filteredFriend);
       onSearch(filteredFriend);
     }
     else {  
-      console.log('No Friend Found');
       getFriends();
     }
   };

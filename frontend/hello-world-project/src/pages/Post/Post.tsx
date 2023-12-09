@@ -63,11 +63,6 @@ export default function PostShare() {
                 setCategories(JSON.parse(data.post.categories || '[]'))
             }
             if (data.post.content && isImagePost(data.post.contentType)) {
-                // const response = await axios.get(`${data.image.image_url}`, {
-                //     responseType: 'blob'
-                // });
-                // const blob = await response.data;
-                // const file = new File([blob], "image.jpg", {type: "image/jpeg"});
                 setImage(data.post.content)
             }
         }
@@ -133,14 +128,6 @@ export default function PostShare() {
                     }
                 })
 
-                // if (image && contentType.toLowerCase() === 'image/png') {
-                //     createPostImageHandler.mutate({
-                //         post: data.post,
-                //         imageInput: {image: image.data || ''}
-                //     })
-                // } else if (data.image) {
-                //     deletePostImageHandler.mutate(data.post)
-                // }
                 return response;
             } catch (error: any) {
                 console.log(error);

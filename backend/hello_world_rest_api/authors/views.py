@@ -23,6 +23,15 @@ from requests.auth import HTTPBasicAuth
 import random
 from django.core.files.base import ContentFile
 import re
+import string
+def generate_random_string(length):
+    # Define the characters you want to include in the random string
+    characters = string.ascii_letters + string.digits  # you can include other characters if needed
+
+    # Use random.choices to generate a random string of the specified length
+    random_string = ''.join(random.choices(characters, k=length))
+
+    return random_string
 
 
 # Create your views here.
@@ -87,6 +96,8 @@ class FriendshipView(generics.CreateAPIView):
         if reverse and reverse.status == 3:
             reverse.status = 2
             reverse.save()
+        if friendship.status == 1:
+            Inbox_Item.objects.filter(author=author,content_type=ContentType.objects.get_for_model(Friendship),object_id=friendship.uid).delete()
         friendship.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
     def put(self,request,author_id,foreign_author_id):
@@ -219,6 +230,7 @@ class InboxView(generics.CreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return PostSerializer
+        
      # to allow input in swagger for testing
     
     def get(self, request, author_id):
@@ -244,27 +256,60 @@ class InboxView(generics.CreateAPIView):
     
     def post(self,request,author_id):
         author = get_object_or_404(Author,uid=author_id)
+        if request.user == author:
+            return Response({'message': 'You cannot send a message to yourself'}, status=status.HTTP_400_BAD_REQUEST)
         if request.data.get('type').lower() == 'follow':
+            actor_data = request.data.get('actor')
+            
+            actor = Author.objects.filter(uid=actor_data['id'].split('/')[-1]).first()
+            if actor is None:
+                actor = Author.objects.create(
+                    uid = actor_data['id'].split('/')[-1],
+                    username = generate_random_string(10),
+                    password = generate_random_string(10),
+                    displayName = actor_data['displayName'],
+                    github = actor_data['github'],
+                    host = actor_data['host'],
+                    id = actor_data['id'],
+                    url = actor_data['url'],
+                    profilePicture = actor_data['profileImage'],
+                    is_approved = True
+                )
+            if Friendship.objects.filter(actor=actor,object=author).first():
+                return Response({'message': 'You have already sent a follow request to this user'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = FriendShipSerializer(data=request.data, context={'request': request})
             model = Friendship
             if serializer.is_valid():
-            
                 instance = serializer.save()
-                
                 inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
                 inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
-                return Response(inbox_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
+
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type').lower() == 'post':
             model = Post
-            post_exist = Post.objects.get(uid=request.data.get('id').split('/')[-1])
+            post_exist = Post.objects.filter(uid=request.data.get('id').split('/')[-1]).first()
             if post_exist:
                 serializer = PostSerializer(post_exist, context={'request': request})
                 inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=post_exist.uid)
                 inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
                 return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
             else:
+                actor = Author.objects.filter(uid=request.data['author']['id'].split('/')[-1]).first()
+                if actor is None:
+                    actor = Author.objects.create(
+                        uid = request.data['author']['id'].split('/')[-1],
+                        username = generate_random_string(10),
+                        password = generate_random_string(10),
+                        displayName = request.data['author']['displayName'],
+                        github = request.data['author']['github'],
+                        host = request.data['author']['host'],
+                        id = request.data['author']['id'],
+                        url = request.data['author']['url'],
+                        profilePicture = request.data['author']['profileImage'],
+                        is_approved = True
+                    )
                 serializer = PostSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
             
@@ -445,6 +490,7 @@ class FriendsView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GetNodesView(generics.CreateAPIView):
+    serializer_class = AuthorSerializer
     def get(self, request):
         nodes = Author.objects.filter(is_a_node=True)
         serializer = AuthorSerializer(nodes, many=True, context={'request': request})

@@ -7,6 +7,7 @@ import { APIURL, getAuthorizationHeader, getAuthorId} from '../../api/config';
 import gsap from 'gsap';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useSnackbar } from 'notistack';
+import { useAuth } from '../../providers/AuthProvider';
 
 
 
@@ -20,10 +21,11 @@ const EditProfile: React.FC = () => {
     const ImageRef = React.createRef<HTMLInputElement>()
     const [reload, setReload] = useState(false);
     const {enqueueSnackbar} = useSnackbar();
+    const {refreshUser} = useAuth()
 
   const getAuthor = async () => {
     try {
-      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/`, {
         headers: {
           Authorization: getAuthorizationHeader(),
         },
@@ -84,7 +86,7 @@ const EditProfile: React.FC = () => {
         formData.append('profilePictureImage', ImageRef.current.files[0])
     }
     try {
-        const response = await axios.post(`${APIURL}/authors/${getAuthorId()}`, formData,{
+        const response = await axios.post(`${APIURL}/authors/${getAuthorId()}/`, formData,{
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: getAuthorizationHeader(),
@@ -96,6 +98,7 @@ const EditProfile: React.FC = () => {
         setProfilePicture(response.data.profilePicture);
         setReload(true);
         handleClearPicture();
+        await refreshUser()
       } catch (e) {
         console.error(e);
       }

@@ -35,7 +35,7 @@ export default function Notifications() {
           ) : ( <h4 style={{alignSelf: 'center' }}>No Friend Requests</h4>)}
           <h3 style={{ marginTop: "1rem", marginLeft: "1rem" }}>Authors</h3>
           {authors.isLoading && <div style={{textAlign: 'center'}}><CircularProgress /></div>}
-          <div className='feed'>
+          <div className='notificationFeed'>
             {authors.data && authors.data.length > 0 ? (
               authors
                 .data

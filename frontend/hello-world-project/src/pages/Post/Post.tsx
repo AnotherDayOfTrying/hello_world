@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider';
 import { ImageOutput, PostOutput, useCreatePost, useSendPost, useEditPost, useCreatePostImage, useDeletePostImage, CONTENT_TYPE } from '../../api/post';
 import axios from 'axios';
-import { AuthorOutput, getAllLocalAuthorsAsync } from '../../api/author';
+import { AuthorOutput, getAllLocalAuthorsAsync, useGetAuthors } from '../../api/author';
 import { useGetFriends } from '../../api/friend';
 import { Chip, Stack, TextField, } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
@@ -33,6 +33,7 @@ export default function PostShare() {
     const createPostHandler = useCreatePost()
     const editPostHandler = useEditPost(data?.post)
     const sendPostHandler = useSendPost()
+    const authors = useGetAuthors()
     const friends = useGetFriends(userInfo)
 
     useEffect(() => {
@@ -136,10 +137,11 @@ export default function PostShare() {
 
                 const sendList: AuthorOutput[] = []
                 if (privacy === 'PUBLIC') {
-                   sendList.push(...(await getAllLocalAuthorsAsync())!.items)
-                   // TODO: send to other apps
+                    if (authors.data)
+                        sendList.push(...authors.data)
                 } else if (privacy === 'PRIVATE') {
-                    sendList.push(...(friends.data!.map((friendship) => {return friendship.actor})))
+                    if (friends.data)
+                        sendList.push(...(friends.data.map((friendship) => {return friendship.actor})))
                 } else if (privacy === 'UNLISTED') {
                     // send to self
                     sendList.push(userInfo)

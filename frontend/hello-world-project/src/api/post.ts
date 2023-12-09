@@ -194,7 +194,7 @@ const useSendPost = () => {
     const queryClient = useQueryClient()
 
     return useMutation({
-        mutationFn: async (args: {author: AuthorOutput, sendPostInput: SendPostInput}) => {
+        mutationFn: async (args: {author: AuthorOutput, sendPostInput: PostOutput}) => {
             const {author, sendPostInput} = args;
             const { data } = await axios.post<SendPostOutput>(`${author.id}/inbox/`, sendPostInput, {
                 headers: {

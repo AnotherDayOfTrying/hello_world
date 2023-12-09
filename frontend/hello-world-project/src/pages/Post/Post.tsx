@@ -149,11 +149,7 @@ export default function PostShare() {
                 const sendRequests = sendList.map(async (author) => {
                     sendPostHandler.mutate({
                         author: author,
-                        sendPostInput: {
-                            type: 'post',
-                            author: userInfo,
-                            id: response!.id,
-                        }
+                        sendPostInput: response!
                     })
                 })
                 await Promise.all(sendRequests)

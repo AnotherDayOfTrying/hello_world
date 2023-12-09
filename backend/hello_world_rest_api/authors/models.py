@@ -130,8 +130,8 @@ class Friendship(models.Model):
     @property
     def type(self):
         return 'Follow'
-    class Meta:
-        unique_together = ('actor', 'object')
+    # class Meta:
+    #     unique_together = ('actor', 'object')
 #Not changed     
 class Like(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)

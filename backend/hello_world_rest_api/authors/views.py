@@ -96,6 +96,8 @@ class FriendshipView(generics.CreateAPIView):
         if reverse and reverse.status == 3:
             reverse.status = 2
             reverse.save()
+        if friendship.status == 1:
+            Inbox_Item.objects.filter(author=author,content_type=ContentType.objects.get_for_model(Friendship),object_id=friendship.uid).delete()
         friendship.delete()
         return Response({'message': 'Delete Success'}, status=status.HTTP_204_NO_CONTENT)
     def put(self,request,author_id,foreign_author_id):
@@ -228,8 +230,7 @@ class InboxView(generics.CreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return PostSerializer
-        elif self.request.method == 'POST':
-            return I
+        
      # to allow input in swagger for testing
     
     def get(self, request, author_id):
@@ -260,21 +261,22 @@ class InboxView(generics.CreateAPIView):
         if request.data.get('type').lower() == 'follow':
             actor_data = request.data.get('actor')
             
-            # actor = Author.objects.filter(uid=actor_data['id'].split('/')[-1]).first()
-            # if actor is None:
-            #     actor = Author.objects.create(
-            #         uid = actor_data['id'].split('/')[-1],
-            #         username = generate_random_string(10),
-            #         password = generate_random_string(10),
-            #         displayName = actor_data['displayName'],
-            #         github = actor_data['github'],
-            #         host = actor_data['host'],
-            #         id = actor_data['id'],
-            #         url = actor_data['url'],
-            #         profilePicture = actor_data['profileImage'],
-            #         is_approved = True
-            #     )
-            
+            actor = Author.objects.filter(uid=actor_data['id'].split('/')[-1]).first()
+            if actor is None:
+                actor = Author.objects.create(
+                    uid = actor_data['id'].split('/')[-1],
+                    username = generate_random_string(10),
+                    password = generate_random_string(10),
+                    displayName = actor_data['displayName'],
+                    github = actor_data['github'],
+                    host = actor_data['host'],
+                    id = actor_data['id'],
+                    url = actor_data['url'],
+                    profilePicture = actor_data['profileImage'],
+                    is_approved = True
+                )
+            if Friendship.objects.filter(actor=actor,object=author).first():
+                return Response({'message': 'You have already sent a follow request to this user'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = FriendShipSerializer(data=request.data, context={'request': request})
             model = Friendship
             if serializer.is_valid():

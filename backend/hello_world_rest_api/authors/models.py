@@ -122,8 +122,8 @@ class Comment(models.Model):
     
 class Friendship(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=False,primary_key=True)
-    actor = models.JSONField()
-    object = models.JSONField()
+    actor = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='actor')
+    object = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='object')
     friend_status = [(1, 'Pending'), (2, 'Following'), (3, 'Friends')]
     status = models.SmallIntegerField(choices=friend_status, default=1)
     summary = models.CharField(max_length=200, blank=True, null=True)

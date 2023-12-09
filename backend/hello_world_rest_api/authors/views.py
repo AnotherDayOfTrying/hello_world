@@ -256,9 +256,10 @@ class InboxView(generics.CreateAPIView):
     
     def post(self,request,author_id):
         author = get_object_or_404(Author,uid=author_id)
-        if request.user == author:
-            return Response({'message': 'You cannot send a message to yourself'}, status=status.HTTP_400_BAD_REQUEST)
+        
         if request.data.get('type').lower() == 'follow':
+            if request.user == author:
+                return Response({'message': 'You cannot send a message to yourself'}, status=status.HTTP_400_BAD_REQUEST)
             actor_data = request.data.get('actor')
             
             actor = Author.objects.filter(uid=actor_data['id'].split('/')[-1]).first()
@@ -288,6 +289,7 @@ class InboxView(generics.CreateAPIView):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type').lower() == 'post':
+            
             model = Post
             post_exist = Post.objects.filter(uid=request.data.get('id').split('/')[-1]).first()
             if post_exist:
@@ -312,9 +314,7 @@ class InboxView(generics.CreateAPIView):
                     )
                 serializer = PostSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
-            
                     instance = serializer.save()
-                    
                     inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
                     inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
                     return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)

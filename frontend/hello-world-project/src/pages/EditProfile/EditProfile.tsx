@@ -35,7 +35,6 @@ const EditProfile: React.FC = () => {
       setProfilePicture(response.data.profilePicture);
       setID(response.data.id)
       setAuthor(response.data);
-      console.log("editpro: ", response.data);
     } catch (e) {
       console.error(e);
     }
@@ -77,12 +76,10 @@ const EditProfile: React.FC = () => {
         formData.append('displayName', displayName)
     }
     if (github !== null){
-        console.log('github: ', github);
         formData.append('github', github)
     }
 
     if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
-        console.log('ImageRef: ', ImageRef.current.files[0]);
         formData.append('profilePictureImage', ImageRef.current.files[0])
     }
     try {

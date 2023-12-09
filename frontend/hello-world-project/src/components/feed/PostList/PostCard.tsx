@@ -53,7 +53,6 @@ const PostCard = ({ data, type, liked, friends }: PostCardProps) => {
     const handleLike = async () => {
         if (isliked) {
             setIsLiked(!isliked);
-            //unlike
         } else {
             setIsLiked(!isliked);
             try {

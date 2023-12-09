@@ -61,11 +61,6 @@ export default function PostShare() {
                 setCategories(JSON.parse(data.post.categories || '[]'))
             }
             if (data.post.content && isImagePost(data.post.contentType)) {
-                // const response = await axios.get(`${data.image.image_url}`, {
-                //     responseType: 'blob'
-                // });
-                // const blob = await response.data;
-                // const file = new File([blob], "image.jpg", {type: "image/jpeg"});
                 setImage(data.post.content)
             }
         }

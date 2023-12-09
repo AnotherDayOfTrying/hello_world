@@ -25,21 +25,6 @@ const CommentCard: React.FC<CommentCardProps> = ({ comment, isLiked }) => {
     const handleLike = async () => {
         if (isliked) {
             setIsLiked(!isliked);
-            // try {
-            // const response = await axios.delete(`${APIURL}/unlike/${likeId}/`,
-            // {
-            // headers: {
-            //     'Content-Type': 'application/json',
-            //     Authorization: getAuthorizationHeader(),
-            // }
-            // });
-            // const responseData: any = response.data;
-            // console.log('unlike response: ', responseData);
-            // setIsLiked(false);
-            // return responseData;
-            // } catch (error: any) {
-            //     console.log(error);     
-            // };
         } else {
             setIsLiked(!isliked);
             try {

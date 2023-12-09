@@ -26,7 +26,6 @@ const UserActivity: React.FC<UserActivityProps> = ({ activity }) => {
 
   if (commits && commits.length > 0) {
     const displayedCommits = commits.slice(0, 3);
-    console.log('commit url:', displayedCommits[0].url);
     return displayedCommits.map((commit: any) => ({
         committerGravatar: `<img src="${activity.actor.avatar_url}" alt="User Avatar" class="gha-gravatar-image" />`,
         shaLink: `<a href="https://github.com/${activity.repo?.name}/commit/${commit.sha}" class="custom-link">${commit.sha.substring(0, 6)}</a>`,
@@ -53,7 +52,6 @@ const getBranchLink = (ref: string, repoName: string) => {
 
 const renderActivity = () => {
     const template = templates[activity.type as keyof typeof templates];
-    console.log('Icon class:', icons[activity.type as keyof typeof icons]);
 
     
     if (template) {

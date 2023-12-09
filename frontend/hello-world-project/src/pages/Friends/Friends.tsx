@@ -6,37 +6,20 @@ import FriendSearch from './FriendSearch';
 import { APIURL, getAuthorizationHeader, getAuthorId } from "../../api/config"
 import axios, { AxiosError } from "axios"
 import { useSnackbar } from 'notistack';
+import { useGetFriends } from '../../api/friend';
+import { useAuth } from '../../providers/AuthProvider';
 
 
 
 export default function Friends() {
     const [data, setData] = useState<any>(null);
     const {enqueueSnackbar} = useSnackbar();
+    const {userInfo} = useAuth()
+    const friends = useGetFriends(userInfo)
 
     const handleSearch = (filteredFriend: any) => {
         setData(filteredFriend); 
     };
-
-    const getFriends = useCallback(async () => { 
-        try {
-            const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/friends/`, {
-            headers: {
-            "Content-Type": "application/json",
-            Authorization: getAuthorizationHeader(),
-            },
-        });
-        const friends: any[] = response.data;
-        setData(friends);
-
-      } catch (error) {
-        // enqueueSnackbar('Unable to fetch friends. Try again later.', {variant: 'error', anchorOrigin: { vertical: 'bottom', horizontal: 'right' }})
-        console.log(error);
-      }
-    }, []);
-
-    useEffect(() => {
-        getFriends();
-      }, [getFriends]);
     
     const isDataEmpty = data ? data.length === 0 : true
     return (
@@ -44,13 +27,13 @@ export default function Friends() {
             <div className='FriendsContainer'>
                 <Leftbar/>
                 <div className="friendsList">
-                <FriendSearch onSearch={handleSearch} getFriends={getFriends} data={data}/>
+                <FriendSearch onSearch={handleSearch} data={data}/>
                 <h3 style={{marginTop: "1rem", marginLeft: "1rem"}}>Friends List</h3>
-                    {data && !isDataEmpty ?
-                    (data.map((data: any, id: number) => {  
-                      const actorId = data.actor.id.split('/').pop();
+                    {friends.data && friends.data.items.length > 0 ?
+                    (friends.data.items.map((data, id: number) => {  
+                      const actorId = data.id.split('/').pop();
                       if (actorId !== getAuthorId()) {
-                        return <FriendsCard data={data}  getFriends={getFriends} key={id}/>
+                        return <FriendsCard data={data} key={id}/>
                       }
                       })
                     ): 

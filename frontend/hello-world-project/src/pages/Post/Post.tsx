@@ -141,7 +141,7 @@ export default function PostShare() {
                         sendList.push(...authors.data)
                 } else if (privacy === 'PRIVATE') {
                     if (friends.data)
-                        sendList.push(...(friends.data.map((friendship) => {return friendship.actor})))
+                        sendList.push(...(friends.data.items.map((friendship) => {return friendship})))
                 } else if (privacy === 'UNLISTED') {
                     // send to self
                     sendList.push(userInfo)

@@ -44,8 +44,8 @@ export default function Notifications() {
                   if (userInfo.id === author.id) { // filter out self
                     return false
                   }
-                  if (friends.data && friends.data.length > 0) { //filter out friends
-                    if(!!friends.data.find((friendship) => friendship.actor.id === author.id)) {
+                  if (friends.data && friends.data.items.length > 0) { //filter out friends
+                    if(!!friends.data.items.find((friendship) => friendship.id === author.id)) {
                       return false
                     }
                   }

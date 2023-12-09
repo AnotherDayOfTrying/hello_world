@@ -133,7 +133,7 @@ class AllAuthorsView(generics.CreateAPIView):
         except ValueError:
             return Response({'error': 'Invalid page or page_size parameter'}, status=400)
         
-        queryset = Author.objects.filter(is_approved=True, is_a_node = False, is_superuser = False).order_by('uid')
+        queryset = Author.objects.filter(is_approved=True, is_a_node = False, is_superuser = False,host = settings.HOST_URL).order_by('uid')
         paginator = PageNumberPagination()
         paginator.page_size = page_size
         page = paginator.paginate_queryset(queryset,request)
@@ -256,11 +256,11 @@ class InboxView(generics.CreateAPIView):
     
     def post(self,request,author_id):
         author = get_object_or_404(Author,uid=author_id)
-        if request.user == author:
-            return Response({'message': 'You cannot send a message to yourself'}, status=status.HTTP_400_BAD_REQUEST)
+        
         if request.data.get('type').lower() == 'follow':
+            if request.user == author:
+                return Response({'message': 'You cannot send a message to yourself'}, status=status.HTTP_400_BAD_REQUEST)
             actor_data = request.data.get('actor')
-            
             actor = Author.objects.filter(uid=actor_data['id'].split('/')[-1]).first()
             if actor is None:
                 actor = Author.objects.create(
@@ -288,6 +288,7 @@ class InboxView(generics.CreateAPIView):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type').lower() == 'post':
+            
             model = Post
             post_exist = Post.objects.filter(uid=request.data.get('id').split('/')[-1]).first()
             if post_exist:
@@ -308,17 +309,13 @@ class InboxView(generics.CreateAPIView):
                         id = request.data['author']['id'],
                         url = request.data['author']['url'],
                         profilePicture = request.data['author']['profileImage'],
-                        is_approved = True
                     )
                 serializer = PostSerializer(data=request.data, context={'request': request})
                 if serializer.is_valid():
-            
                     instance = serializer.save()
-                    
                     inbox_item = Inbox_Item.objects.create(author=author,content_type=ContentType.objects.get_for_model(model),object_id=instance.uid)
                     inbox_serializer = InboxSerializer(inbox_item, context={'request': request})
                     return Response(inbox_serializer.data["contentObject"], status=status.HTTP_201_CREATED)
-
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         elif request.data.get('type').lower() == 'comment':
             post = Post.objects.get(uid=request.data['id'].split("/")[6])

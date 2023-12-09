@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { LoginInterface, SignUpInterface, login, signup, verifySession, logout, fetchNodes } from "../api/auth"
 import { useSnackbar } from "notistack";
-import { AuthorOutput } from "../api/author";
+import { AuthorOutput, getAuthorAsync } from "../api/author";
 
 const AuthContext = createContext<any>({});
 
@@ -69,6 +69,11 @@ export const AuthProvider = ({ children }: any) => {
     navigate("/login", { replace: true })
   };
 
+  const refreshUser = async () => {
+    if (userInfo)
+      setUserInfo(await getAuthorAsync(userInfo))
+  }
+
   const value = useMemo(
     () => ({
       user,
@@ -79,6 +84,7 @@ export const AuthProvider = ({ children }: any) => {
       signupUser,
       loginUser,
       logoutUser,
+      refreshUser
     }),
     [user, userId, userInfo, verifiedSession, hosts]
   );

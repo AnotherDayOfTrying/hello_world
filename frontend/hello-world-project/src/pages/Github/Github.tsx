@@ -23,7 +23,7 @@ const Github: React.FC = () => {
 
   const getAuthor = async () => {
     try {
-      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/`, {
         headers: {
           Authorization: getAuthorizationHeader(),
         },
@@ -56,7 +56,7 @@ const Github: React.FC = () => {
 
   return (
     <div className="container">
-      <Leftbar  />z
+      <Leftbar  />
         <div className="activityList">
         {data.length > 0 ? (
           data.map((activity) => <Activity key={activity.id} activity={activity} />)

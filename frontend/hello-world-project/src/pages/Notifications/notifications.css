@@ -12,3 +12,11 @@
     gap: 1rem;
 
 }
+
+.notificationFeed{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 70vh;
+    overflow: auto;
+}

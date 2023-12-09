@@ -40,7 +40,10 @@ const Feed: React.FC<FeedProps> = ({filter, type}: FeedProps) => {
           <Posts type={type} data={response.data?.reverse().filter((post) => {
             const categories: string[] = JSON.parse(post.categories || '[]')
             if (filter && filter.length > 0) {
-              return categories.filter(value => filter.includes(value)).length > 0;
+              return filter
+                .every((category) => {
+                  return categories.includes(category)
+              })
             } else {
               return true
             }

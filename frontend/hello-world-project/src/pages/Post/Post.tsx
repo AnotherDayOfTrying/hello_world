@@ -9,7 +9,7 @@ import { ImageOutput, PostOutput, useCreatePost, useSendPost, useEditPost, useCr
 import axios from 'axios';
 import { AuthorOutput, getAllLocalAuthorsAsync } from '../../api/author';
 import { useGetFriends } from '../../api/friend';
-import { Button, Chip, Stack, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Chip, Stack, TextField, } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
 
 
@@ -34,8 +34,6 @@ export default function PostShare() {
     const editPostHandler = useEditPost(data?.post)
     const sendPostHandler = useSendPost()
     const friends = useGetFriends(userInfo)
-    const createPostImageHandler = useCreatePostImage(data?.post)
-    const deletePostImageHandler = useDeletePostImage(data?.post)
 
     useEffect(() => {
       // Fetch or update data based on the route change
@@ -63,11 +61,6 @@ export default function PostShare() {
                 setCategories(JSON.parse(data.post.categories || '[]'))
             }
             if (data.post.content && isImagePost(data.post.contentType)) {
-                // const response = await axios.get(`${data.image.image_url}`, {
-                //     responseType: 'blob'
-                // });
-                // const blob = await response.data;
-                // const file = new File([blob], "image.jpg", {type: "image/jpeg"});
                 setImage(data.post.content)
             }
         }
@@ -86,17 +79,7 @@ export default function PostShare() {
     };
 
     const handlePostSubmit = async (privacy: string)  => {
-        // "text/plain" | "text/markdown" | "application/base64" | "image/png" | "image/jpeg"
         const isImagePost = contentType.toLowerCase() === 'image/png' || contentType.toLocaleLowerCase() === 'image/jpeg' || contentType.toLocaleLowerCase() === 'application/base64'
-
-        if (ImageRef.current && ImageRef.current.files && ImageRef.current.files[0]) {
-            setImage({
-                data: ImageRef.current.files[0],
-                ...image
-            })
-        } else {
-            setImage(null)
-        }
 
         let content: any = '';
         if (isImagePost) {
@@ -107,6 +90,7 @@ export default function PostShare() {
                     fileReader.onload = (e) => resolve(fileReader.result);
                     fileReader.readAsDataURL(file);
                 });
+                setImage(content)
             }
         } else {
             content = text
@@ -133,14 +117,6 @@ export default function PostShare() {
                     }
                 })
 
-                // if (image && contentType.toLowerCase() === 'image/png') {
-                //     createPostImageHandler.mutate({
-                //         post: data.post,
-                //         imageInput: {image: image.data || ''}
-                //     })
-                // } else if (data.image) {
-                //     deletePostImageHandler.mutate(data.post)
-                // }
                 return response;
             } catch (error: any) {
                 console.log(error);
@@ -157,11 +133,7 @@ export default function PostShare() {
                     unlisted: privacy === 'UNLISTED',
                     categories: JSON.stringify(categories),
                 }})
-                if (image && contentType.toLowerCase() === 'image')
-                    await createPostImageHandler.mutateAsync({
-                        post: response,
-                        imageInput: {image: image.data || ''}
-                    })
+
                 const sendList: AuthorOutput[] = []
                 if (privacy === 'PUBLIC') {
                    sendList.push(...(await getAllLocalAuthorsAsync())!.items)

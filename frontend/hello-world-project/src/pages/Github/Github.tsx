@@ -23,17 +23,15 @@ const Github: React.FC = () => {
 
   const getAuthor = async () => {
     try {
-      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}`, {
+      const response = await axios.get(`${APIURL}/authors/${getAuthorId()}/`, {
         headers: {
           Authorization: getAuthorizationHeader(),
         },
       });
       const github = response.data.github;
-      console.log('github: ', github);
       const path = github.split('/');
       const username = path[path.length - 1]; 
       setUsername(username);
-      console.log('username: ', username);
       fetchData();
     } catch (e) {
 
@@ -43,11 +41,9 @@ const Github: React.FC = () => {
   
     const fetchData = async () => {
       try {
-        console.log('username*: ', username);
         if (username !== '') {
           const response = await axios.get(`https://api.github.com/users/${username}/events`);
           setData(response.data);
-          console.log(response.data);
         }
       } catch (error: any) {
         if (error.response.status === 403) {
@@ -60,7 +56,7 @@ const Github: React.FC = () => {
 
   return (
     <div className="container">
-      <Leftbar  />z
+      <Leftbar  />
         <div className="activityList">
         {data.length > 0 ? (
           data.map((activity) => <Activity key={activity.id} activity={activity} />)

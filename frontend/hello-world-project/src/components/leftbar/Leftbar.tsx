@@ -14,7 +14,6 @@ export default function Leftbar({reload: isreload}: LeftbarProps) {
   const [Reload, setReload] = React.useState<any>(false);
 
   useEffect(() => {
-    console.log('isreload1:', isreload);
     setReload(isreload);
   }, [isreload])
 
